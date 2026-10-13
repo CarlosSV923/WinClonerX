@@ -92,9 +92,9 @@ virtuales de prueba, spikes S1 y S3 y estructura de la interfaz. Ninguna histori
 
 ### Estructura de la aplicación de escritorio
 
-- [ ] T026 [P] Crear `src/WinCopy.App/app.manifest` con `requireAdministrator`, compatibilidad con Windows 10/11 y `longPathAware`
-- [ ] T027 [P] Implementar la infraestructura de localización: `src/WinCopy.App/Resources/Strings.resx` (inglés, neutro), `Strings.es.resx` y la extensión de marcado `{loc:Text Key}` en `src/WinCopy.App/Localization/LocExtension.cs`. La cultura sale de `CultureInfo.CurrentUICulture` con inglés como respaldo
-- [ ] T028 [P] Tests de localización en `tests/WinCopy.App.Tests/Localization/ResourceParityTests.cs` (cada clave existe en inglés y español y no está vacía, SC-008) y `NoLiteralTextInXamlTests.cs` (ningún `Text=`, `Content=` ni `Header=` literal en los `.xaml`, FR-029)
+- [X] T026 [P] Crear `src/WinCopy.App/app.manifest` con `requireAdministrator`, compatibilidad con Windows 10/11 y `longPathAware`
+- [X] T027 [P] Implementar la infraestructura de localización: `src/WinCopy.App/Resources/Strings.resx` (inglés, neutro), `Strings.es.resx` y la extensión de marcado `{loc:Loc Key}` (clase `LocExtension`) en `src/WinCopy.App/Localization/LocExtension.cs`. La cultura sale de `CultureInfo.CurrentUICulture` con inglés como respaldo
+- [X] T028 [P] Tests de localización en `tests/WinCopy.App.Tests/Localization/ResourceParityTests.cs` (cada clave existe en inglés y español y no está vacía, SC-008) y `NoLiteralTextInXamlTests.cs` (ningún `Text=`, `Content=` ni `Header=` literal en los `.xaml`, FR-029)
 - [ ] T029 Implementar `App.xaml(.cs)` con Generic Host + DI (raíz de composición), instancia única con el mutex `Global\WinCopy.SingleInstance` (si ya existe, trae al frente la ventana existente, FR-031) y el tema Fluent base en `src/WinCopy.App/App.xaml`
 - [ ] T030 Implementar el tema propio (paleta, tipografía, esquinas, botones primario y destructivo) en `src/WinCopy.App/Themes/WinCopyTheme.xaml`, inspirado en la estética de 4DDiG con recursos propios (principio V)
 - [ ] T031 Implementar la estructura del asistente: `src/WinCopy.App/MainWindow.xaml` con barra lateral de pasos (`src/WinCopy.App/Controls/StepRail.xaml`), área de contenido y barra inferior Atrás/Siguiente, más `src/WinCopy.App/ViewModels/WizardViewModel.cs` con la navegación entre los 5 pasos de [contracts/ui-wizard.md](contracts/ui-wizard.md)
