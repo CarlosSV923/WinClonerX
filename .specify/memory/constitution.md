@@ -1,20 +1,14 @@
 <!--
 Sync Impact Report
-- Cambio de versión: plantilla (sin versión) → 1.0.0
-- Principios (todos nuevos):
-  I. Seguridad de los datos primero (NO NEGOCIABLE)
-  II. Planificar antes de actuar
-  III. Dominio aislado (DDD + arquitectura hexagonal)
-  IV. Pruebas primero, con discos virtuales
-  V. Solo APIs públicas de Windows (sala limpia)
-  VI. Alcance mínimo
-  VII. Transparencia y observabilidad
-  VIII. Experiencia guiada y localizada
-- Secciones añadidas: Restricciones técnicas; Flujo de desarrollo y calidad
+- Cambio de versión: 1.0.0 → 1.1.0 (MINOR: se amplía de forma significativa la guía de distribución)
+- Principios modificados: ninguno
+- Secciones modificadas: Restricciones técnicas. La viñeta "Firma de código" (antes TODO) se sustituye
+  por "Distribución y firma de código".
+- Secciones añadidas: ninguna
 - Secciones eliminadas: ninguna
-- Plantillas: no requieren cambios (leen la constitución al ejecutarse)
-- TODO pendientes:
-  TODO(CODE_SIGNING): decidir el certificado de firma de código antes de la primera versión pública
+- Plantillas: no requieren cambios
+- TODO resueltos: TODO(CODE_SIGNING)
+- TODO pendientes: ninguno
 -->
 
 # WinCopy Constitution
@@ -139,8 +133,20 @@ Motivo: la claridad de la interfaz es parte de la seguridad (principio I).
 - **Acceso al sistema:** P/Invoke a Win32 y COM para VSS. Cualquier dependencia de terceros MUST tener una
   licencia compatible con un proyecto público (MIT, Apache-2.0, BSD o MS-PL) y justificarse en el plan.
 - **Instalador:** MSI generado con WiX y definido en el repositorio.
-- **Firma de código:** TODO(CODE_SIGNING). Hay que decidirla antes de la primera versión pública. Smart
-  App Control y otras políticas de integridad de Windows pueden bloquear binarios sin firmar.
+- **Distribución y firma de código:** el proyecto no paga certificados de firma. Mientras no haya una
+  firma gratuita disponible:
+  - Las versiones se publican sin firmar. Cada versión MUST publicar la huella SHA-256 del instalador e
+    incluir una atestación de procedencia de la compilación (GitHub Artifact Attestations).
+  - El README MUST explicar, en este orden:
+    1. Cómo superar el aviso de SmartScreen ("Más información → Ejecutar de todas formas").
+    2. Cómo verificar la huella SHA-256 y la atestación.
+    3. Cómo compilar desde el código.
+    4. Solo como último recurso: cómo desactivar Smart App Control, advirtiendo de forma destacada que
+       en muchas versiones de Windows no se puede reactivar sin reinstalar o restablecer el sistema.
+  - La documentación y la aplicación MUST NOT presentar la desactivación de protecciones de Windows como
+    un paso estándar de instalación.
+  - Antes de la versión 1.0 se MUST evaluar la firma gratuita para código abierto (por ejemplo, SignPath
+    Foundation).
 - **Proyectos:** se configuran con `Nullable` activado, `TreatWarningsAsErrors` y los analizadores de .NET.
 
 ## Flujo de desarrollo y calidad
@@ -168,4 +174,4 @@ Motivo: la claridad de la interfaz es parte de la seguridad (principio I).
   plan correspondiente. El principio I nunca admite desviaciones.
 - Las decisiones iniciales del proyecto están en `docs/decisiones-iniciales.md`.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-13 | **Last Amended**: 2026-10-13
+**Version**: 1.1.0 | **Ratified**: 2026-10-13 | **Last Amended**: 2026-10-13
