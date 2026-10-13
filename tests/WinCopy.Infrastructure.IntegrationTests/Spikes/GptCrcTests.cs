@@ -1,0 +1,15 @@
+using Shouldly;
+using Xunit;
+
+namespace WinCopy.Infrastructure.IntegrationTests.Spikes;
+
+// Pure unit test for spike S1. It touches no disk and needs no elevation. It is not an integration test.
+[Trait("Spike", "S1")]
+public sealed class GptCrcTests
+{
+    [Fact]
+    public void Crc32OfCheckStringMatchesIeeeCheckValue()
+    {
+        GptLayout.Crc32("123456789"u8).ShouldBe(0xCBF43926u);
+    }
+}
