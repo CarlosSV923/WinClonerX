@@ -10,4 +10,10 @@
     <ProjectReference Include="..\WinCopy.Domain\WinCopy.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+  </ItemGroup>
+
 </Project>
