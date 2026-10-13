@@ -41,7 +41,7 @@ Abreviaturas usadas en las rutas:
 - [X] T003 [P] Crear `Directory.Build.props` con `Nullable=enable`, `TreatWarningsAsErrors=true`, `AnalysisLevel=latest-recommended`, `ImplicitUsings=enable`, `LangVersion=latest` y `PlatformTarget=x64`
 - [X] T004 [P] Crear `Directory.Packages.props` (gestión central) con CommunityToolkit.Mvvm, Microsoft.Extensions.Hosting, System.Management, Serilog, Serilog.Sinks.File, Serilog.Formatting.Compact, xunit.v3, Shouldly y NetArchTest.Rules (MIT, justificada en research.md R15)
 - [X] T005 [P] Crear `.editorconfig` (convenciones C# y estilo de nombres) y `.gitattributes` (`* text=auto eol=crlf` para `.cs`, `.xaml` y `.md`; `binary` para `.vhdx`) para eliminar las advertencias LF/CRLF
-- [ ] T006 [P] Crear el proyecto WiX v6 vacío `installer/WinCopy.Installer/WinCopy.Installer.wixproj` (SDK `WixToolset.Sdk`), con `Package.wxs` mínimo (x64, por máquina, `Program Files\WinCopy`) y añadirlo a la solución
+- [X] T006 [P] Crear el proyecto WiX v6 vacío `installer/WinCopy.Installer/WinCopy.Installer.wixproj` (SDK `WixToolset.Sdk`), con `Package.wxs` mínimo (x64, por máquina, `Program Files\WinCopy`) y añadirlo a la solución
 - [X] T007 [P] Crear el flujo de CI `.github/workflows/ci.yml` (windows-latest): restaurar, compilar en Release y ejecutar las pruebas no marcadas con el rasgo `Integration`
 - [X] T008 [P] Crear `docs/glosario.md` con el lenguaje ubicuo de [data-model.md](data-model.md) (Disco, Partición, Volumen, Inventario, Plan de clonado, Correspondencia de partición, Reducción del origen, Ejecución, Compensación, Compromiso del diseño, Huella del inventario)
 

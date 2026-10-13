@@ -1,0 +1,12 @@
+﻿<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <OutputName>WinCopy</OutputName>
+    <Platform>x64</Platform>
+    <InstallerPlatform>x64</InstallerPlatform>
+  </PropertyGroup>
+  <!-- ICE validation needs an elevated process (WIX1105 otherwise). Release builds validate
+       (CI runners are elevated); local Debug builds skip it so the solution stays green. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <SuppressValidation>true</SuppressValidation>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,29 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="WinCopy"
+           Manufacturer="WinCopy"
+           Version="0.1.0"
+           UpgradeCode="45375F69-2C6C-4BB1-BD51-4B9D75111B6C"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of WinCopy is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="MainFeature" Title="WinCopy" Level="1">
+      <ComponentGroupRef Id="PlaceholderComponents" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="WinCopy" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="PlaceholderComponents" Directory="INSTALLFOLDER">
+      <Component Id="ReadmeComponent" Guid="*">
+        <File Id="ReadmeTxt" Source="README.txt" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
