@@ -15,6 +15,9 @@ Aplicación de Windows instalable cuya **única funcionalidad** es clonar el dis
   - `FSCTL_GET_VOLUME_BITMAP` para leer solo los bloques ocupados.
   - `IOCTL_DISK_CREATE_DISK` y `IOCTL_DISK_SET_DRIVE_LAYOUT_EX` para la tabla de particiones.
   - `FSCTL_SHRINK_VOLUME` y `FSCTL_EXTEND_VOLUME` para ajustar tamaños.
+  - **Actualización 2026-10-13**: para reducir se usa `MSFT_Partition.Resize` (Storage Management API).
+    `FSCTL_SHRINK_VOLUME` sola obliga a mover los archivos por cuenta propia. Ver
+    `specs/001-system-disk-clone/research.md` (R6) y la constitución v1.1.1.
   - `bcdboot` y `reagentc` para el arranque y la recuperación.
 - Equipo de desarrollo: UEFI con disco GPT, NVMe Samsung 990 EVO Plus de 1 TB (C: de 930 GB), .NET SDK 10.0.401 y Node 24.
 
@@ -22,7 +25,7 @@ Aplicación de Windows instalable cuya **única funcionalidad** es clonar el dis
 
 | # | Tema | Decisión | Motivo |
 |---|------|----------|--------|
-| 1 | Destino más pequeño que el origen | Se admite si el destino tiene espacio suficiente para los datos usados. Antes de clonar, la app **encoge C: con la función nativa de Windows** (`FSCTL_SHRINK_VOLUME`). Si el destino es mayor, el volumen se amplía después de clonar. | Cubre el caso típico de HDD→SSD con riesgo moderado y usa la misma función que el Administrador de discos. Se descartó reubicar NTFS por nuestra cuenta, por complejidad y riesgo. La app debe avisar de que se modifica el origen y pedir confirmación. |
+| 1 | Destino más pequeño que el origen | Se admite si el destino tiene espacio suficiente para los datos usados. Antes de clonar, la app **encoge C: con la función nativa de Windows** (`MSFT_Partition.Resize`; ver la nota de actualización). Si el destino es mayor, el volumen se amplía después de clonar. | Cubre el caso típico de HDD→SSD con riesgo moderado y usa la misma función que el Administrador de discos. Se descartó reubicar NTFS por nuestra cuenta, por complejidad y riesgo. La app debe avisar de que se modifica el origen y pedir confirmación. |
 | 2 | Firmware y particionado | **Solo UEFI con GPT** | Es el estándar de Windows 11 y el entorno de desarrollo. BIOS/MBR y la conversión MBR→GPT quedan para más adelante. |
 | 3 | Tecnología | **C# con .NET 10 y WPF**, con llamadas directas (P/Invoke) a las APIs de Windows | Misma tecnología de interfaz que 4DDiG (facilita una estética similar), es madura y el SDK ya está instalado. |
 | 4 | Instalador | **MSI con WiX** | Estándar profesional, se define en código (encaja con SDD) y permite una desinstalación limpia. La app pide permisos de administrador (`requireAdministrator`). |

@@ -1,13 +1,12 @@
 <!--
 Sync Impact Report
-- Cambio de versión: 1.0.0 → 1.1.0 (MINOR: se amplía de forma significativa la guía de distribución)
-- Principios modificados: ninguno
-- Secciones modificadas: Restricciones técnicas. La viñeta "Firma de código" (antes TODO) se sustituye
-  por "Distribución y firma de código".
+- Cambio de versión: 1.1.0 → 1.1.1 (PATCH: corrección de una referencia técnica, sin cambio de reglas)
+- Principios modificados: I. La función de reducción del origen pasa de `FSCTL_SHRINK_VOLUME` a
+  `MSFT_Partition.Resize`. Según la documentación de Microsoft, esa FSCTL sola exige mover los archivos
+  por cuenta propia (ver specs/001-system-disk-clone/research.md, R6).
 - Secciones añadidas: ninguna
 - Secciones eliminadas: ninguna
 - Plantillas: no requieren cambios
-- TODO resueltos: TODO(CODE_SIGNING)
 - TODO pendientes: ninguno
 -->
 
@@ -24,7 +23,8 @@ Clonar implica borrar un disco entero. Cualquier error puede destruir datos de f
 - Antes de escribir en el destino, el usuario MUST confirmar de forma explícita e informada qué disco se
   borrará, identificado por modelo, número de serie, tamaño y particiones actuales.
 - El disco de origen se trata como de solo lectura. La única excepción permitida es encoger el volumen
-  de Windows con la función nativa del sistema (`FSCTL_SHRINK_VOLUME`), que MUST pedir su propia
+  de Windows con la función nativa del sistema (Storage Management API, `MSFT_Partition.Resize`, la
+  misma que usa el Administrador de discos), que MUST pedir su propia
   confirmación, aparte de la de borrar el destino.
 - Si una comprobación previa no se puede verificar, la operación MUST abortarse, no continuar. Las
   comprobaciones mínimas son: capacidad, UEFI/GPT, BitLocker, estado de VSS y que los discos sigan
@@ -174,4 +174,4 @@ Motivo: la claridad de la interfaz es parte de la seguridad (principio I).
   plan correspondiente. El principio I nunca admite desviaciones.
 - Las decisiones iniciales del proyecto están en `docs/decisiones-iniciales.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-13 | **Last Amended**: 2026-10-13
+**Version**: 1.1.1 | **Ratified**: 2026-10-13 | **Last Amended**: 2026-10-13
