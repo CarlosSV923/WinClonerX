@@ -3,8 +3,10 @@
 **Feature**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md) | **Fecha**: 2026-10-13
 
 Cada decisión tiene el formato Decisión / Motivo / Alternativas. Las marcadas **(spike)** tienen
-incertidumbre técnica residual: se validan con una prueba de concepto sobre VHDX al principio de la
-implementación (Fase 0 de `tasks.md`). Si un spike falla, se aplica la alternativa indicada.
+incertidumbre técnica residual y se validan con una prueba de concepto. S1 y S3 se hacen sobre VHDX en
+la fase 2 de `tasks.md`. S2 necesita el motor de clonado completo, así que es un punto de control al
+final de la parte técnica de la US1, antes de la interfaz. Si un spike falla, se aplica la alternativa
+indicada.
 
 Fuentes de Microsoft consultadas el 2026-10-13:
 - [BCDBoot Command-Line Options](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/bcdboot-command-line-options-techref-di)
@@ -186,7 +188,10 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   aviso que requiere aceptación (FR-014). La lectura se hace a través de la instantánea del volumen
   desbloqueado, que ofrece los datos descifrados. El clon queda como NTFS sin cifrar **(spike S3)**.
 - **Lo que valida el spike S3**: clonar un VHDX con BitLocker activado (BitLocker funciona sobre VHDX
-  con protector de contraseña) y comprobar que el clon se monta como NTFS válido y sin cifrar.
+  con protector de contraseña) y comprobar que el clon se monta como NTFS válido y sin cifrar. Para que
+  el spike no dependa de la interop VSS de la US1, la instantánea se crea con WMI
+  `Win32_ShadowCopy.Create`. Lo que se valida es el comportamiento de la pila de volúmenes con BitLocker,
+  que es el mismo con ambas vías.
   **Alternativa**: si el resultado no es válido, BitLocker pasa a ser bloqueante en la v1 y hay que
   suspender o descifrar antes. Eso requiere revisar la decisión 7 con la persona usuaria.
 
@@ -252,13 +257,21 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 - **Decisión**:
   - **xUnit v3** (Apache-2.0) y **Shouldly** (BSD) para aserciones. Fakes escritos a mano para los
     puertos (sin librerías de mocks).
+  - **NetArchTest.Rules** (MIT), solo en `WinCopy.ArchitectureTests`: verifica de forma declarativa que
+    el dominio no depende de Windows ni WPF y que las capas solo dependen hacia dentro (principio III).
+    Alternativa descartada: reflexión manual sobre las referencias de ensamblado (más código propio que
+    mantener y menos expresivo).
   - Integración sobre **VHDX** creados con la API `virtdisk.dll` (`CreateVirtualDisk`,
     `AttachVirtualDisk`), sin depender del módulo de Hyper-V. Requiere ejecutar las pruebas como
     administrador.
-  - **Protección contra discos físicos** (principio IV): el *fixture* de integración solo entrega a los
-    adaptadores discos con `BusType == FileBackedVirtual` (15) que haya creado y adjuntado él mismo
-    (comparando la ruta del VHDX). Cualquier otro disco provoca un fallo inmediato del test, antes de
-    abrir un manejador de escritura.
+  - **Protección contra discos físicos** (principio IV), en dos capas que no dependen de que la prueba
+    esté bien escrita:
+    1. `DiskWriteGuard` es el único punto de producción que abre manejadores de escritura en un disco.
+       Admite restricciones globales del proceso que **solo pueden añadir prohibiciones**.
+    2. El ensamblado de pruebas de integración registra con un `[ModuleInitializer]` una restricción
+       que solo autoriza discos `BusType == FileBackedVirtual` (15) respaldados por un VHDX bajo
+       `%TEMP%\WinCopyTests\`. Así, aunque una prueba cree un adaptador directamente con el número de un
+       disco físico, la apertura falla antes de llamar a `CreateFile`.
   - Arranque: pruebas manuales o semiautomatizadas en VM Gen2 de Hyper-V (opcional) y validación final
     en el segundo disco físico con la lista de [quickstart.md](quickstart.md).
 - **Alternativas**:

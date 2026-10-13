@@ -166,7 +166,7 @@ Una persona cancela el clonado a mitad, o se produce un fallo (se desconecta el 
 
 ### Measurable Outcomes
 
-- **SC-001**: Una persona sin conocimientos técnicos llega desde abrir la aplicación hasta iniciar el clonado en menos de 3 minutos y con no más de 5 decisiones.
+- **SC-001**: Una persona sin conocimientos técnicos llega desde abrir la aplicación hasta iniciar el clonado en menos de 3 minutos y con no más de 5 decisiones. Una "decisión" es cada pantalla en la que la persona tiene que elegir o confirmar algo. Aceptar varios avisos en la misma pantalla cuenta como una sola decisión.
 - **SC-002**: El 100 % de los clones de la matriz de validación arrancan Windows al primer intento desde el disco nuevo, con los mismos usuarios, programas, archivos y activación que el original.
 - **SC-003**: La duración depende de los datos ocupados y no de la capacidad. Clonar un sistema con 100 GB ocupados en un disco de 1 TB tarda como máximo un 20 % más que clonar 100 GB ocupados en un disco de 200 GB, con el mismo hardware.
 - **SC-004**: En el 100 % de las pruebas (incluidas las que fuerzan errores de selección) no se escribe nunca en el disco del sistema ni en un disco distinto del confirmado.
@@ -183,7 +183,7 @@ Una persona cancela el clonado a mitad, o se produce un fallo (se desconecta el 
 - Sistemas compatibles: Windows 10 22H2 y Windows 11 de 64 bits, con una sola instalación de Windows en el disco de origen (sin arranque dual).
 - La persona usuaria tiene permisos de administrador en el equipo.
 - El destino puede estar conectado por USB (por ejemplo, un SSD en una carcasa externa). Se usa como soporte para instalarlo luego dentro del equipo; arrancar Windows de forma habitual desde USB no es un objetivo.
-- El margen de seguridad para considerar que los datos caben es del 10 % del espacio ocupado, con un mínimo de 10 GB. Se ajustará en la planificación si hace falta.
+- El margen de seguridad para considerar que los datos caben es del 10 % del espacio ocupado, con un mínimo de 10 GiB. Se ajustará en la planificación si hace falta.
 - La aplicación no cambia la configuración del firmware (orden de arranque). Solo indica a la persona cómo hacerlo.
 - La reducción del origen usa la función del propio Windows y está sujeta a sus límites (archivos que no se pueden mover).
 - Se considera que el disco de origen está sano. Ante errores de lectura, la aplicación aborta en lugar de intentar recuperar datos.

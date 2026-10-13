@@ -43,9 +43,11 @@ y WMI) y una interfaz WPF MVVM tipo asistente. Detalles en [research.md](researc
 configuración persistente.
 
 **Testing**:
-- xUnit v3 + Shouldly.
+- xUnit v3 + Shouldly. NetArchTest.Rules (MIT) para los tests de arquitectura (R15).
 - Fakes propios de los puertos, con inyección de fallos.
-- Integración sobre VHDX (`virtdisk.dll`) como administrador, con protección contra discos físicos.
+- Integración sobre VHDX (`virtdisk.dll`) como administrador. La protección contra discos físicos está en
+  dos capas: `DiskWriteGuard` en producción y una restricción "solo VHDX" registrada para todo el proceso
+  de pruebas (R15).
 - Arranque en VM Gen2 de Hyper-V (opcional) y validación manual en disco físico
   ([quickstart.md](quickstart.md)).
 
@@ -54,7 +56,7 @@ ejecuta como administrador.
 
 **Project Type**: aplicación de escritorio (WPF) con instalador MSI
 
-**Performance Goals**:
+**Performance Goals** (medidos en la tarea de rendimiento de la fase de pulido de `tasks.md`):
 - Rendimiento de copia ≥ 85 % de la velocidad secuencial del disco más lento (tubería de 4 MiB con 2–4
   búferes en vuelo).
 - Duración proporcional a los datos ocupados (SC-003).
@@ -175,9 +177,12 @@ más integración y arquitectura. El instalador queda aparte, en `installer/`.
 
 ## Fases de entrega (orientativas para /speckit-tasks)
 
-1. **Fase 0: Spikes técnicos** (sobre VHDX): S1 (escritura en disco fuera de línea + GPT propia),
-   S2 (arranque y WinRE del clon en una VM), S3 (BitLocker). Decide entre la ruta principal y la
-   alternativa de R4, R7 y R9.
+1. **Spikes técnicos**:
+   - S1 (escritura en disco fuera de línea + GPT propia) y S3 (BitLocker, con una instantánea WMI) se
+     hacen sobre VHDX en la fase Foundational.
+   - S2 (arranque y WinRE del clon en una VM) es un punto de control al final de la parte técnica de la
+     US1, porque necesita el motor de clonado completo.
+   - Deciden entre la ruta principal y la alternativa de R4, R7 y R9.
 2. **Base**: solución, `Directory.Build.props`, tests de arquitectura, objetos de valor compartidos,
    glosario.
 3. **US1 (P1)**: inventario, comprobaciones previas, plan con destino igual o mayor, ejecución completa,

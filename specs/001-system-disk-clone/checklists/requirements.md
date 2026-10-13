@@ -36,6 +36,8 @@
 - Iteración 2: los 3 se resolvieron con la persona usuaria (sesión del 2026-10-13, registrada en la
   sección Clarifications). Se añadieron FR-021a, FR-021b, FR-022a, SC-009 y SC-010. Todos los puntos
   de la lista se superan.
+- Iteración 3 (tras `/speckit-analyze`): se definió qué es una "decisión" en SC-001 y se unificó el
+  margen en 10 GiB.
 - Los términos UEFI/GPT, BitLocker y tamaño de sector son conceptos del dominio que una persona usuaria
   ve en Windows. No son detalles de implementación.
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`

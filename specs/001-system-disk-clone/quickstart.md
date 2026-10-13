@@ -72,8 +72,10 @@ dotnet test tests/WinCopy.Infrastructure.IntegrationTests
 5. Al terminar, exportar el registro.
 6. Apagar, arrancar desde el disco clonado (menú de arranque del firmware o intercambiando los discos) y
    repetir las comprobaciones del nivel 3.
-7. Registrar el resultado en `docs/validacion-manual.md`: versión, hardware, tamaños, duración y
-   resultado de cada comprobación.
+7. Desinstalar WinCopy desde Configuración → Aplicaciones y comprobar que no queda nada en
+   `Program Files\WinCopy`, ni en la lista de programas, ni procesos o servicios (FR-032).
+8. Registrar el resultado en `docs/validacion-manual.md`: versión, hardware, tamaños, duración,
+   respuesta de la interfaz durante la copia (< 100 ms percibido) y resultado de cada comprobación.
 
 ## Criterios de aceptación de la funcionalidad
 
@@ -81,11 +83,11 @@ dotnet test tests/WinCopy.Infrastructure.IntegrationTests
 |----------|-----------------|
 | SC-001 (< 3 min, ≤ 5 decisiones) | Nivel 4, paso 3 |
 | SC-002 (arranque 100 %) | Niveles 3 y 4 |
-| SC-003 (duración proporcional a lo ocupado) | Nivel 2 (VHDX de 200 GB y de 1 TB con los mismos datos) |
+| SC-003 (duración proporcional a lo ocupado) | Nivel 2 (10 GB de datos en VHDX de 20 GB y de 100 GB; misma proporción que la especificación) |
 | SC-004 (nunca se escribe en un disco no confirmado) | Niveles 1 y 2 (tests de invariantes y fixture de seguridad) |
 | SC-005 (el origen sobrevive a fallos) | Niveles 1 y 2 |
 | SC-006 (tiempo restante ±20 %) | Nivel 4, paso 4 |
-| SC-007 (identificar el disco ≥ 90 %) | Prueba de uso con 5 o más personas antes de la 1.0 |
+| SC-007 (identificar el disco ≥ 90 %) | Prueba de uso con 5 o más personas antes de la 1.0 (tarea de pulido, registrada en `docs/validacion-manual.md`) |
 | SC-008 (es/en 100 %) | Nivel 1 |
 | SC-009 (detección de alteraciones) | Nivel 2 |
 | SC-010 (restauración del origen) | Niveles 2 y 3 |

@@ -41,7 +41,7 @@ El disco del sistema **nunca** aparece en la lista de destinos.
 | Elemento | Contenido | Requisito |
 |----------|-----------|-----------|
 | Disco a borrar | En grande: modelo, número de serie completo, capacidad y particiones actuales. Texto: "Se borrará TODO el contenido de este disco" | FR-012 |
-| Campo de verificación | "Escribe los 4 últimos caracteres del número de serie (XXXX) para confirmar". Sin distinguir mayúsculas | FR-012, R13 |
+| Campo de verificación | "Escribe los 4 últimos caracteres del número de serie (XXXX) para confirmar". Sin distinguir mayúsculas. Si el disco no informa número de serie (algunos USB), se muestra y se pide el identificador del disco (GUID) con el texto "Escribe los 4 últimos caracteres del identificador del disco" | FR-012, R13 |
 | Reducción del origen | Solo si aplica: panel separado con el tamaño actual y el reducido de Windows en el disco original, la explicación de que se restaurará al final y su propia casilla de confirmación | FR-013 |
 | Botón | **Clonar ahora** (estilo de acción destructiva). Solo se habilita con las confirmaciones válidas | FR-012 |
 
