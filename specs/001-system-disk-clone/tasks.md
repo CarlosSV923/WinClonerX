@@ -56,11 +56,11 @@ virtuales de prueba, spikes S1 y S3 y estructura de la interfaz. Ninguna histori
 
 ### Modelo compartido del dominio
 
-- [ ] T009 [P] Tests de los objetos de valor en `tests/WinCopy.Domain.Tests/Shared/ValueObjectTests.cs`: `ByteSize` (≥ 0, aritmética, formato GiB/GB), `SectorSize` ("Vale 512 o 4096 en la v1"), `Extent` ("El desplazamiento está alineado al sector y la longitud es > 0"), `PartitionGuid` ("No puede estar vacío") e `InventoryFingerprint` ("Es igual si y solo si no cambió nada relevante")
-- [ ] T010 [P] Implementar `ByteSize`, `SectorSize`, `Extent`, `DiskId`, `PartitionGuid`, `GptPartitionType` (constantes ESP, MSR, BasicData, Recovery, LDM*, Spaces*) e `InventoryFingerprint` en `src/WinCopy.Domain/Shared/`
-- [ ] T011 [P] Tests del inventario en `tests/WinCopy.Domain.Tests/Inventory/DiskInventoryTests.cs`: derivación de `PartitionRole` a partir del tipo GPT y del volumen de Windows, e invariante "hay exactamente un disco con `IsSystem = true`" (si no hay ninguno o hay varios, el inventario es *no soportado*)
-- [ ] T012 [P] Implementar `DiskInventory`, `Disk`, `Partition`, `Volume` y los enumerados `FirmwareType`, `BusKind`, `PartitionStyle`, `PartitionRole`, `FileSystemKind` y `EncryptionState` en `src/WinCopy.Domain/Inventory/` según [data-model.md](data-model.md)
-- [ ] T013 [P] Implementar el tipo `Result<T, TError>` y los errores de dominio en `src/WinCopy.Domain/Shared/Result.cs`
+- [X] T009 [P] Tests de los objetos de valor en `tests/WinCopy.Domain.Tests/Shared/ValueObjectTests.cs`: `ByteSize` (≥ 0, aritmética, formato GiB/GB), `SectorSize` ("Vale 512 o 4096 en la v1"), `Extent` ("El desplazamiento está alineado al sector y la longitud es > 0"), `PartitionGuid` ("No puede estar vacío") e `InventoryFingerprint` ("Es igual si y solo si no cambió nada relevante")
+- [X] T010 [P] Implementar `ByteSize`, `SectorSize`, `Extent`, `DiskId`, `PartitionGuid`, `GptPartitionType` (constantes ESP, MSR, BasicData, Recovery, LDM*, Spaces*) e `InventoryFingerprint` en `src/WinCopy.Domain/Shared/`
+- [X] T011 [P] Tests del inventario en `tests/WinCopy.Domain.Tests/Inventory/DiskInventoryTests.cs`: derivación de `PartitionRole` a partir del tipo GPT y del volumen de Windows, e invariante "hay exactamente un disco con `IsSystem = true`" (si no hay ninguno o hay varios, el inventario es *no soportado*)
+- [X] T012 [P] Implementar `DiskInventory`, `Disk`, `Partition`, `Volume` y los enumerados `FirmwareType`, `BusKind`, `PartitionStyle`, `PartitionRole`, `FileSystemKind` y `EncryptionState` en `src/WinCopy.Domain/Inventory/` según [data-model.md](data-model.md)
+- [X] T013 [P] Implementar el tipo `Result<T, TError>` y los errores de dominio en `src/WinCopy.Domain/Shared/Result.cs`
 
 ### Arquitectura, puertos y transversales
 
