@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WinCopy.App.ViewModels;
@@ -8,7 +8,7 @@ namespace WinCopy.App;
 /// <summary>
 /// Composition root. Builds the Generic Host, registers the windows and view models, and enforces a single instance.
 /// </summary>
-public sealed partial class App : Application, IDisposable
+public sealed partial class App : System.Windows.Application, IDisposable
 {
     private SingleInstance? _singleInstance;
     private IHost? _host;
