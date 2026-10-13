@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
