@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WinCopy.App/WinCopy.App.csproj" />
+    <Project Path="src/WinCopy.Application/WinCopy.Application.csproj" />
+    <Project Path="src/WinCopy.Domain/WinCopy.Domain.csproj" />
+    <Project Path="src/WinCopy.Infrastructure.Windows/WinCopy.Infrastructure.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WinCopy.App.Tests/WinCopy.App.Tests.csproj" />
+    <Project Path="tests/WinCopy.Application.Tests/WinCopy.Application.Tests.csproj" />
+    <Project Path="tests/WinCopy.ArchitectureTests/WinCopy.ArchitectureTests.csproj" />
+    <Project Path="tests/WinCopy.Domain.Tests/WinCopy.Domain.Tests.csproj" />
+    <Project Path="tests/WinCopy.Infrastructure.IntegrationTests/WinCopy.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/WinCopy.Infrastructure.Windows.Tests/WinCopy.Infrastructure.Windows.Tests.csproj" />
+  </Folder>
+</Solution>

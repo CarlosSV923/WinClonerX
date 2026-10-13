@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinCopy.Application\WinCopy.Application.csproj" />
+    <ProjectReference Include="..\WinCopy.Domain\WinCopy.Domain.csproj" />
+    <ProjectReference Include="..\WinCopy.Infrastructure.Windows\WinCopy.Infrastructure.Windows.csproj" />
+  </ItemGroup>
+
+</Project>

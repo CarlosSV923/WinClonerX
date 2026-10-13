@@ -6,7 +6,11 @@ bin/
 obj/
 .vs/
 *.user
+*.suo
+packages/
 TestResults/
+artifacts/
+*.binlog
 
 # Discos virtuales de prueba
 *.vhd

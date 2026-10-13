@@ -1,0 +1,24 @@
+# Normalización automática de finales de línea
+* text=auto
+
+# Código y documentos: CRLF en el árbol de trabajo
+*.cs text eol=crlf
+*.xaml text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.slnx text eol=crlf
+*.md text eol=crlf
+*.ps1 text eol=crlf
+*.resx text eol=crlf
+*.wxs text eol=crlf
+*.yml text eol=crlf
+
+# Scripts bash de .specify: deben conservar LF
+*.sh text eol=lf
+
+# Binarios
+*.vhdx binary
+*.vhd binary
+*.png binary
+*.ico binary
+*.zip binary
