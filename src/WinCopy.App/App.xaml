@@ -1,9 +1,15 @@
-﻿<Application x:Class="WinCopy.App.App"
+<Application x:Class="WinCopy.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WinCopy.App"
-             StartupUri="MainWindow.xaml">
+             xmlns:converters="clr-namespace:WinCopy.App.Converters"
+             ThemeMode="Light">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/WinCopyTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:LocKeyConverter x:Key="LocKeyConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

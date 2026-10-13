@@ -6,12 +6,19 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
+    <!-- Required by LibraryImport (SYSLIB1062) for the user32 calls in NativeMethods.cs. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WinCopy.Application\WinCopy.Application.csproj" />
     <ProjectReference Include="..\WinCopy.Domain\WinCopy.Domain.csproj" />
     <ProjectReference Include="..\WinCopy.Infrastructure.Windows\WinCopy.Infrastructure.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
 </Project>

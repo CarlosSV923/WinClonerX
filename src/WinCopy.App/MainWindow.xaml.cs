@@ -1,23 +1,14 @@
-﻿using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using WinCopy.App.ViewModels;
 
 namespace WinCopy.App;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
+/// <summary>Main window: the cloning wizard shell. Its DataContext comes from DI.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(WizardViewModel viewModel)
     {
         InitializeComponent();
+        DataContext = viewModel;
     }
-}
+}

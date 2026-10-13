@@ -79,4 +79,10 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Rail_Steps_Label" xml:space="preserve">
+    <value>Wizard steps</value>
+  </data>
+  <data name="Icon_Check" xml:space="preserve">
+    <value>&#xE73E;</value>
+  </data>
 </root>

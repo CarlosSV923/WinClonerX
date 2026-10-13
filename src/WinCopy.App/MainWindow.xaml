@@ -1,13 +1,70 @@
-﻿<Window x:Class="WinCopy.App.MainWindow"
+<Window x:Class="WinCopy.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinCopy.App"
         xmlns:loc="clr-namespace:WinCopy.App.Localization"
+        xmlns:controls="clr-namespace:WinCopy.App.Controls"
+        xmlns:themes="clr-namespace:WinCopy.App.Themes"
         mc:Ignorable="d"
-        Title="{loc:Loc App_Title}" Height="450" Width="800">
+        Title="{loc:Loc App_Title}"
+        Width="1000" Height="680"
+        MinWidth="900" MinHeight="600"
+        Background="{StaticResource Brush.Background}"
+        FontFamily="{x:Static themes:WinCopyFonts.Text}">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
+        <!-- Left rail: app title and the step list. -->
+        <Border Grid.RowSpan="2" Background="{StaticResource Brush.Rail}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top"
+                           Style="{StaticResource Text.Title}"
+                           Foreground="{StaticResource Brush.RailText}"
+                           Margin="20,24,20,20"
+                           Text="{loc:Loc App_Title}" />
+                <controls:StepRail StepItems="{Binding StepItems}" Margin="12,0,12,12" />
+            </DockPanel>
+        </Border>
+
+        <!-- Content area: the current step. Placeholder until the step pages exist. -->
+        <ContentControl Grid.Row="0" Grid.Column="1"
+                        Margin="24,24,24,12"
+                        Content="{Binding CurrentStep}">
+            <ContentControl.ContentTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Card}">
+                        <TextBlock Style="{StaticResource Text.Subtitle}"
+                                   Text="{Binding TitleKey, Converter={StaticResource LocKeyConverter}}" />
+                    </Border>
+                </DataTemplate>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
+
+        <!-- Bottom bar: Back and Next. -->
+        <StackPanel Grid.Row="1" Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="24,0,24,20">
+            <Button Style="{StaticResource Button.Secondary}"
+                    MinWidth="120"
+                    Margin="0,0,12,0"
+                    Content="{loc:Loc Common_Back}"
+                    AutomationProperties.Name="{loc:Loc Common_Back}"
+                    Command="{Binding BackCommand}" />
+            <Button Style="{StaticResource Button.Primary}"
+                    MinWidth="120"
+                    Content="{loc:Loc Common_Next}"
+                    AutomationProperties.Name="{loc:Loc Common_Next}"
+                    Command="{Binding NextCommand}" />
+        </StackPanel>
     </Grid>
 </Window>
