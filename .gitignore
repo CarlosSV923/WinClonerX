@@ -1,0 +1,13 @@
+# Claude Code: configuración local y posibles credenciales
+.claude/settings.local.json
+
+# .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+
+# Discos virtuales de prueba
+*.vhd
+*.vhdx
