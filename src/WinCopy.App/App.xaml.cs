@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WinCopy.App.ViewModels;
+using WinCopy.App.Composition;
 
 namespace WinCopy.App;
 
@@ -52,9 +52,5 @@ public sealed partial class App : System.Windows.Application, IDisposable
         _singleInstance = null;
     }
 
-    private static void ConfigureServices(IServiceCollection services)
-    {
-        services.AddSingleton<WizardViewModel>();
-        services.AddSingleton<MainWindow>();
-    }
+    private static void ConfigureServices(IServiceCollection services) => ServiceRegistration.Register(services);
 }

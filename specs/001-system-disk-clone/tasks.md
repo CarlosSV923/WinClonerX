@@ -173,7 +173,7 @@ comprobar que Windows arranca desde el clon con `C:` ampliado.
   - Clonar dentro de la VM, arrancar el clon y comprobar que el volumen de Windows es `C:` y que `reagentc /info` muestra WinRE habilitado.
   - Documentar el procedimiento y el resultado en `docs/spikes/s2-arranque-vm.md` y en `specs/001-system-disk-clone/research.md` (R5 y R7).
   - Si falla, corregir T068 y T070 antes de seguir.
-- [ ] T074 [US1] Registrar todos los adaptadores y casos de uso en el contenedor DI en `src/WinCopy.App/Composition/ServiceRegistration.cs`
+- [X] T074 [US1] Registrar todos los adaptadores y casos de uso en el contenedor DI en `src/WinCopy.App/Composition/ServiceRegistration.cs`
 
 **Interfaz**
 
