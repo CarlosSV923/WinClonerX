@@ -53,4 +53,36 @@ public sealed class ReferenceSystemDiskLayoutTests
     {
         Should.Throw<ArgumentException>(() => ReferenceSystemDisk.WindowsPartitionBytes(new ByteSize((2L << 30) + 1)));
     }
+
+    // WindowsBytesFromFreeExtent: the size from the real free space after the ESP and MSR. Recovery (600 MiB) and 2 MiB slack
+    // stay free, and the result is rounded down to a whole MiB.
+    [Fact]
+    public void WindowsFromFreeExtentLeavesExactlyRecoveryAndTwoMiBSlack()
+    {
+        long free = 1930 * Mib;
+
+        ReferenceSystemDisk.WindowsBytesFromFreeExtent(free).ShouldBe(1328 * Mib);
+    }
+
+    [Fact]
+    public void WindowsFromFreeExtentRoundsDownToWholeMiB()
+    {
+        long free = (1931 * Mib) + (512 * 1024);
+
+        ReferenceSystemDisk.WindowsBytesFromFreeExtent(free).ShouldBe(1329 * Mib);
+    }
+
+    [Fact]
+    public void WindowsFromFreeExtentWithoutRoomForAMiBIsRejected()
+    {
+        // 602 MiB is Recovery plus slack exactly. One byte less than 1 MiB more still rounds to 0.
+        Should.Throw<ArgumentOutOfRangeException>(() => ReferenceSystemDisk.WindowsBytesFromFreeExtent(602 * Mib));
+        Should.Throw<ArgumentOutOfRangeException>(() => ReferenceSystemDisk.WindowsBytesFromFreeExtent((603 * Mib) - 1));
+    }
+
+    [Fact]
+    public void NegativeFreeExtentIsRejected()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => ReferenceSystemDisk.WindowsBytesFromFreeExtent(-1));
+    }
 }

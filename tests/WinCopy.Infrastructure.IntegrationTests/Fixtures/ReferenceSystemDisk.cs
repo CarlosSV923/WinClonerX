@@ -9,35 +9,52 @@ namespace WinCopy.Infrastructure.IntegrationTests.Fixtures;
 
 /// <summary>
 /// A VHDX with a Windows-11-like GPT layout, built by <see cref="ReferenceSystemDisk.CreateAsync"/>. The partitions are
-/// listed in disk order: ESP, MSR, Windows, Recovery. The drive letters are already removed, so the partitions are
-/// reachable only through their volume GUID paths.
+/// listed in disk order (by offset). The order is not fixed: <c>Initialize-Disk</c> may create a Microsoft Reserved partition
+/// before the ESP, so callers find partitions by their GPT type, never by index. The drive letters are already removed, so the
+/// partitions are reachable only through their volume GUID paths.
 /// </summary>
 internal sealed class ReferenceDisk
 {
+    private readonly IReadOnlyList<ListedPartition> _layout;
+
     internal ReferenceDisk(
         AttachedVirtualDisk disk,
-        IReadOnlyList<PartitionInfo> partitions,
+        IReadOnlyList<ListedPartition> layout,
         IReadOnlyDictionary<string, string> manifest)
     {
         Disk = disk;
-        Partitions = partitions;
+        _layout = layout;
         Manifest = manifest;
     }
 
     /// <summary>The attached VHDX. The fixture detaches it and deletes the file.</summary>
     public AttachedVirtualDisk Disk { get; }
 
-    /// <summary>ESP, MSR, Windows and Recovery, in disk order, with their state after the letters were removed.</summary>
-    public IReadOnlyList<PartitionInfo> Partitions { get; }
+    /// <summary>Every partition in disk order, with its GPT type, after the letters were removed.</summary>
+    public IReadOnlyList<ListedPartition> Layout => _layout;
 
-    /// <summary>The "Windows" Basic Data partition (NTFS).</summary>
-    public PartitionInfo Windows => Partitions[ReferenceSystemDisk.WindowsIndex];
+    /// <summary>Every partition in disk order, with its state after the letters were removed.</summary>
+    public IReadOnlyList<PartitionInfo> Partitions => _layout.Select(listed => listed.Partition).ToArray();
+
+    /// <summary>The "Windows" Basic Data partition (NTFS). Found by its GPT type.</summary>
+    public PartitionInfo Windows => PartitionOfType(ReferenceSystemDisk.BasicDataType, "Basic Data (Windows)");
+
+    /// <summary>The Recovery partition (NTFS). Found by its GPT type.</summary>
+    public PartitionInfo Recovery => PartitionOfType(ReferenceSystemDisk.RecoveryType, "Recovery");
 
     /// <summary>
     /// SHA-256 (uppercase hex) of each data file, keyed by its path relative to the root of the Windows volume, for example
     /// <c>WinCopyData\file-00.bin</c>.
     /// </summary>
     public IReadOnlyDictionary<string, string> Manifest { get; }
+
+    private PartitionInfo PartitionOfType(Guid type, string name)
+    {
+        ListedPartition[] matches = _layout.Where(listed => listed.GptType == type).ToArray();
+        return matches.Length == 1
+            ? matches[0].Partition
+            : throw new InvalidOperationException($"The reference disk must hold exactly one {name} partition; it holds {matches.Length}.");
+    }
 }
 
 /// <summary>
@@ -46,9 +63,6 @@ internal sealed class ReferenceDisk
 /// </summary>
 internal static class ReferenceSystemDisk
 {
-    /// <summary>Index of the Windows partition in <see cref="ReferenceDisk.Partitions"/>.</summary>
-    internal const int WindowsIndex = 2;
-
     internal const string DataFolderName = "WinCopyData";
 
     private const long Mib = 1L << 20;
@@ -56,6 +70,8 @@ internal static class ReferenceSystemDisk
     private const long MsrMiB = 16;
     private const long RecoveryMiB = 600;
     private const long SlackMiB = 4;
+    private const long WindowsSlackMiB = 2;
+    private const int ExpectedPartitionCount = 4;
     private const int DataFileBytes = 1024 * 1024;
     private const int HashBlockBytes = 32;
 
@@ -65,8 +81,10 @@ internal static class ReferenceSystemDisk
     internal static readonly Guid RecoveryType = new("DE94BBA4-06D1-4D40-A16A-BFD50179D6AC");
 
     /// <summary>
-    /// Size of the "Windows" partition for a disk of <paramref name="totalSize"/>: the total minus ESP (100 MiB), MSR
-    /// (16 MiB), Recovery (600 MiB) and 4 MiB of slack for the GPT. Pure arithmetic, no disk is touched.
+    /// Lower bound of the "Windows" partition size for a disk of <paramref name="totalSize"/>: the total minus ESP (100 MiB),
+    /// MSR (16 MiB), Recovery (600 MiB) and 4 MiB of slack for the GPT. It is only a pre-check that the disk is big enough. It is
+    /// not the size that is created: <see cref="Build"/> sizes the partition from the real free space with
+    /// <see cref="WindowsBytesFromFreeExtent"/>. Pure arithmetic, no disk is touched.
     /// </summary>
     /// <exception cref="ArgumentException">The size is not a whole number of MiB.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The disk is too small for the layout.</exception>
@@ -89,27 +107,55 @@ internal static class ReferenceSystemDisk
     }
 
     /// <summary>
+    /// The "Windows" partition size for a disk whose largest free extent is <paramref name="freeExtentBytes"/>, measured after the
+    /// ESP and the MSR exist. Recovery takes 600 MiB at the end, and 2 MiB stay free. The result is rounded down to a whole MiB.
+    /// Pure arithmetic.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The free extent cannot hold a Windows partition of at least 1 MiB.</exception>
+    internal static long WindowsBytesFromFreeExtent(long freeExtentBytes)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(freeExtentBytes);
+
+        long usable = freeExtentBytes - (RecoveryMiB + WindowsSlackMiB) * Mib;
+        long windows = usable <= 0 ? 0 : usable / Mib * Mib;
+        if (windows <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(freeExtentBytes),
+                freeExtentBytes,
+                "The free space after the ESP and MSR cannot hold the Windows and Recovery partitions.");
+        }
+
+        return windows;
+    }
+
+    /// <summary>
     /// Attaches a new VHDX of <paramref name="size"/> through <paramref name="fx"/> and builds the layout on it.
     /// <paramref name="dataFiles"/> files of 1 MiB of deterministic content are written to the Windows volume.
     /// </summary>
+    /// <param name="includeDummyBcd">
+    /// Writes a placeholder <c>EFI\Microsoft\Boot\BCD</c> on the ESP, so that a clone's ESP passes the structural verifier's
+    /// BCD check. The placeholder is not a boot store; the boot configurator is faked in the clone tests.
+    /// </param>
     internal static async Task<ReferenceDisk> CreateAsync(
         VirtualDiskFixture fx,
         VirtualDiskStorageOps ops,
         ByteSize size,
-        int dataFiles)
+        int dataFiles,
+        bool includeDummyBcd = false)
     {
         ArgumentNullException.ThrowIfNull(fx);
         ArgumentNullException.ThrowIfNull(ops);
         ArgumentOutOfRangeException.ThrowIfNegative(dataFiles);
 
-        // Checks the size before any disk is created.
-        long windowsBytes = WindowsPartitionBytes(size);
+        // Checks that the disk is big enough before any disk is created.
+        _ = WindowsPartitionBytes(size);
 
         AttachedVirtualDisk disk = await fx.CreateAndAttachAsync(size);
-        return await Task.Run(() => Build(disk, ops, windowsBytes, dataFiles));
+        return await Task.Run(() => Build(disk, ops, dataFiles, includeDummyBcd));
     }
 
-    private static ReferenceDisk Build(AttachedVirtualDisk disk, VirtualDiskStorageOps ops, long windowsBytes, int dataFiles)
+    private static ReferenceDisk Build(AttachedVirtualDisk disk, VirtualDiskStorageOps ops, int dataFiles, bool includeDummyBcd)
     {
         int diskNumber = disk.DiskNumber;
         var lettered = new List<(int PartitionNumber, char Letter)>();
@@ -118,11 +164,33 @@ internal static class ReferenceSystemDisk
         {
             ops.InitializeGpt(diskNumber);
 
+            // Initialize-Disk may already have created a Microsoft Reserved partition. Reuse it. Create one only when none exists.
+            IReadOnlyList<ListedPartition> initial = ops.GetPartitions(diskNumber);
+            if (initial.Any(listed => listed.GptType != MsrType))
+            {
+                throw new InvalidOperationException(
+                    "A freshly initialized disk should hold only a Microsoft Reserved partition, but it holds another partition type.");
+            }
+
+            if (initial.Count > 1)
+            {
+                throw new InvalidOperationException($"A freshly initialized disk holds {initial.Count} partitions; at most one is expected.");
+            }
+
             PartitionInfo esp = ops.CreateGptPartition(diskNumber, EspMiB * Mib, EspType, assignLetter: true);
             char espLetter = Track(lettered, esp);
             ops.FormatFat32(diskNumber, espLetter, "SYSTEM");
+            if (includeDummyBcd)
+            {
+                WriteDummyBcd(ops, diskNumber, espLetter);
+            }
 
-            PartitionInfo msr = ops.CreateGptPartition(diskNumber, MsrMiB * Mib, MsrType, assignLetter: false);
+            PartitionInfo msr = initial.Count == 1
+                ? initial[0].Partition
+                : ops.CreateGptPartition(diskNumber, MsrMiB * Mib, MsrType, assignLetter: false);
+
+            // The Windows partition takes the room that is left after the ESP and the MSR, minus Recovery and the slack.
+            long windowsBytes = WindowsBytesFromFreeExtent(ops.LargestFreeExtent(diskNumber));
 
             PartitionInfo windows = ops.CreateGptPartition(diskNumber, windowsBytes, BasicDataType, assignLetter: true);
             char windowsLetter = Track(lettered, windows);
@@ -141,14 +209,26 @@ internal static class ReferenceSystemDisk
 
             lettered.Clear();
 
-            // Read the partitions again, so that the recorded letters are the ones that remain (none).
-            var partitions = new List<PartitionInfo>(4);
-            foreach (PartitionInfo created in new[] { esp, msr, windows, recovery })
+            // Read the whole table again, so that the layout is what the disk holds now, in disk order.
+            List<ListedPartition> layout = ops.GetPartitions(diskNumber)
+                .OrderBy(listed => listed.Partition.OffsetBytes)
+                .ToList();
+
+            if (layout.Count != ExpectedPartitionCount)
             {
-                partitions.Add(ops.GetPartition(diskNumber, created.PartitionNumber));
+                throw new InvalidOperationException(
+                    $"The reference disk should hold {ExpectedPartitionCount} partitions; it holds {layout.Count}.");
             }
 
-            return new ReferenceDisk(disk, partitions, manifest);
+            foreach (PartitionInfo created in new[] { esp, msr, windows, recovery })
+            {
+                if (!layout.Any(listed => listed.Partition.GptGuid == created.GptGuid))
+                {
+                    throw new InvalidOperationException($"Partition {created.PartitionNumber} is missing from the reference layout.");
+                }
+            }
+
+            return new ReferenceDisk(disk, layout, manifest);
         }
         catch
         {
@@ -164,6 +244,16 @@ internal static class ReferenceSystemDisk
             $"Partition {partition.PartitionNumber} on disk {partition.DiskNumber} got no drive letter.");
         lettered.Add((partition.PartitionNumber, letter));
         return letter;
+    }
+
+    private static void WriteDummyBcd(VirtualDiskStorageOps ops, int diskNumber, char espLetter)
+    {
+        ops.AssertLetterOnDisk(espLetter, diskNumber);
+        string bootFolder = Path.Combine($"{espLetter}:\\", "EFI", "Microsoft", "Boot");
+        Directory.CreateDirectory(bootFolder);
+        File.WriteAllBytes(
+            Path.Combine(bootFolder, "BCD"),
+            Encoding.ASCII.GetBytes("WinCopy reference BCD (test placeholder, not a boot store)"));
     }
 
     private static Dictionary<string, string> WriteWindowsVolume(

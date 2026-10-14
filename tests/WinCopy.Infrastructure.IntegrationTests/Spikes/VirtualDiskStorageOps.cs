@@ -86,6 +86,9 @@ internal sealed record PartitionInfo(
     IReadOnlyList<string> AccessPaths,
     Guid GptGuid);
 
+/// <summary>A partition with its GPT partition type, as listed by <see cref="VirtualDiskStorageOps.GetPartitions"/>.</summary>
+internal sealed record ListedPartition(PartitionInfo Partition, Guid GptType);
+
 /// <summary>BitLocker state of a volume, as reported by <c>Get-BitLockerVolume</c>.</summary>
 internal sealed record BitLockerStatus(string VolumeStatus, string ProtectionStatus, int EncryptionPercentage);
 
@@ -266,6 +269,61 @@ internal sealed class VirtualDiskStorageOps
         return CheckedPartition(stdout, diskNumber);
     }
 
+    /// <summary>Lists every partition of a safe target with its GPT type, in the order PowerShell reports them.</summary>
+    public IReadOnlyList<ListedPartition> GetPartitions(int diskNumber)
+    {
+        AssertSafeTarget(diskNumber);
+        string stdout = RunChecked(
+            $"$ps = @(Get-Partition -DiskNumber {diskNumber}); " +
+            "$rows = @($ps | ForEach-Object { [pscustomobject]@{ DiskNumber = [int]$_.DiskNumber; " +
+            "PartitionNumber = [int]$_.PartitionNumber; DriveLetter = [string]$_.DriveLetter; " +
+            "OffsetBytes = [long]$_.Offset; SizeBytes = [long]$_.Size; GptGuid = [string]$_.Guid; " +
+            "GptType = [string]$_.GptType; AccessPaths = @($_.AccessPaths) } }); " +
+            "ConvertTo-Json -InputObject $rows -Compress");
+
+        using JsonDocument document = JsonDocument.Parse(LastLine(stdout));
+        JsonElement rows = document.RootElement;
+        if (rows.ValueKind != JsonValueKind.Array)
+        {
+            throw new StorageCommandException("PowerShell did not return a list of partitions.");
+        }
+
+        var listed = new List<ListedPartition>(rows.GetArrayLength());
+        foreach (JsonElement row in rows.EnumerateArray())
+        {
+            int actualDisk = row.GetProperty("DiskNumber").GetInt32();
+            if (actualDisk != diskNumber)
+            {
+                throw new StorageCommandException($"PowerShell listed a partition of disk {actualDisk} for disk {diskNumber}.");
+            }
+
+            listed.Add(new ListedPartition(ParsePartition(row), ParseGuidOrEmpty(ReadString(row, "GptType"))));
+        }
+
+        return listed;
+    }
+
+    /// <summary>
+    /// The size, in bytes, of the largest unallocated extent of a safe target (<c>MSFT_Disk.LargestFreeExtent</c>). Read after
+    /// the partitions that must stay are created, it is the room left for the Windows and Recovery partitions.
+    /// </summary>
+    public long LargestFreeExtent(int diskNumber)
+    {
+        AssertSafeTarget(diskNumber);
+        string stdout = RunChecked(
+            $"$d = Get-Disk -Number {diskNumber}; " +
+            "[pscustomobject]@{ LargestFreeExtent = [long]$d.LargestFreeExtent } | ConvertTo-Json -Compress");
+
+        using JsonDocument document = JsonDocument.Parse(LastLine(stdout));
+        long bytes = document.RootElement.GetProperty("LargestFreeExtent").GetInt64();
+        if (bytes < 0)
+        {
+            throw new StorageCommandException($"PowerShell reported a negative free extent ({bytes}) for disk {diskNumber}.");
+        }
+
+        return bytes;
+    }
+
     /// <summary>Cleanup only. Removes the drive letter of a partition of a safe target.</summary>
     public void RemoveDriveLetter(int diskNumber, int partitionNumber, char letter)
     {
@@ -379,15 +437,20 @@ internal sealed class VirtualDiskStorageOps
             throw new StorageCommandException($"PowerShell reported disk {actualDisk} for a command on disk {diskNumber}.");
         }
 
-        return new PartitionInfo(
-            actualDisk,
-            root.GetProperty("PartitionNumber").GetInt32(),
-            ParseDriveLetter(ReadString(root, "DriveLetter")),
-            root.GetProperty("OffsetBytes").GetInt64(),
-            root.GetProperty("SizeBytes").GetInt64(),
-            ReadStrings(root, "AccessPaths"),
-            ParseGptGuid(ReadString(root, "GptGuid")));
+        return ParsePartition(root);
     }
+
+    private static PartitionInfo ParsePartition(JsonElement root) => new(
+        root.GetProperty("DiskNumber").GetInt32(),
+        root.GetProperty("PartitionNumber").GetInt32(),
+        ParseDriveLetter(ReadString(root, "DriveLetter")),
+        root.GetProperty("OffsetBytes").GetInt64(),
+        root.GetProperty("SizeBytes").GetInt64(),
+        ReadStrings(root, "AccessPaths"),
+        ParseGptGuid(ReadString(root, "GptGuid")));
+
+    private static Guid ParseGuidOrEmpty(string? text) =>
+        Guid.TryParse(text, out Guid value) ? value : Guid.Empty;
 
     private static char? ParseDriveLetter(string? text) =>
         !string.IsNullOrEmpty(text) && char.IsAsciiLetter(text[0])
