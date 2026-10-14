@@ -152,8 +152,8 @@ comprobar que Windows arranca desde el clon con `C:` ampliado.
 
 **Infraestructura**
 
-- [ ] T057 [P] [US1] Implementar `StorageInventoryReader` (`MSFT_Disk`, `MSFT_Partition`, `MSFT_Volume` vía `System.Management` en `root\Microsoft\Windows\Storage` + `IOCTL_DISK_GET_DRIVE_LAYOUT_EX` para los GUID y atributos exactos) en `src/WinCopy.Infrastructure.Windows/Storage/StorageInventoryReader.cs`
-- [ ] T058 [P] [US1] Implementar `PlatformFactsProvider` (firmware, `Win32_EncryptableVolume`, batería, disponibilidad de VSS y espacio de diferencias, destino en uso con `FSCTL_LOCK_VOLUME` de prueba) en `src/WinCopy.Infrastructure.Windows/Platform/PlatformFactsProvider.cs`
+- [X] T057 [P] [US1] Implementar `StorageInventoryReader` (`MSFT_Disk`, `MSFT_Partition`, `MSFT_Volume` vía `System.Management` en `root\Microsoft\Windows\Storage` + `IOCTL_DISK_GET_DRIVE_LAYOUT_EX` para los GUID y atributos exactos) en `src/WinCopy.Infrastructure.Windows/Storage/StorageInventoryReader.cs`
+- [X] T058 [P] [US1] Implementar `PlatformFactsProvider` (firmware, `Win32_EncryptableVolume`, batería, disponibilidad de VSS y espacio de diferencias, destino en uso con `FSCTL_LOCK_VOLUME` de prueba) en `src/WinCopy.Infrastructure.Windows/Platform/PlatformFactsProvider.cs`
 - [X] T059 [US1] Implementar la interop COM de VSS (`[GeneratedComInterface]` de `IVssBackupComponents` e `IVssAsync`, `LibraryImport` de `CreateVssBackupComponentsInternal`) en `src/WinCopy.Infrastructure.Windows/Interop/Vss/`
 - [X] T060 [US1] Implementar `VssSnapshotService` y `VssSnapshotSet` (contexto *backup*, un único *snapshot set*, borrado garantizado en `DisposeAsync`) en `src/WinCopy.Infrastructure.Windows/Snapshots/` (depende de T059)
 - [X] T061 [US1] Implementar `SnapshotVolumeSource` (`IBlockSource` sobre `\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopyN`, `FSCTL_GET_VOLUME_BITMAP` + `FSCTL_GET_NTFS_VOLUME_DATA`, tramos ocupados y región final) en `src/WinCopy.Infrastructure.Windows/RawIo/SnapshotVolumeSource.cs`
