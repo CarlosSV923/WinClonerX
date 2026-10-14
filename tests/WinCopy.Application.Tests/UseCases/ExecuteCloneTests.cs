@@ -561,13 +561,13 @@ public sealed class ExecuteCloneTests
     };
 
     /// <summary>Dependencias del orquestador con sus fakes, cableadas como en la aplicación.</summary>
-    private sealed class Harness
+    internal sealed class Harness
     {
-        public Harness(ClonePlan? plan = null)
+        public Harness(ClonePlan? plan = null, DiskInventory? inventory = null)
         {
             Plan = plan ?? ConfirmedPlan();
             Store.Save(Plan);
-            Inventory.Inventory = StandardInventory();
+            Inventory.Inventory = inventory ?? StandardInventory();
 
             Snapshots.VolumesToServe[WindowsSource] = WindowsVolume();
             Snapshots.VolumesToServe[RecoverySource] = RecoveryVolume();
@@ -576,7 +576,7 @@ public sealed class ExecuteCloneTests
             MountFaults = new ReleaseFaultMounter(Mounter);
             Orchestrator = new ExecuteClone(
                 Store, Inventory, Snapshots, Raw, Targets, Copier, Expander, MountFaults, Registry, Boot, Recovery,
-                Verifier, Power, Log, Clock);
+                Verifier, Resizer, Power, Log, Clock);
             Orchestrator.Events.Subscribe(new EventCollector(Events, e => OnEvent(e)));
         }
 
@@ -607,6 +607,8 @@ public sealed class ExecuteCloneTests
         public FakeRecoveryConfigurator Recovery { get; } = new();
 
         public FakeStructuralVerifier Verifier { get; } = new();
+
+        public FakeSourceResizer Resizer { get; } = new();
 
         public FakePowerManager Power { get; } = new();
 

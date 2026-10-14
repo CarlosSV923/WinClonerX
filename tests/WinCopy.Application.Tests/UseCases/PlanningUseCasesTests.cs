@@ -137,7 +137,7 @@ public sealed class PlanningUseCasesTests
         var (h, plan) = await BuildDraftAsync(TargetDisk(withDataPartition: true));
         plan.Warnings.Select(w => w.Code).ShouldBe(new[] { PreflightCode.TargetNotEmpty });
 
-        var confirmed = await h.Confirm.ExecuteAsync(plan.Id, new[] { PreflightCode.TargetNotEmpty }, TargetSuffix, Ct);
+        var confirmed = await h.Confirm.ExecuteAsync(plan.Id, new[] { PreflightCode.TargetNotEmpty }, TargetSuffix, false, Ct);
 
         confirmed.Status.ShouldBe(PlanStatus.Confirmed);
         confirmed.Confirmation!.Disk.ShouldBe(TargetId);
@@ -159,7 +159,7 @@ public sealed class PlanningUseCasesTests
         var (h, plan) = await BuildDraftAsync(TargetDisk(withDataPartition: true));
 
         await Should.ThrowAsync<InvalidOperationException>(
-            () => h.Confirm.ExecuteAsync(plan.Id, new[] { PreflightCode.TargetNotEmpty }, "9999", Ct));
+            () => h.Confirm.ExecuteAsync(plan.Id, new[] { PreflightCode.TargetNotEmpty }, "9999", false, Ct));
 
         h.Store.TryGet(plan.Id, out var stored).ShouldBeTrue();
         stored!.Status.ShouldBe(PlanStatus.Draft);
@@ -172,7 +172,7 @@ public sealed class PlanningUseCasesTests
         var (h, plan) = await BuildDraftAsync(TargetDisk(withDataPartition: true));
 
         await Should.ThrowAsync<InvalidOperationException>(
-            () => h.Confirm.ExecuteAsync(plan.Id, Array.Empty<PreflightCode>(), TargetSuffix, Ct));
+            () => h.Confirm.ExecuteAsync(plan.Id, Array.Empty<PreflightCode>(), TargetSuffix, false, Ct));
 
         h.Store.TryGet(plan.Id, out var stored).ShouldBeTrue();
         stored!.Status.ShouldBe(PlanStatus.Draft);
@@ -190,7 +190,7 @@ public sealed class PlanningUseCasesTests
         h.Reader.Inventory = InventoryOf(SystemDisk(), TargetDisk(withDataPartition: true));
 
         var thrown = await Should.ThrowAsync<PlanInvalidatedException>(
-            () => h.Confirm.ExecuteAsync(plan.Id, Array.Empty<PreflightCode>(), TargetSuffix, Ct));
+            () => h.Confirm.ExecuteAsync(plan.Id, Array.Empty<PreflightCode>(), TargetSuffix, false, Ct));
 
         thrown.PlanId.ShouldBe(plan.Id);
         thrown.Reason.ShouldBe("DisksChanged");
@@ -210,7 +210,7 @@ public sealed class PlanningUseCasesTests
         var h = new Harness();
 
         await Should.ThrowAsync<InvalidOperationException>(
-            () => h.Confirm.ExecuteAsync(new PlanId(Guid.NewGuid()), Array.Empty<PreflightCode>(), TargetSuffix, Ct));
+            () => h.Confirm.ExecuteAsync(new PlanId(Guid.NewGuid()), Array.Empty<PreflightCode>(), TargetSuffix, false, Ct));
     }
 
     /// <summary>Captura el inventario con el origen y el destino indicado, y construye un plan en borrador.</summary>

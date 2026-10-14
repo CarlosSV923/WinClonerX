@@ -20,6 +20,7 @@ public sealed class ConfirmClonePlan(
         PlanId id,
         IReadOnlyCollection<PreflightCode> acceptedWarnings,
         string typedSuffix,
+        bool confirmSourceShrink,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(acceptedWarnings);
@@ -35,6 +36,18 @@ public sealed class ConfirmClonePlan(
             throw new PlanInvalidatedException(id, plan.InvalidationReason ?? DisksChangedReason);
         }
 
+        // La reducción del origen exige su propia autorización explícita (FR-013). Se comprueba antes de leer los discos,
+        // para que una confirmación incompleta no deje rastro: el plan sigue en borrador.
+        if (plan.SourceShrink is null && confirmSourceShrink)
+        {
+            throw new ArgumentException("El plan no reduce el origen: no admite confirmación de reducción.", nameof(confirmSourceShrink));
+        }
+
+        if (plan.SourceShrink is not null && !confirmSourceShrink)
+        {
+            throw new InvalidOperationException("Shrink of the original disk was not confirmed");
+        }
+
         var fresh = await inventoryReader.ReadAsync(ct);
         var target = fresh.FindDisk(plan.Target);
         if (target is null
@@ -48,7 +61,11 @@ public sealed class ConfirmClonePlan(
         }
 
         plan.AcceptWarnings(acceptedWarnings);
-        plan.Confirm(new TargetConfirmation(plan.Target, typedSuffix, clock.UtcNow), target);
+
+        var shrink = plan.SourceShrink is { } step
+            ? new ShrinkConfirmation(step.Partition, step.ShrunkLength, clock.UtcNow)
+            : null;
+        plan.Confirm(new TargetConfirmation(plan.Target, typedSuffix, clock.UtcNow), target, shrink);
         store.Save(plan);
         log.Record(PlanningLogEvents.PlanConfirmed(plan));
 

@@ -17,7 +17,7 @@ internal sealed class FakeConfirmClonePlan(ClonePlan plan) : IConfirmClonePlan
     /// <summary>When set, the next call fails with this exception instead of confirming.</summary>
     public Exception? NextFailure { get; set; }
 
-    public Task<ClonePlan> ExecuteAsync(PlanId id, IReadOnlyCollection<PreflightCode> acceptedWarnings, string typedSuffix, CancellationToken ct)
+    public Task<ClonePlan> ExecuteAsync(PlanId id, IReadOnlyCollection<PreflightCode> acceptedWarnings, string typedSuffix, bool confirmSourceShrink, CancellationToken ct)
     {
         CallCount++;
         LastPlanId = id;

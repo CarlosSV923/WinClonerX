@@ -71,7 +71,8 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         ErrorMessage = null;
         try
         {
-            await _confirmPlan.ExecuteAsync(plan.Id, _acceptedWarnings, TypedSuffix, cancellationToken);
+            // The shrink confirmation checkbox is added by the US2 UI task; until then no shrink is authorized here.
+            await _confirmPlan.ExecuteAsync(plan.Id, _acceptedWarnings, TypedSuffix, false, cancellationToken);
             PlanConfirmed?.Invoke(this, new PlanConfirmedEventArgs(plan.Id));
         }
         catch (PlanInvalidatedException)

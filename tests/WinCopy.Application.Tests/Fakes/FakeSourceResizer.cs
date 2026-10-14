@@ -15,9 +15,16 @@ public sealed class FakeSourceResizer : FakeBase, ISourceResizer
     /// <summary>Restauraciones solicitadas, en orden.</summary>
     public List<(PartitionGuid Partition, ByteSize Length)> Restores { get; } = [];
 
-    /// <summary>Devuelve el mínimo configurado.</summary>
+    /// <summary>Particiones consultadas con GetMinimumSizeAsync, en orden.</summary>
+    public List<PartitionGuid> MinimumQueries { get; } = [];
+
+    /// <summary>Devuelve el mínimo configurado y registra la partición consultada.</summary>
     public Task<ByteSize> GetMinimumSizeAsync(PartitionGuid partition, CancellationToken ct) =>
-        Reply(nameof(GetMinimumSizeAsync), () => MinimumSize, ct);
+        Reply(nameof(GetMinimumSizeAsync), () =>
+        {
+            MinimumQueries.Add(partition);
+            return MinimumSize;
+        }, ct);
 
     /// <summary>Registra la reducción solicitada.</summary>
     public Task ShrinkAsync(PartitionGuid partition, ByteSize newLength, CancellationToken ct) =>

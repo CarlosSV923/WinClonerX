@@ -2,6 +2,7 @@ using System.Globalization;
 using WinCopy.Application.Ports.Models;
 using WinCopy.Domain.Execution;
 using WinCopy.Domain.Planning;
+using WinCopy.Domain.Shared;
 
 namespace WinCopy.Application.UseCases.Execution;
 
@@ -87,6 +88,18 @@ internal static class ExecutionLogEvents
         id,
         LogLevelKind.Warning,
         ("Step", step),
+        ("TechnicalDetail", technicalDetail));
+
+    /// <summary>
+    /// La restauración del tamaño original del origen ha fallado tras un clon verificado. No cambia el desenlace (el clon es
+    /// válido y la ejecución termina como Completed con SourceRestored = false), pero la partición del origen queda reducida.
+    /// </summary>
+    public static LogEvent SourceRestoreFailed(ExecutionId id, PartitionGuid partition, ByteSize originalLength, string technicalDetail) => Create(
+        "SourceRestoreFailed",
+        id,
+        LogLevelKind.Warning,
+        ("Partition", Text(partition.Value)),
+        ("OriginalLength", originalLength.Bytes),
         ("TechnicalDetail", technicalDetail));
 
     private static LogEvent Create(string name, ExecutionId id, LogLevelKind level, params (string Key, object? Value)[] entries)

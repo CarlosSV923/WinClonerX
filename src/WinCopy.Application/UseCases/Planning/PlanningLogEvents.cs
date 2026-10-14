@@ -47,7 +47,7 @@ internal static class PlanningLogEvents
             ["EstimateBytes"] = plan.Estimate.BytesToCopy.Bytes,
         });
 
-    /// <summary>Evento de plan confirmado: avisos aceptados y si se confirmó una reducción (en la versión 1, nunca).</summary>
+    /// <summary>Evento de plan confirmado: avisos aceptados y si se autorizó la reducción del origen (FR-013).</summary>
     public static LogEvent PlanConfirmed(ClonePlan plan) => new(
         "PlanConfirmed",
         new Dictionary<string, object?>(StringComparer.Ordinal)
@@ -57,7 +57,7 @@ internal static class PlanningLogEvents
                 .Select(code => code.ToString())
                 .OrderBy(code => code, StringComparer.Ordinal)
                 .ToArray(),
-            ["ShrinkConfirmed"] = false,
+            ["ShrinkConfirmed"] = plan.SourceShrinkConfirmation is not null,
         });
 
     /// <summary>Evento de plan invalidado porque cambió el estado de los discos entre la planificación y la confirmación.</summary>

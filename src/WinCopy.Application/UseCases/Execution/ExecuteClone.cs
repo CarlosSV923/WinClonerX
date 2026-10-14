@@ -30,11 +30,14 @@ public sealed class ExecuteClone(
     IBootConfigurator bootConfigurator,
     IRecoveryConfigurator recoveryConfigurator,
     IStructuralVerifier verifier,
+    ISourceResizer resizer,
     IPowerManager power,
     IExecutionLog log,
     IClock clock) : IExecuteClone
 {
     private const string DisksChangedReason = "DisksChanged";
+    private const string ShrinkInsufficientCode = "ShrinkInsufficient";
+    private const string ShrinkFailedCode = "ShrinkFailed";
     private static readonly TimeSpan ProgressReportInterval = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan ProgressLogInterval = TimeSpan.FromSeconds(5);
 
@@ -100,6 +103,13 @@ public sealed class ExecuteClone(
     private async Task RunPhasesAsync(ExecutionRun run, CancellationToken ct)
     {
         await RunPhaseAsync(run, ExecutionPhase.Revalidate, () => RevalidateAsync(run, ct), ct);
+
+        // La reducción del origen va antes de la instantánea: la copia ve el origen ya reducido (FR-021).
+        if (run.Plan.SourceShrink is not null)
+        {
+            await RunPhaseAsync(run, ExecutionPhase.ShrinkSource, () => ShrinkSourceAsync(run, ct), ct);
+        }
+
         await RunPhaseAsync(run, ExecutionPhase.Snapshot, () => SnapshotAsync(run, ct), ct);
         await RunPhaseAsync(run, ExecutionPhase.PrepareTarget, () => PrepareTargetAsync(run, ct), ct);
         await RunPhaseAsync(run, ExecutionPhase.CopyData, () => CopyDataAsync(run, ct), ct);
@@ -113,6 +123,12 @@ public sealed class ExecuteClone(
         await RunPhaseAsync(run, ExecutionPhase.RepairBoot, () => RepairBootAsync(run, ct), ct);
         await RunPhaseAsync(run, ExecutionPhase.StructuralVerification, () => VerifyStructureAsync(run, ct), ct);
         await RunPhaseAsync(run, ExecutionPhase.Cleanup, () => CleanupAsync(run), ct);
+
+        // La restauración del origen es lo último del camino feliz: después de la limpieza y de una verificación correcta.
+        if (run.Plan.SourceShrink is not null)
+        {
+            await RunPhaseAsync(run, ExecutionPhase.RestoreSource, () => RestoreSourceAsync(run), ct);
+        }
     }
 
     /// <summary>Ejecuta una fase: comprueba la cancelación antes de empezar, la marca como iniciada y como completada, y publica sus eventos.</summary>
@@ -144,6 +160,75 @@ public sealed class ExecuteClone(
         }
 
         run.FreshTarget = fresh;
+    }
+
+    /// <summary>
+    /// Reduce temporalmente la partición de Windows del origen (FR-021). Antes de tocar nada consulta el mínimo que admite
+    /// Windows: si ha subido por encima de la longitud reducida planificada, falla con ShrinkInsufficient sin reducir ni abrir
+    /// el destino (US2, escenario 2). Solo se usa la partición de la reducción del plan.
+    /// </summary>
+    private async Task ShrinkSourceAsync(ExecutionRun run, CancellationToken ct)
+    {
+        var shrink = RequireShrink(run);
+
+        ByteSize minimum;
+        try
+        {
+            minimum = await resizer.GetMinimumSizeAsync(shrink.Partition, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new ExecutionAbortException(ShrinkFailedCode, ex.ToString());
+        }
+
+        if (minimum > shrink.ShrunkLength)
+        {
+            throw new ExecutionAbortException(
+                ShrinkInsufficientCode,
+                $"El mínimo que admite Windows ({minimum.Bytes} bytes) supera la longitud reducida planificada ({shrink.ShrunkLength.Bytes} bytes).");
+        }
+
+        // A partir de aquí la compensación RestoreSource debe restaurar: una reducción fallida puede haber cambiado el origen.
+        run.ShrinkAttempted = true;
+        try
+        {
+            await resizer.ShrinkAsync(shrink.Partition, shrink.ShrunkLength, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new ExecutionAbortException(ShrinkFailedCode, ex.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Restaura el tamaño original del origen en el camino feliz. No se interrumpe con la cancelación: el clon ya está
+    /// verificado. Un fallo no invalida el clon: se registra en la ejecución y en el registro (SourceRestoreFailed), y la
+    /// ejecución termina como Completed con SourceRestored = false.
+    /// </summary>
+    private async Task RestoreSourceAsync(ExecutionRun run)
+    {
+        var shrink = RequireShrink(run);
+
+        try
+        {
+            await resizer.RestoreAsync(shrink.Partition, shrink.OriginalLength, CancellationToken.None);
+            run.SourceRestored = true;
+        }
+        catch (Exception ex)
+        {
+            var detail = ex.ToString();
+            run.Execution.RecordRestoreFailure(detail);
+            run.SourceRestored = false;
+            log.Record(ExecutionLogEvents.SourceRestoreFailed(run.Id, shrink.Partition, shrink.OriginalLength, detail));
+        }
     }
 
     private async Task SnapshotAsync(ExecutionRun run, CancellationToken ct)
@@ -347,7 +432,7 @@ public sealed class ExecuteClone(
             CloneOutcome.Completed,
             run.Structural,
             Full: null,
-            SourceRestored: null,
+            SourceRestored: SourceRestoredFor(run),
             run.Recovery,
             run.Elapsed,
             log.CurrentFile,
@@ -380,6 +465,11 @@ public sealed class ExecuteClone(
         foreach (var kind in execution.RequiredCompensations)
         {
             var (success, detail) = await RunCompensationAsync(run, kind);
+            if (kind == CompensationKind.RestoreSource)
+            {
+                run.SourceRestored = success;
+            }
+
             execution.CompleteCompensation(kind, success, detail, clock.UtcNow);
             Flush(run);
         }
@@ -391,7 +481,7 @@ public sealed class ExecuteClone(
             failure is null ? CloneOutcome.Cancelled : CloneOutcome.Failed,
             run.Structural,
             Full: null,
-            SourceRestored: null,
+            SourceRestored: SourceRestoredFor(run),
             run.Recovery,
             run.Elapsed,
             log.CurrentFile,
@@ -407,7 +497,7 @@ public sealed class ExecuteClone(
     /// Ejecuta una compensación. Usa <see cref="CancellationToken.None"/>: ya hay una cancelación en marcha y las compensaciones
     /// deben completarse. Un fallo se devuelve como resultado y no interrumpe las compensaciones siguientes.
     /// </summary>
-    private static async Task<(bool Success, string? Detail)> RunCompensationAsync(ExecutionRun run, CompensationKind kind)
+    private async Task<(bool Success, string? Detail)> RunCompensationAsync(ExecutionRun run, CompensationKind kind)
     {
         try
         {
@@ -435,6 +525,17 @@ public sealed class ExecuteClone(
                 case CompensationKind.ReleaseMounts:
                     var failures = await ReleaseMountsAsync(run);
                     return failures.Count == 0 ? (true, null) : (false, string.Join("; ", failures));
+
+                case CompensationKind.RestoreSource:
+                    // Si la reducción nunca se intentó, el origen no se ha tocado: no hay nada que restaurar y no se llama al puerto.
+                    if (!run.ShrinkAttempted)
+                    {
+                        return (true, "la reducción no llegó a intentarse; el origen no se ha modificado");
+                    }
+
+                    var shrink = RequireShrink(run);
+                    await resizer.RestoreAsync(shrink.Partition, shrink.OriginalLength, CancellationToken.None);
+                    return (true, null);
 
                 case CompensationKind.AllowSleep:
                     run.Sleep.Release();
@@ -580,6 +681,16 @@ public sealed class ExecuteClone(
     private static ITargetDisk RequireTarget(ExecutionRun run) =>
         run.Target ?? throw new InvalidOperationException("El disco de destino no está abierto.");
 
+    private static SourceShrinkStep RequireShrink(ExecutionRun run) =>
+        run.Plan.SourceShrink ?? throw new InvalidOperationException("El plan no reduce el origen.");
+
+    /// <summary>
+    /// Estado del origen para el informe: null si el plan no reduce el origen. Si lo reduce, true salvo que la restauración
+    /// haya fallado. Si la reducción nunca llegó a empezar, el origen no se ha tocado, así que también es true.
+    /// </summary>
+    private static bool? SourceRestoredFor(ExecutionRun run) =>
+        run.Plan.SourceShrink is null ? null : run.SourceRestored ?? true;
+
     /// <summary>Estado de una ejecución en curso: el agregado de dominio y los recursos que hay que liberar.</summary>
     private sealed class ExecutionRun(ClonePlan plan, CloneExecution execution, DateTimeOffset startedAt, SleepBlock sleep)
     {
@@ -596,6 +707,12 @@ public sealed class ExecuteClone(
         public ExecutionId Id => Execution.Id;
 
         public Disk? FreshTarget { get; set; }
+
+        /// <summary>Verdadero si ShrinkAsync se llegó a llamar: a partir de ahí la compensación RestoreSource debe restaurar.</summary>
+        public bool ShrinkAttempted { get; set; }
+
+        /// <summary>Estado del origen tras la restauración del camino feliz o la compensación RestoreSource. Null si no ha habido.</summary>
+        public bool? SourceRestored { get; set; }
 
         public ISnapshotSet? Snapshot { get; set; }
 

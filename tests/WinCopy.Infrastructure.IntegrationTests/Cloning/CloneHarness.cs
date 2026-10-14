@@ -150,6 +150,7 @@ internal sealed class CloneHarness : IAsyncDisposable
             draft.Id,
             acceptedWarnings,
             TargetConfirmation.ExpectedSuffix(targetDisk),
+            draft.SourceShrink is not null,
             ct);
 
         CloneResultReport report = await Services.GetRequiredService<IExecuteClone>().ExecuteAsync(confirmed.Id, ct);
