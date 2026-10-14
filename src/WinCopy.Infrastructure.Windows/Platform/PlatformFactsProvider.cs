@@ -15,7 +15,10 @@ namespace WinCopy.Infrastructure.Windows.Platform;
 /// <para><b>TargetInUse</b> is true for a non-system disk when any of its volumes cannot be locked exclusively. The system
 /// disk is never probed. A disk with no volumes is not in use. A probe that throws counts as in use (fail-safe). A
 /// missing key in the dictionary is treated as in use by the evaluator as well.</para>
-/// <para><b>MinimumWindowsSize</b> is null. It needs <c>MSFT_Partition.GetSupportedSize</c>, which is US2 (TODO(US2), T092).</para>
+/// <para><b>MinimumWindowsSize</b> is the smallest length Windows allows for the running Windows partition of the source,
+/// read through <see cref="ISourceResizer.GetMinimumSizeAsync"/>. It is null when that read fails or when no Windows
+/// volume is found on the system disk. Null means "shrink unavailable", and the evaluator then reports TargetTooSmall.
+/// A failure is reported through the warnings callback and never fails the facts.</para>
 /// </remarks>
 internal sealed class PlatformFactsProvider : IPlatformFactsProvider
 {
@@ -25,22 +28,29 @@ internal sealed class PlatformFactsProvider : IPlatformFactsProvider
     private readonly IServiceCatalog _services;
     private readonly IVolumePathResolver _volumePaths;
     private readonly IVolumeLockProbe _lockProbe;
+    private readonly ISourceResizer _resizer;
+    private readonly Action<string>? _warnings;
 
     public PlatformFactsProvider(
         IPowerManager power,
         IServiceCatalog services,
         IVolumePathResolver volumePaths,
-        IVolumeLockProbe lockProbe)
+        IVolumeLockProbe lockProbe,
+        ISourceResizer resizer,
+        Action<string>? warnings = null)
     {
         ArgumentNullException.ThrowIfNull(power);
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(volumePaths);
         ArgumentNullException.ThrowIfNull(lockProbe);
+        ArgumentNullException.ThrowIfNull(resizer);
 
         _power = power;
         _services = services;
         _volumePaths = volumePaths;
         _lockProbe = lockProbe;
+        _resizer = resizer;
+        _warnings = warnings;
     }
 
     /// <inheritdoc />
@@ -59,16 +69,41 @@ internal sealed class PlatformFactsProvider : IPlatformFactsProvider
 
         IReadOnlyDictionary<DiskId, bool> targetInUse = await Task.Run(() => ProbeTargets(inventory, ct), ct);
 
+        ByteSize? minimumWindowsSize = await MinimumWindowsSizeAsync(inventory, ct);
+
         return new PlatformFacts(
             SourceEncryption(inventory),
             power.OnBattery,
             power.BatteryPercent,
             snapshotAvailable,
             snapshotFreeSpace,
-
-            // TODO(US2): MSFT_Partition.GetSupportedSize (T092). Until then the shrink check has no minimum.
-            MinimumWindowsSize: null,
+            minimumWindowsSize,
             targetInUse);
+    }
+
+    /// <summary>
+    /// The smallest length Windows allows for the running Windows partition of the source. Returns null when the system
+    /// disk has no Windows volume, or when the resizer cannot answer. A failure is only a warning.
+    /// </summary>
+    private async Task<ByteSize?> MinimumWindowsSizeAsync(DiskInventory inventory, CancellationToken ct)
+    {
+        Partition? windowsPartition = inventory.SystemDisk?.Partitions
+            .FirstOrDefault(partition => partition.Volume is { IsWindowsVolume: true });
+
+        if (windowsPartition is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await _resizer.GetMinimumSizeAsync(windowsPartition.UniqueId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _warnings?.Invoke($"Minimum Windows size unavailable, shrink disabled: {ex.Message}");
+            return null;
+        }
     }
 
     /// <summary>Encryption of each volume on the source (system) disk, keyed by partition GUID.</summary>

@@ -14,7 +14,8 @@ public static class PreflightEvaluator
     private const long MinimumSnapshotFreeSpaceBytes = 2L * 1024 * 1024 * 1024;
 
     /// <summary>
-    /// Devuelve el informe global y, para cada disco distinto del sistema, su elegibilidad.
+    /// Devuelve el informe global y, para cada disco distinto del sistema, su elegibilidad. La estrategia ShrinkSource no añade
+    /// ningún código de aviso: su confirmación es aparte y se expone en <see cref="TargetEligibility.Strategy"/>.
     /// Un valor de <see cref="PlatformFacts.TargetInUse"/> ausente se trata como "en uso" (no comprobado bloquea).
     /// </summary>
     public static (PreflightReport Global, IReadOnlyList<TargetEligibility> Targets) Evaluate(
@@ -75,7 +76,7 @@ public static class PreflightEvaluator
             IsInUse(target, facts) ? Block(PreflightCode.TargetInUse) : Pass(PreflightCode.TargetInUse),
         };
 
-        var (sizeCheck, strategy, shortfall) = CheckSize(source, windowsIndex, target, policy);
+        var (sizeCheck, strategy, shortfall) = CheckSize(source, windowsIndex, target, facts, policy);
         reasons.Add(sizeCheck);
         reasons.Add(target.Partitions.Count > 0 ? Warn(PreflightCode.TargetNotEmpty) : Pass(PreflightCode.TargetNotEmpty));
 
@@ -89,6 +90,7 @@ public static class PreflightEvaluator
         Disk source,
         int windowsIndex,
         Disk target,
+        PlatformFacts facts,
         CapacityPolicy policy)
     {
         // Sin una única partición de Windows en el origen no hay tamaño que comparar; la comprobación global ya bloquea.
@@ -97,31 +99,30 @@ public static class PreflightEvaluator
             return (Pass(PreflightCode.TargetTooSmall), null, null);
         }
 
-        // TODO(US2): cuando el destino sea más pequeño, evaluar la estrategia ShrinkSource y PreflightCode.ShrinkInsufficient.
-        var layout = TargetLayoutCalculator.Calculate(source, target);
-        if (!layout.IsSuccess)
+        var decision = TargetLayoutCalculator.Decide(source, target, policy, facts.MinimumWindowsSize);
+        if (decision.IsSuccess)
         {
-            if (layout.Error.Code == TargetLayoutCalculator.TargetTooSmallCode)
-            {
-                var missing = new ByteSize(long.Parse(layout.Error.Detail!, CultureInfo.InvariantCulture));
-                return (Block(PreflightCode.TargetTooSmall, Data(("Shortfall", missing))), null, missing);
-            }
-
-            return (Block(PreflightCode.UnsupportedDiskKind, Data(("Reason", layout.Error.Code))), null, null);
+            return (Pass(PreflightCode.TargetTooSmall), decision.Value.Strategy, null);
         }
 
-        // La partición de Windows debe conservar sus datos ocupados más el margen (FR-010).
-        var windowsUsed = source.Partitions[windowsIndex].Volume!.Used;
-        var required = policy.Required(windowsUsed);
-        var targetWindowsLength = layout.Value[windowsIndex].Length;
-        if (targetWindowsLength < required.Bytes)
+        var error = decision.Error;
+        if (error.Code == TargetLayoutCalculator.TargetTooSmallCode)
         {
-            var missing = required - new ByteSize(targetWindowsLength);
+            var missing = ShortfallOf(error);
             return (Block(PreflightCode.TargetTooSmall, Data(("Shortfall", missing))), null, missing);
         }
 
-        return (Pass(PreflightCode.TargetTooSmall), SizeStrategy.SameOrLarger, null);
+        if (error.Code == TargetLayoutCalculator.ShrinkInsufficientCode)
+        {
+            var missing = ShortfallOf(error);
+            return (Block(PreflightCode.ShrinkInsufficient, Data(("Shortfall", missing))), null, missing);
+        }
+
+        return (Block(PreflightCode.UnsupportedDiskKind, Data(("Reason", error.Code))), null, null);
     }
+
+    private static ByteSize ShortfallOf(DomainError error) =>
+        new(long.Parse(error.Detail!, CultureInfo.InvariantCulture));
 
     private static PreflightCheck SourceKindCheck(Disk source)
     {

@@ -37,7 +37,7 @@ public static class DependencyInjection
 {
     /// <summary>
     /// Registra todos los puertos de salida con su adaptador real, más los componentes internos compartidos.
-    /// No registra <see cref="IDeviceChangeMonitor"/> ni <see cref="ISourceResizer"/>: todavía no tienen adaptador.
+    /// No registra <see cref="IDeviceChangeMonitor"/>: todavía no tiene adaptador.
     /// </summary>
     public static IServiceCollection AddWinCopyInfrastructure(
         this IServiceCollection services,
@@ -89,11 +89,19 @@ public static class DependencyInjection
 
         services.AddSingleton<IPowerManager>(static _ => new PowerManager());
 
+        services.AddSingleton<ISourceResizer>(sp => new StorageSourceResizer(
+            new WmiPartitionResizeApi(),
+            sp.GetRequiredService<IVolumeExtentsReader>(),
+            sp.GetRequiredService<DiskOperationRecorder>(),
+            sp.GetRequiredService<IClock>()));
+
         services.AddSingleton<IPlatformFactsProvider>(sp => new PlatformFactsProvider(
             sp.GetRequiredService<IPowerManager>(),
             new WmiServiceCatalog(),
             sp.GetRequiredService<IVolumePathResolver>(),
-            new Win32VolumeLockProbe()));
+            new Win32VolumeLockProbe(),
+            sp.GetRequiredService<ISourceResizer>(),
+            warnings));
 
         services.AddSingleton<ISnapshotService>(sp => new VssSnapshotService(
             sp.GetRequiredService<IVolumePathResolver>(),

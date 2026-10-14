@@ -5,7 +5,8 @@ namespace WinCopy.Domain.Planning;
 
 /// <summary>
 /// Planificador de clonado (servicio de dominio). Evalúa las comprobaciones previas, rechaza el destino si hay algún
-/// bloqueo y, si no, construye el plan en borrador con las correspondencias de partición y los GUID nuevos.
+/// bloqueo y, si no, construye el plan en borrador con las correspondencias de partición, los GUID nuevos y, si el destino
+/// es más pequeño que el origen, la reducción de la partición de Windows.
 /// </summary>
 public static class ClonePlanner
 {
@@ -47,22 +48,23 @@ public static class ClonePlanner
 
         var source = inventory.SystemDisk
             ?? throw new InvalidOperationException("El inventario no tiene un disco del sistema.");
-        var layout = TargetLayoutCalculator.Calculate(source, targetDisk);
-        if (!layout.IsSuccess)
+        var decision = TargetLayoutCalculator.Decide(source, targetDisk, policy, facts.MinimumWindowsSize);
+        if (!decision.IsSuccess)
         {
             throw new InvalidOperationException("La elegibilidad indica un destino apto, pero el diseño no se puede calcular.");
         }
 
+        var layout = decision.Value;
+        var shrink = layout.SourceShrink;
         var planId = new PlanId(newGuid());
         var newDiskGuid = newGuid();
-        var extents = layout.Value;
         var mappings = source.Partitions
             .Select((partition, i) => new PartitionMapping(
                 partition,
-                extents[i],
+                layout.Extents[i],
                 new PartitionGuid(newGuid()),
                 CopyMethodFor(partition),
-                ResizeFor(partition, extents[i])))
+                ResizeFor(partition, layout.Extents[i], shrink)))
             .ToArray();
 
         var warnings = global.Warnings
@@ -79,7 +81,8 @@ public static class ClonePlanner
             mode,
             warnings,
             CloneEstimate.Calculate(mappings, source.Bus, targetDisk.Bus),
-            policy);
+            policy,
+            shrink);
 
         return Result<ClonePlan, PreflightReport>.Success(plan);
     }
@@ -87,8 +90,19 @@ public static class ClonePlanner
     private static CopyMethod CopyMethodFor(Partition partition) =>
         partition.Volume?.FileSystem == FileSystemKind.Ntfs ? CopyMethod.UsedClustersFromSnapshot : CopyMethod.RawFull;
 
-    private static ResizeKind ResizeFor(Partition partition, Extent targetExtent) =>
-        partition.Role == PartitionRole.Windows && targetExtent.Length > partition.Extent.Length
-            ? ResizeKind.GrowFileSystem
-            : ResizeKind.None;
+    /// <summary>
+    /// Ampliación del sistema de archivos. Sin reducción, Windows crece si su destino es mayor que el origen. Con reducción,
+    /// el sistema de archivos crece desde la longitud reducida hasta el destino, si queda espacio sobrante.
+    /// </summary>
+    private static ResizeKind ResizeFor(Partition partition, Extent targetExtent, SourceShrinkStep? shrink)
+    {
+        if (partition.Role != PartitionRole.Windows)
+        {
+            return ResizeKind.None;
+        }
+
+        var baseline = shrink?.ShrunkLength ?? new ByteSize(partition.Extent.Length);
+
+        return targetExtent.Length > baseline.Bytes ? ResizeKind.GrowFileSystem : ResizeKind.None;
+    }
 }

@@ -15,7 +15,7 @@ public enum CompensationKind
     /// <summary>Retirar los montajes temporales.</summary>
     ReleaseMounts,
 
-    /// <summary>Restaurar el tamaño del origen si se redujo. Solo en la versión 2 (US2).</summary>
+    /// <summary>Restaurar el tamaño del origen si se redujo.</summary>
     RestoreSource,
 
     /// <summary>Permitir de nuevo la suspensión del equipo.</summary>

@@ -7,7 +7,7 @@ namespace WinCopy.Domain.Planning;
 /// Plan de clonado (agregado raíz): decisión sobre cómo se clonará el origen en el destino, calculada a partir de un
 /// inventario concreto. Solo <see cref="ClonePlanner"/> lo crea; <see cref="Create"/> valida las invariantes.
 /// Ciclo de vida: Draft → Confirmed, o Draft/Confirmed → Invalidated.
-/// TODO(US2): el campo SourceShrink (y ShrinkConfirmation) se añade con la estrategia ShrinkSource; en la versión 1 se omite.
+/// Un plan con <see cref="SourceShrink"/> exige, además, la <see cref="ShrinkConfirmation"/> al confirmarse.
 /// </summary>
 public sealed class ClonePlan
 {
@@ -22,7 +22,8 @@ public sealed class ClonePlan
         Guid newDiskGuid,
         VerificationMode verification,
         IReadOnlyList<PreflightCheck> warnings,
-        CloneEstimate estimate)
+        CloneEstimate estimate,
+        SourceShrinkStep? sourceShrink)
     {
         Id = id;
         Source = source;
@@ -33,6 +34,7 @@ public sealed class ClonePlan
         Verification = verification;
         Warnings = warnings;
         Estimate = estimate;
+        SourceShrink = sourceShrink;
     }
 
     /// <summary>Identificador del plan.</summary>
@@ -62,6 +64,12 @@ public sealed class ClonePlan
     /// <summary>Bytes a copiar y duración estimada.</summary>
     public CloneEstimate Estimate { get; }
 
+    /// <summary>
+    /// Reducción temporal de la partición de Windows del origen, presente solo cuando el destino de Windows es más pequeño
+    /// que el origen (estrategia ShrinkSource). Null en el resto de planes.
+    /// </summary>
+    public SourceShrinkStep? SourceShrink { get; }
+
     /// <summary>Situación actual del plan.</summary>
     public PlanStatus Status { get; private set; } = PlanStatus.Draft;
 
@@ -71,12 +79,16 @@ public sealed class ClonePlan
     /// <summary>Confirmación del destino, presente solo cuando el plan está confirmado.</summary>
     public TargetConfirmation? Confirmation { get; private set; }
 
+    /// <summary>Confirmación de la reducción del origen, presente solo cuando el plan está confirmado y reduce el origen.</summary>
+    public ShrinkConfirmation? SourceShrinkConfirmation { get; private set; }
+
     /// <summary>Motivo de la invalidación, presente solo cuando el plan está invalidado.</summary>
     public string? InvalidationReason { get; private set; }
 
     /// <summary>
     /// Crea el plan validando sus invariantes. Lanza <see cref="InvalidOperationException"/> si alguna no se cumple,
-    /// lo que indica un fallo del planificador y no un error de la persona.
+    /// lo que indica un fallo del planificador y no un error de la persona. <paramref name="sourceShrink"/> es la reducción
+    /// de la partición de Windows del origen, o null si el plan no la necesita.
     /// </summary>
     internal static ClonePlan Create(
         PlanId id,
@@ -88,7 +100,8 @@ public sealed class ClonePlan
         VerificationMode verification,
         IReadOnlyList<PreflightCheck> warnings,
         CloneEstimate estimate,
-        CapacityPolicy policy)
+        CapacityPolicy policy,
+        SourceShrinkStep? sourceShrink = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(target);
@@ -99,11 +112,12 @@ public sealed class ClonePlan
         ValidateTargetIdentity(source, target);
         ValidateSectorSize(source, target);
         ValidateLayout(source, target, mappings);
-        ValidateOnlyWindowsResizes(source, mappings);
+        ValidateOnlyWindowsResizes(source, mappings, sourceShrink);
+        ValidateSourceShrink(source, mappings, sourceShrink, policy);
         ValidateCapacity(source, mappings, policy);
         ValidateNewGuids(source, newDiskGuid, mappings);
 
-        return new ClonePlan(id, source.Id, target.Id, fingerprint, mappings, newDiskGuid, verification, warnings, estimate);
+        return new ClonePlan(id, source.Id, target.Id, fingerprint, mappings, newDiskGuid, verification, warnings, estimate, sourceShrink);
     }
 
     /// <summary>Acepta los avisos indicados. Solo en borrador, y solo códigos que el plan tiene como aviso.</summary>
@@ -129,9 +143,11 @@ public sealed class ClonePlan
 
     /// <summary>
     /// Confirma el plan. Exige borrador, todos los avisos aceptados, el disco de destino del plan y una confirmación
-    /// que coincida con él. Si no se cumple, lanza <see cref="InvalidOperationException"/> y el plan no cambia.
+    /// que coincida con él. Si el plan reduce el origen, exige además <paramref name="shrink"/> con la misma partición y
+    /// longitud reducida (FR-013); si no reduce el origen, no admite ninguna. Si no se cumple, lanza
+    /// <see cref="InvalidOperationException"/> y el plan no cambia.
     /// </summary>
-    public void Confirm(TargetConfirmation confirmation, Disk targetDisk)
+    public void Confirm(TargetConfirmation confirmation, Disk targetDisk, ShrinkConfirmation? shrink = null)
     {
         ArgumentNullException.ThrowIfNull(confirmation);
         ArgumentNullException.ThrowIfNull(targetDisk);
@@ -153,7 +169,10 @@ public sealed class ClonePlan
             throw new InvalidOperationException("La confirmación no coincide con el disco de destino del plan.");
         }
 
+        ValidateShrinkConfirmation(shrink);
+
         Confirmation = confirmation;
+        SourceShrinkConfirmation = shrink;
         Status = PlanStatus.Confirmed;
     }
 
@@ -205,6 +224,30 @@ public sealed class ClonePlan
         if (Status != PlanStatus.Draft)
         {
             throw new InvalidOperationException(message);
+        }
+    }
+
+    // La confirmación de reducción debe existir y coincidir si el plan reduce el origen; si no lo reduce, no debe haberla.
+    private void ValidateShrinkConfirmation(ShrinkConfirmation? shrink)
+    {
+        if (SourceShrink is not { } expected)
+        {
+            if (shrink is not null)
+            {
+                throw new InvalidOperationException("El plan no reduce el origen: no admite confirmación de reducción.");
+            }
+
+            return;
+        }
+
+        if (shrink is null)
+        {
+            throw new InvalidOperationException("El plan reduce la partición de Windows del origen: hace falta la confirmación de la reducción (FR-013).");
+        }
+
+        if (shrink.Partition != expected.Partition || shrink.ShrunkLength != expected.ShrunkLength)
+        {
+            throw new InvalidOperationException("La confirmación de la reducción no coincide con la del plan.");
         }
     }
 
@@ -267,9 +310,9 @@ public sealed class ClonePlan
         }
     }
 
-    // Invariante 4: solo la partición de Windows puede cambiar de longitud.
-    // TODO(US2): en la versión 2 Windows podrá reducirse con SourceShrink; hoy solo puede crecer.
-    private static void ValidateOnlyWindowsResizes(Disk source, IReadOnlyList<PartitionMapping> mappings)
+    // Invariante 4: solo la partición de Windows puede cambiar de longitud. Crecer exige ampliar su sistema de archivos.
+    // Reducirla solo es posible con SourceShrink; su coherencia se comprueba en la invariante 5.
+    private static void ValidateOnlyWindowsResizes(Disk source, IReadOnlyList<PartitionMapping> mappings, SourceShrinkStep? sourceShrink)
     {
         for (var i = 0; i < mappings.Count; i++)
         {
@@ -294,13 +337,69 @@ public sealed class ClonePlan
 
             if (targetLength < sourceLength)
             {
-                throw Invariant(4, "en la versión 1 la partición de Windows solo puede crecer.");
+                if (sourceShrink is null)
+                {
+                    throw Invariant(4, "la partición de Windows solo puede reducirse con una reducción del origen (SourceShrink).");
+                }
+
+                // Con reducción, el sistema de archivos crece desde la longitud reducida: lo comprueba la invariante 5.
+                continue;
             }
 
             if (mappings[i].Resize != ResizeKind.GrowFileSystem)
             {
                 throw Invariant(4, "la partición de Windows que crece debe ampliar su sistema de archivos.");
             }
+        }
+    }
+
+    // Invariante 5: la reducción del origen es coherente con el destino de Windows. Solo se exige con reducción de Windows
+    // en el destino (la ausencia de SourceShrink en ese caso la rechaza la invariante 4).
+    // La reducción refiere a la partición de Windows del origen, su longitud original es la actual, el destino de Windows es
+    // más pequeño que el origen, la longitud reducida cabe en el destino y cubre lo ocupado más el margen, y el sistema de
+    // archivos crece desde la longitud reducida solo si queda espacio.
+    private static void ValidateSourceShrink(Disk source, IReadOnlyList<PartitionMapping> mappings, SourceShrinkStep? shrink, CapacityPolicy policy)
+    {
+        if (shrink is null)
+        {
+            return;
+        }
+
+        var windowsIndex = Enumerable.Range(0, source.Partitions.Count).Single(i => source.Partitions[i].Role == PartitionRole.Windows);
+        var windows = source.Partitions[windowsIndex];
+        var targetLength = mappings[windowsIndex].TargetExtent.Length;
+
+        if (shrink.Partition != windows.UniqueId)
+        {
+            throw Invariant(5, "la reducción del origen debe referirse a la partición de Windows.");
+        }
+
+        if (shrink.OriginalLength.Bytes != windows.Extent.Length)
+        {
+            throw Invariant(5, "la longitud original de la reducción debe ser la longitud actual de la partición de Windows.");
+        }
+
+        if (targetLength >= windows.Extent.Length)
+        {
+            throw Invariant(5, "una reducción del origen solo tiene sentido si la partición de Windows del destino es más pequeña.");
+        }
+
+        if (shrink.ShrunkLength.Bytes > targetLength)
+        {
+            throw Invariant(5, "la longitud reducida no puede superar la partición de Windows del destino.");
+        }
+
+        var used = windows.Volume?.Used
+            ?? throw Invariant(5, "la partición de Windows no tiene volumen.");
+        if (shrink.ShrunkLength < policy.Required(used))
+        {
+            throw Invariant(5, "la longitud reducida debe dejar lo ocupado más el margen.");
+        }
+
+        var expectedResize = targetLength > shrink.ShrunkLength.Bytes ? ResizeKind.GrowFileSystem : ResizeKind.None;
+        if (mappings[windowsIndex].Resize != expectedResize)
+        {
+            throw Invariant(5, "el sistema de archivos de Windows debe crecer desde la longitud reducida hasta el destino.");
         }
     }
 

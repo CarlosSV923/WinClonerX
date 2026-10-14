@@ -1,5 +1,6 @@
 using Shouldly;
 using WinCopy.Application.Errors;
+using WinCopy.Application.Ports;
 using WinCopy.Application.Ports.Models;
 using WinCopy.Domain.Inventory;
 using WinCopy.Domain.Planning;
@@ -174,11 +175,53 @@ public sealed class PlatformFactsProviderTests
     }
 
     [Fact]
-    public async Task MinimumWindowsSizeIsNullUntilUs2()
+    public async Task MinimumWindowsSizeIsTheResizerMinimumForTheSystemWindowsPartition()
     {
-        var facts = await Run(DefaultInventory());
+        var resizer = new FakeMinimumSizeResizer { MinimumSize = new ByteSize(30 * Gib) };
+
+        var facts = await Run(DefaultInventory(), resizer: resizer);
+
+        facts.MinimumWindowsSize.ShouldBe(new ByteSize(30 * Gib));
+        resizer.Asked.ToArray().ShouldBe(new[] { new PartitionGuid(WindowsPartition) });
+    }
+
+    [Fact]
+    public async Task MinimumWindowsSizeIsNullAndWarnsWhenTheResizerFails()
+    {
+        var resizer = new FakeMinimumSizeResizer
+        {
+            Failure = new PlatformException(PlatformErrorCode.ShrinkFailed, "refusing to resize a partition"),
+        };
+        var warnings = new List<string>();
+
+        var facts = await Run(DefaultInventory(), resizer: resizer, warnings: warnings);
 
         facts.MinimumWindowsSize.ShouldBeNull();
+        warnings.Count.ShouldBe(1);
+        warnings[0].ShouldContain("refusing to resize a partition");
+    }
+
+    [Fact]
+    public async Task MinimumWindowsSizeIsNullWithoutAWindowsVolumeAndDoesNotAskTheResizer()
+    {
+        var inventory = new DiskInventory(Now, FirmwareType.Uefi,
+        [
+            MakeDisk(0, SystemDiskGuid, isSystem: true, MakePart(1, EspPartition, MakeVolume(FileSystemKind.Fat32))),
+        ]);
+        var resizer = new FakeMinimumSizeResizer();
+
+        var facts = await Run(inventory, resizer: resizer);
+
+        facts.MinimumWindowsSize.ShouldBeNull();
+        resizer.Asked.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ACancelledMinimumReadPropagatesTheCancellation()
+    {
+        var resizer = new FakeMinimumSizeResizer { Failure = new OperationCanceledException() };
+
+        await Should.ThrowAsync<OperationCanceledException>(() => Run(DefaultInventory(), resizer: resizer));
     }
 
     // ---- TargetInUse ----
@@ -322,20 +365,58 @@ public sealed class PlatformFactsProviderTests
         FakePowerManager? power = null,
         FakeServiceCatalog? services = null,
         FakeVolumePaths? volumePaths = null,
-        FakeVolumeLockProbe? probe = null) =>
-        new(
+        FakeVolumeLockProbe? probe = null,
+        FakeMinimumSizeResizer? resizer = null,
+        List<string>? warnings = null)
+    {
+        Action<string>? sink = warnings is null ? null : warnings.Add;
+
+        return new(
             power ?? new FakePowerManager(),
             services ?? new FakeServiceCatalog { Kind = ServiceStartKind.Manual },
             volumePaths ?? DefaultVolumePaths(),
-            probe ?? new FakeVolumeLockProbe());
+            probe ?? new FakeVolumeLockProbe(),
+            resizer ?? new FakeMinimumSizeResizer(),
+            sink);
+    }
 
     private static Task<PlatformFacts> Run(
         DiskInventory inventory,
         FakeVolumePaths? volumePaths = null,
         FakePowerManager? power = null,
         FakeServiceCatalog? services = null,
-        FakeVolumeLockProbe? probe = null) =>
-        Provider(power, services, volumePaths, probe).GetAsync(inventory, CancellationToken.None);
+        FakeVolumeLockProbe? probe = null,
+        FakeMinimumSizeResizer? resizer = null,
+        List<string>? warnings = null) =>
+        Provider(power, services, volumePaths, probe, resizer, warnings).GetAsync(inventory, CancellationToken.None);
+
+    /// <summary>Scripted <see cref="ISourceResizer"/> that only answers <see cref="ISourceResizer.GetMinimumSizeAsync"/>.</summary>
+    private sealed class FakeMinimumSizeResizer : ISourceResizer
+    {
+        public ByteSize MinimumSize { get; set; } = new(10 * Gib);
+
+        public Exception? Failure { get; set; }
+
+        public List<PartitionGuid> Asked { get; } = [];
+
+        public Task<ByteSize> GetMinimumSizeAsync(PartitionGuid partition, CancellationToken ct)
+        {
+            Asked.Add(partition);
+
+            if (Failure is not null)
+            {
+                throw Failure;
+            }
+
+            return Task.FromResult(MinimumSize);
+        }
+
+        public Task ShrinkAsync(PartitionGuid partition, ByteSize newLength, CancellationToken ct) =>
+            throw new NotSupportedException("The facts never shrink.");
+
+        public Task RestoreAsync(PartitionGuid partition, ByteSize originalLength, CancellationToken ct) =>
+            throw new NotSupportedException("The facts never restore.");
+    }
 
     private static FakeVolumePaths DefaultVolumePaths()
     {

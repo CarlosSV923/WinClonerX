@@ -92,4 +92,53 @@ public sealed class TargetConfirmationTests
 
         new TargetConfirmation(otherDisk.Id, "1234", At).Matches(disk).ShouldBeFalse();
     }
+
+    // ----- Números de serie de adaptadores USB que informan ceros (puentes USB) -----
+
+    private static readonly DiskId GuidDisk = new(1, new Guid("6F1E0B2C-3D4A-4B5C-8D6E-7F8091A2B3C4"));
+
+    [Fact]
+    public void AnAllZeroSerialFallsBackToTheDiskGuid()
+    {
+        var disk = TargetDisk(serial: "0000000000000000", id: GuidDisk);
+
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
+        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AllZerosWithATrailingDotFallBackToTheDiskGuid()
+    {
+        var disk = TargetDisk(serial: " 0000. ", id: GuidDisk);
+
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
+        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ASerialOfOnlyDotsFallsBackToTheDiskGuid()
+    {
+        var disk = TargetDisk(serial: "...", id: GuidDisk);
+
+        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
+    }
+
+    [Fact]
+    public void ASerialWithANonZeroCharacterIsStillUsed()
+    {
+        var disk = TargetDisk(serial: "0000A0", id: GuidDisk);
+
+        TargetConfirmation.UsesGuidFallback(disk).ShouldBeFalse();
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("00A0");
+    }
+
+    [Fact]
+    public void AZeroSerialIsNotConfirmedWithZeros()
+    {
+        var disk = TargetDisk(serial: "0000000000000000", id: GuidDisk);
+
+        new TargetConfirmation(disk.Id, "0000", At).Matches(disk).ShouldBeFalse();
+        new TargetConfirmation(disk.Id, "b3c4", At).Matches(disk).ShouldBeTrue();
+    }
 }

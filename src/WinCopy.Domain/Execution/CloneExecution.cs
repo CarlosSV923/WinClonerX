@@ -11,6 +11,12 @@ namespace WinCopy.Domain.Execution;
 /// tras las compensaciones); Running → Cancelling (<see cref="RequestCancel"/>), diferida durante CommitLayout.
 /// </para>
 /// <para>
+/// Restauración del origen (planes con reducción): si RestoreSource falla en el camino feliz, no es un fallo de la ejecución.
+/// Se registra con <see cref="RecordRestoreFailure"/>, el clon es válido y la ejecución termina como Completed con
+/// <see cref="CloneResultReport.SourceRestored"/> = false. Si RestoreSource falla como compensación, queda registrado en
+/// <see cref="Compensations"/> sin ocultar el fallo original (FR-021a).
+/// </para>
+/// <para>
 /// Invariante: el disco de origen solo se modifica en ShrinkSource y RestoreSource (FR-021); ver <see cref="PhaseMayModifySource"/>.
 /// </para>
 /// </summary>
@@ -57,6 +63,12 @@ public sealed class CloneExecution
 
     /// <summary>Momento en que se registró el fallo.</summary>
     public DateTimeOffset? FailedAt { get; private set; }
+
+    /// <summary>
+    /// Motivo por el que no se pudo restaurar el tamaño original del origen en el camino feliz, o null si se restauró o si
+    /// no hubo reducción. Con un valor, la ejecución termina como Completed con <see cref="CloneResultReport.SourceRestored"/> = false.
+    /// </summary>
+    public string? RestoreFailure { get; private set; }
 
     /// <summary>Resultado de cada compensación, en el orden en que se ejecutaron.</summary>
     public IReadOnlyList<CompensationRecord> Compensations => _compensations;
@@ -211,12 +223,35 @@ public sealed class CloneExecution
     }
 
     /// <summary>
+    /// Registra que no se ha podido restaurar el tamaño original del origen en el camino feliz (fase RestoreSource en marcha).
+    /// No es un fallo de la ejecución: el clon es válido. Después hay que completar la fase y terminar como Completed con
+    /// <see cref="CloneResultReport.SourceRestored"/> = false. Solo válido en un plan que reduce el origen.
+    /// Un error no controlado de la restauración se registra con <see cref="Fail"/> y pasa por las compensaciones.
+    /// </summary>
+    public void RecordRestoreFailure(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        if (Plan.SourceShrink is null)
+        {
+            throw new InvalidOperationException("La ejecución no reduce el origen: no hay nada que restaurar.");
+        }
+
+        if (State != ExecutionState.Running || _inProgress != ExecutionPhase.RestoreSource)
+        {
+            throw new InvalidOperationException("El fallo de la restauración solo se registra durante la fase RestoreSource, en marcha.");
+        }
+
+        RestoreFailure = detail;
+    }
+
+    /// <summary>
     /// Compensaciones que deben ejecutarse tras un fallo o una cancelación, en orden fijo y solo las que aplican:
     /// <list type="number">
     /// <item><description>DeleteTargetLayout, si se inició CommitLayout;</description></item>
     /// <item><description>DeleteSnapshot, si se inició Snapshot;</description></item>
     /// <item><description>ReleaseMounts, si se inició RepairBoot;</description></item>
-    /// <item><description>RestoreSource, solo en la versión 2 (US2): hoy nunca aplica;</description></item>
+    /// <item><description>RestoreSource, si se inició ShrinkSource;</description></item>
     /// <item><description>AllowSleep, siempre.</description></item>
     /// </list>
     /// Solo es válido en Failing y en Cancelling.
@@ -246,7 +281,11 @@ public sealed class CloneExecution
                 required.Add(CompensationKind.ReleaseMounts);
             }
 
-            // TODO(US2): añadir RestoreSource cuando se haya iniciado ShrinkSource.
+            if (_begun.Contains(ExecutionPhase.ShrinkSource))
+            {
+                required.Add(CompensationKind.RestoreSource);
+            }
+
             required.Add(CompensationKind.AllowSleep);
 
             return required;
@@ -273,8 +312,9 @@ public sealed class CloneExecution
     }
 
     /// <summary>
-    /// Termina la ejecución con su informe. Completada exige todas las fases; fallida o cancelada exige todas las
-    /// compensaciones. El desenlace del informe debe corresponder al estado final.
+    /// Termina la ejecución con su informe. Completada exige todas las fases y, si el plan reduce el origen, que el informe
+    /// diga si el origen se restauró; fallida o cancelada exige todas las compensaciones. El desenlace del informe debe
+    /// corresponder al estado final.
     /// </summary>
     public void Finish(DateTimeOffset now, CloneResultReport report)
     {
@@ -289,6 +329,7 @@ public sealed class CloneExecution
                 }
 
                 RequireOutcome(report, CloneOutcome.Completed);
+                RequireRestoreOutcome(report);
                 State = ExecutionState.Completed;
                 CurrentPhase = ExecutionPhase.Done;
                 _events.Add(new ExecutionCompleted(Id, now));
@@ -334,17 +375,38 @@ public sealed class CloneExecution
         }
     }
 
-    /// <summary>Fases planificadas. ShrinkSource y RestoreSource no se planifican hasta la versión 2 (US2).</summary>
+    /// <summary>En un plan que reduce el origen, el informe de una ejecución completada debe reflejar la restauración.</summary>
+    private void RequireRestoreOutcome(CloneResultReport report)
+    {
+        if (Plan.SourceShrink is null)
+        {
+            return;
+        }
+
+        if (report.SourceRestored != (RestoreFailure is null))
+        {
+            throw new ArgumentException("El informe no coincide con el resultado de la restauración del origen.", nameof(report));
+        }
+    }
+
+    /// <summary>
+    /// Fases planificadas. ShrinkSource va justo después de Revalidate, para que la instantánea y la copia vean el origen
+    /// reducido. RestoreSource es la última, tras la limpieza. Ambas solo aparecen si el plan reduce el origen.
+    /// </summary>
     private static List<ExecutionPhase> PlanPhases(ClonePlan plan)
     {
-        var phases = new List<ExecutionPhase>
+        var shrinks = plan.SourceShrink is not null;
+        var phases = new List<ExecutionPhase> { ExecutionPhase.Revalidate };
+
+        if (shrinks)
         {
-            ExecutionPhase.Revalidate,
-            ExecutionPhase.Snapshot,
-            ExecutionPhase.PrepareTarget,
-            ExecutionPhase.CopyData,
-            ExecutionPhase.CommitLayout,
-        };
+            phases.Add(ExecutionPhase.ShrinkSource);
+        }
+
+        phases.Add(ExecutionPhase.Snapshot);
+        phases.Add(ExecutionPhase.PrepareTarget);
+        phases.Add(ExecutionPhase.CopyData);
+        phases.Add(ExecutionPhase.CommitLayout);
 
         if (plan.Mappings.Any(mapping => mapping.Resize == ResizeKind.GrowFileSystem))
         {
@@ -360,6 +422,11 @@ public sealed class CloneExecution
         }
 
         phases.Add(ExecutionPhase.Cleanup);
+
+        if (shrinks)
+        {
+            phases.Add(ExecutionPhase.RestoreSource);
+        }
 
         return phases;
     }

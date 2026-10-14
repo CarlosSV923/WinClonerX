@@ -10,7 +10,7 @@ public enum ExecutionPhase
     /// <summary>Comprobar que el inventario sigue siendo el del plan (huella).</summary>
     Revalidate,
 
-    /// <summary>Reducir la partición de Windows del origen. Solo en la versión 2 (US2).</summary>
+    /// <summary>Reducir temporalmente la partición de Windows del origen, si el destino es más pequeño.</summary>
     ShrinkSource,
 
     /// <summary>Crear la instantánea coherente de los volúmenes del origen.</summary>
@@ -40,7 +40,7 @@ public enum ExecutionPhase
     /// <summary>Borrar la instantánea y retirar los montajes temporales.</summary>
     Cleanup,
 
-    /// <summary>Restaurar el tamaño del origen si se redujo. Solo en la versión 2 (US2).</summary>
+    /// <summary>Restaurar el tamaño del origen si se redujo.</summary>
     RestoreSource,
 
     /// <summary>Ejecución completada.</summary>

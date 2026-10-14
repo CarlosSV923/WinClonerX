@@ -32,8 +32,6 @@ public sealed class CompositionTests : IDisposable
     [
         // Sin adaptador: FR-011, US3 escenario 2.
         typeof(IDeviceChangeMonitor),
-        // Sin adaptador: R6, US2.
-        typeof(ISourceResizer),
     ];
 
     private readonly string _logDirectory = Path.Combine(
