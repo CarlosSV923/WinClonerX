@@ -47,3 +47,12 @@ jobs:
         with:
           name: test-results
           path: TestResults
+
+      # The Release solution build above also builds the MSI (the installer is excluded from Debug builds in the slnx),
+      # and only Release runs ICE validation.
+      - name: Upload MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinCopy-msi
+          path: installer/WinCopy.Installer/bin/x64/Release/*.msi
+          if-no-files-found: error

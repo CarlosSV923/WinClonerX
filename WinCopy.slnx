@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/installer/">
-    <Project Path="installer/WinCopy.Installer/WinCopy.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" />
+    <Project Path="installer/WinCopy.Installer/WinCopy.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/WinCopy.App/WinCopy.App.csproj" />

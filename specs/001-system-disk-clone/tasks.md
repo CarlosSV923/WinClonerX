@@ -187,7 +187,7 @@ comprobar que Windows arranca desde el clon con `C:` ampliado.
 
 **Instalador**
 
-- [ ] T082 [US1] Completar `installer/WinCopy.Installer/Package.wxs`: publicación *self-contained* win-x64 de `WinCopy.App`, acceso directo en el menú Inicio, actualización mayor (`MajorUpgrade`) y desinstalación sin componentes residuales (FR-032). Añadir el destino `dotnet build installer/WinCopy.Installer -c Release` en la CI
+- [X] T082 [US1] Completar `installer/WinCopy.Installer/Package.wxs`: publicación *self-contained* win-x64 de `WinCopy.App`, acceso directo en el menú Inicio, actualización mayor (`MajorUpgrade`) y desinstalación sin componentes residuales (FR-032). Añadir el destino `dotnet build installer/WinCopy.Installer -c Release` en la CI
 
 **Checkpoint**: la US1 funciona por sí sola. Los niveles 1 y 2 de quickstart están en verde, y el nivel 3 (VM) arranca el clon.
 
