@@ -1,6 +1,6 @@
 using WinCopy.Application.Ports;
-using WinCopy.Application.Ports.Models;
 using WinCopy.Domain.Inventory;
+using WinCopy.Domain.Planning;
 using WinCopy.Domain.Shared;
 
 namespace WinCopy.Application.Tests.Fakes;
@@ -10,25 +10,21 @@ public sealed class FakePlatformFactsProvider : FakeBase, IPlatformFactsProvider
 {
     /// <summary>Hechos que devuelve GetAsync.</summary>
     public PlatformFacts Facts { get; set; } = new(
-        FirmwareType.Uefi,
         new Dictionary<PartitionGuid, EncryptionState>(),
-        new PowerStatus(false, 100),
-        true,
-        ByteSize.FromGiB(20),
-        null,
-        false);
+        OnBattery: false,
+        BatteryPercent: 100,
+        SnapshotAvailable: true,
+        SnapshotFreeSpace: ByteSize.FromGiB(20),
+        MinimumWindowsSize: null,
+        TargetInUse: new Dictionary<DiskId, bool>());
 
     /// <summary>Último inventario recibido.</summary>
     public DiskInventory? LastInventory { get; private set; }
 
-    /// <summary>Último destino candidato recibido.</summary>
-    public DiskId? LastCandidateTarget { get; private set; }
-
-    /// <summary>Guarda los argumentos y devuelve los hechos configurados.</summary>
-    public Task<PlatformFacts> GetAsync(DiskInventory inventory, DiskId? candidateTarget, CancellationToken ct)
+    /// <summary>Guarda el inventario recibido y devuelve los hechos configurados.</summary>
+    public Task<PlatformFacts> GetAsync(DiskInventory inventory, CancellationToken ct)
     {
         LastInventory = inventory;
-        LastCandidateTarget = candidateTarget;
         return Reply(nameof(GetAsync), () => Facts, ct);
     }
 }

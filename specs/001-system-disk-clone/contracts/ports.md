@@ -23,9 +23,11 @@ interface IDiskInventoryReader
 
 interface IPlatformFactsProvider
 {
-    Task<PlatformFacts> GetAsync(DiskInventory inventory, DiskId? candidateTarget, CancellationToken ct);
-    // Firmware, BitLocker por volumen, batería, VSS disponible y espacio de diferencias,
-    // mínimo de reducción soportado (MSFT_Partition.GetSupportedSize) y si el destino está en uso.
+    Task<PlatformFacts> GetAsync(DiskInventory inventory, CancellationToken ct);
+    // PlatformFacts es un objeto de valor del DOMINIO (WinCopy.Domain.Planning), para que el dominio no
+    // dependa de la capa de aplicación. Contiene BitLocker por volumen, batería, VSS disponible y espacio
+    // de diferencias, el mínimo de reducción soportado (MSFT_Partition.GetSupportedSize) y, para cada
+    // posible destino, si está en uso (si falta el dato, se considera en uso).
 }
 
 interface IDeviceChangeMonitor   // FR-011, US3 escenario 2

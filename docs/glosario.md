@@ -45,7 +45,7 @@ Valores usados por más de un contexto.
 | Gravedad | `Severity` | Resultado de una comprobación: `Pass` (superada), `Warning` (requiere aceptación) o `Blocking` (impide el clonado). |
 | Informe de comprobaciones | `PreflightReport` | Conjunto de comprobaciones previas de una planificación. Está bloqueado si alguna tiene gravedad `Blocking`. |
 | Evaluador de comprobaciones | `PreflightEvaluator` | Servicio de dominio que, con el inventario y los hechos de la plataforma, produce el informe de comprobaciones y la elegibilidad de cada destino. |
-| Hechos de la plataforma | `PlatformFacts` | Datos del entorno (BitLocker, batería, disponibilidad de instantáneas y reducción mínima) que la capa de aplicación obtiene y entrega al dominio. |
+| Hechos de la plataforma | `PlatformFacts` | Datos del entorno (BitLocker por volumen, batería, disponibilidad de instantáneas, espacio libre para ellas, reducción mínima y si cada destino está en uso) que la capa de aplicación obtiene y entrega al dominio. Un destino ausente en los hechos se trata como en uso. |
 | Elegibilidad del destino | `TargetEligibility` | Resultado de evaluar un disco distinto del sistema como destino: si es apto, los motivos si no lo es y la estrategia de tamaño. |
 | Espacio que falta | `Shortfall` | Cantidad de bytes que faltan para que los datos ocupados y el margen quepan en un destino no apto. |
 | Estrategia de tamaño | `SizeStrategy` | Forma de ajustar el origen al destino: `SameOrLarger` (el destino es igual o mayor) o `ShrinkSource` (hay que reducir la partición de Windows del origen). |
@@ -57,12 +57,17 @@ Valores usados por más de un contexto.
 | Correspondencia de partición | `PartitionMapping` | Relación entre una partición de origen y su extensión, identificador nuevo y método de copia en el destino. Hay una por cada partición de origen. |
 | Extensión de destino | `TargetExtent` | Extensión que ocupará una partición en el disco de destino. |
 | Método de copia | `CopyMethod` | Forma de copiar una partición: `UsedClustersFromSnapshot` (NTFS, solo los datos ocupados) o `RawFull` (EFI, MSR y el resto, completa). |
-| Redimensionado | `Resize` | Ajuste de tamaño de una partición en el destino: `None` o `GrowFileSystem` (ampliar el sistema de archivos al espacio adicional). Solo aplica a la partición de Windows cuando el destino es mayor. |
+| Redimensionado | `ResizeKind` (propiedad `Resize`) | Ajuste de tamaño de una partición en el destino: `None` o `GrowFileSystem` (ampliar el sistema de archivos al espacio adicional). Solo aplica a la partición de Windows cuando el destino es mayor. |
 | Reducción del origen | `SourceShrinkStep` | Paso del plan que reduce la partición de Windows del origen antes del clonado. Guarda el tamaño original, el tamaño reducido y el mínimo que admite Windows. |
 | Confirmación del destino | `TargetConfirmation` | Confirmación escrita por la persona que identifica el disco que se borrará con los 4 últimos caracteres de su número de serie o, si no tiene, de su GUID. |
 | Confirmación de reducción | `ShrinkConfirmation` | Confirmación explícita y separada de la del destino que autoriza reducir la partición de Windows del origen al tamaño propuesto. |
 | Modo de verificación | `VerificationMode` | Verificación que se hará al terminar: `Structural` (siempre) o `StructuralAndFull` (añade la comparación completa de datos, opcional y desactivada por defecto). |
 | Estimación | `CloneEstimate` | Bytes que se copiarán y duración prevista del clonado. |
+| Identificador de plan | `PlanId` | GUID que identifica un plan de clonado. No puede estar vacío. |
+| Avisos aceptados | `AcceptedWarnings` | Códigos de aviso que la persona ha aceptado en un plan en borrador. Confirmar exige que estén todos. |
+| Sufijo esperado | `TargetConfirmation.ExpectedSuffix` | Los 4 últimos caracteres del número de serie del destino en mayúsculas o, si no tiene, los 4 últimos del GUID de disco. Es lo que la persona debe escribir para confirmar. |
+| Espacio requerido | `CapacityPolicy.Required` | Lo ocupado más el margen: lo mínimo que debe tener la partición de Windows del destino. |
+| Área utilizable | `TargetLayoutCalculator` (primer y último byte) | Espacio del destino donde pueden colocarse las particiones: empieza en el primer byte utilizable y termina antes de las entradas y la cabecera GPT de respaldo. |
 
 ## Ejecución
 
