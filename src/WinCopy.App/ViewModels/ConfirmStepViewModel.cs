@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WinCopy.App.Localization;
+using WinCopy.App.Presentation;
 using WinCopy.Application.UseCases.Planning;
 using WinCopy.Domain.Inventory;
 using WinCopy.Domain.Planning;
@@ -9,8 +10,8 @@ namespace WinCopy.App.ViewModels;
 
 /// <summary>
 /// Step 3 "Confirm" (contracts/ui-wizard.md): shows the disk that will be erased and asks for the last four characters of its
-/// serial number (or of its GUID when it has none). "Clone now" is only enabled when they match (FR-012, R13).
-/// The shrink confirmation of the source is US2 and is not implemented here.
+/// serial number (or of its GUID when it has none). For a plan that shrinks the source (FR-013), it also asks for a separate
+/// authorization. "Clone now" is only enabled when the characters match and, if there is a shrink, it is authorized (FR-012, R13).
 /// </summary>
 public sealed partial class ConfirmStepViewModel : ObservableObject
 {
@@ -40,6 +41,18 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
     [ObservableProperty]
     private bool _usesGuidFallback;
 
+    /// <summary>True when the plan reduces the source disk (FR-013). Shows the shrink panel.</summary>
+    [ObservableProperty]
+    private bool _hasSourceShrink;
+
+    /// <summary>Localized explanation of the temporary shrink: the sizes before and after and that it is restored.</summary>
+    [ObservableProperty]
+    private string _sourceShrinkText = string.Empty;
+
+    /// <summary>The separate authorization of the source shrink, bound to its checkbox. Always false when there is no shrink.</summary>
+    [ObservableProperty]
+    private bool _confirmSourceShrink;
+
     /// <summary>True while the confirmation is being saved.</summary>
     [ObservableProperty]
     private bool _isBusy;
@@ -56,8 +69,14 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         && string.Equals(TypedSuffix.Trim(), TargetConfirmation.ExpectedSuffix(_target), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Confirms the plan. Enabled only when the characters match and the plan is known (FR-012). The button is the default
-    /// button of the step, so the keyboard can complete it with Enter.
+    /// Whether the step is complete: the characters match and, when the plan shrinks the source, the shrink is authorized.
+    /// Only this drives the "Clone now" button and the validity of step 3.
+    /// </summary>
+    public bool IsReadyToClone => IsSuffixValid && (!HasSourceShrink || ConfirmSourceShrink);
+
+    /// <summary>
+    /// Confirms the plan. Enabled only when the characters match, the shrink is authorized if there is one, and the plan is known
+    /// (FR-012, FR-013). The button is the default button of the step, so the keyboard can complete it with Enter.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanCloneNow))]
     private async Task CloneNowAsync(CancellationToken cancellationToken)
@@ -71,8 +90,13 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         ErrorMessage = null;
         try
         {
-            // The shrink confirmation checkbox is added by the US2 UI task; until then no shrink is authorized here.
-            await _confirmPlan.ExecuteAsync(plan.Id, _acceptedWarnings, TypedSuffix, false, cancellationToken);
+            // Without a shrink in the plan the authorization is always false, even if the checkbox had been ticked before.
+            await _confirmPlan.ExecuteAsync(
+                plan.Id,
+                _acceptedWarnings,
+                TypedSuffix,
+                HasSourceShrink && ConfirmSourceShrink,
+                cancellationToken);
             PlanConfirmed?.Invoke(this, new PlanConfirmedEventArgs(plan.Id));
         }
         catch (PlanInvalidatedException)
@@ -112,21 +136,38 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         _acceptedWarnings = acceptedWarnings;
 
         TargetCard = new DiskCardViewModel(target);
-        UsesGuidFallback = target.SerialNumber.Trim().Length == 0;
+        UsesGuidFallback = TargetConfirmation.UsesGuidFallback(target);
         PromptText = UsesGuidFallback
-            ? Loc.Format("Confirm_Prompt_Guid", ExpectedMask())
+            ? Loc.Format("Confirm_Prompt_Guid", DiskCardViewModel.GroupedGuid(target.Id.DiskGuid))
             : Loc.Format("Confirm_Prompt_Serial", ExpectedMask());
 
+        HasSourceShrink = plan.SourceShrink is not null;
+        SourceShrinkText = plan.SourceShrink is { } shrink
+            ? Loc.Format(
+                "Shrink_Confirm_Body",
+                SizeText.Format(shrink.OriginalLength),
+                SizeText.Format(shrink.ShrunkLength))
+            : string.Empty;
+
         TypedSuffix = string.Empty;
+        ConfirmSourceShrink = false;
         ErrorMessage = null;
+        OnPropertyChanged(nameof(IsReadyToClone));
         CloneNowCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanCloneNow() => IsSuffixValid && !IsBusy && _plan is not null;
+    private bool CanCloneNow() => IsReadyToClone && !IsBusy && _plan is not null;
 
     partial void OnTypedSuffixChanged(string value)
     {
         OnPropertyChanged(nameof(IsSuffixValid));
+        OnPropertyChanged(nameof(IsReadyToClone));
+        CloneNowCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnConfirmSourceShrinkChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsReadyToClone));
         CloneNowCommand.NotifyCanExecuteChanged();
     }
 

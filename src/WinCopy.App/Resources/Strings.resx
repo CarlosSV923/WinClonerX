@@ -125,7 +125,7 @@
     <value>Windows will be extended</value>
   </data>
   <data name="Disks_Strategy_Shrink" xml:space="preserve">
-    <value>Windows on the original disk will have to be shrunk</value>
+    <value>Windows on the original disk must be shrunk first</value>
   </data>
   <data name="Disks_Shortfall" xml:space="preserve">
     <value>Missing {0}</value>
@@ -230,7 +230,7 @@
     <value>The system cannot create the consistent copy it needs while Windows is running. Check that Volume Shadow Copy is available, then try again.</value>
   </data>
   <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
-    <value>The system disk does not have enough free space for the consistent copy. Only {0} is free and at least 2 GB is needed. Free up space and try again.</value>
+    <value>The system disk does not have enough free space for the consistent copy. Only {0} is free and at least 2 GiB is needed. Free up space and try again.</value>
   </data>
   <data name="Preflight_BitLockerOn" xml:space="preserve">
     <value>BitLocker is on for Windows, so the copy will not be encrypted. To encrypt the new disk again, turn BitLocker on in Windows after cloning.</value>
@@ -242,16 +242,16 @@
     <value>This disk has partitions or data. Everything on it will be erased.</value>
   </data>
   <data name="Size_Tb" xml:space="preserve">
-    <value>{0} TB</value>
+    <value>{0} TiB</value>
   </data>
   <data name="Size_Gb" xml:space="preserve">
-    <value>{0} GB</value>
+    <value>{0} GiB</value>
   </data>
   <data name="Size_Mb" xml:space="preserve">
-    <value>{0} MB</value>
+    <value>{0} MiB</value>
   </data>
   <data name="Size_Kb" xml:space="preserve">
-    <value>{0} KB</value>
+    <value>{0} KiB</value>
   </data>
   <data name="Size_B" xml:space="preserve">
     <value>{0} B</value>
@@ -331,6 +331,12 @@
   <data name="Disk_Serial_NotReported" xml:space="preserve">
     <value>Not reported by the disk</value>
   </data>
+  <data name="Disk_Label_Guid" xml:space="preserve">
+    <value>Disk identifier</value>
+  </data>
+  <data name="Disk_Guid_NotReported" xml:space="preserve">
+    <value>Not available</value>
+  </data>
   <data name="Confirm_Title" xml:space="preserve">
     <value>Confirm before erasing</value>
   </data>
@@ -364,6 +370,18 @@
   <data name="Confirm_Failed" xml:space="preserve">
     <value>The confirmation could not be saved. Try again.</value>
   </data>
+  <data name="Shrink_Heading" xml:space="preserve">
+    <value>Temporary shrink of the original disk</value>
+  </data>
+  <data name="Shrink_Review_Body" xml:space="preserve">
+    <value>Windows (C:) will go from {0} to {1} during the copy and will be restored when it finishes.</value>
+  </data>
+  <data name="Shrink_Confirm_Body" xml:space="preserve">
+    <value>To make it fit, WinCopy will temporarily shrink the Windows partition on the original disk from {0} to {1}. When it finishes, it gives the space back and restores its size. Windows may take several minutes to move files.</value>
+  </data>
+  <data name="Shrink_Confirm_Understand" xml:space="preserve">
+    <value>I understand and authorize temporarily shrinking the original disk</value>
+  </data>
   <data name="Progress_Title" xml:space="preserve">
     <value>Cloning in progress</value>
   </data>
@@ -383,7 +401,7 @@
     <value>{0} of {1}</value>
   </data>
   <data name="Progress_Throughput" xml:space="preserve">
-    <value>{0} MB/s</value>
+    <value>{0} MiB/s</value>
   </data>
   <data name="Progress_Eta" xml:space="preserve">
     <value>Time left: {0}</value>
@@ -501,6 +519,12 @@
   </data>
   <data name="Result_Failed_KeepOriginal" xml:space="preserve">
     <value>Keep your original disk as it is and keep using it. Choose another destination disk and try again.</value>
+  </data>
+  <data name="Result_SourceRestored" xml:space="preserve">
+    <value>The original disk went back to its original size.</value>
+  </data>
+  <data name="Result_SourceRestore_Failed" xml:space="preserve">
+    <value>Windows (C:) could not be returned to its original size. The clone is valid. You can recover the space in Disk Management → right-click C: → Extend Volume.</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Export log</value>

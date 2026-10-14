@@ -39,7 +39,20 @@
                     </StackPanel>
                 </Border>
 
-                <!-- TODO(US2): the shrink confirmation panel of the source, with its own checkbox (FR-013). -->
+                <!-- Shrink of the source (FR-013), only when the plan needs it. Its own checkbox, apart from the serial confirmation. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,12,0,0"
+                        BorderBrush="{StaticResource Brush.Accent}"
+                        BorderThickness="2"
+                        Visibility="{Binding HasSourceShrink, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Subtitle}" Text="{loc:Loc Shrink_Heading}" />
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="0,6,0,0" Text="{Binding SourceShrinkText}" />
+                        <CheckBox Margin="0,10,0,0"
+                                  Content="{loc:Loc Shrink_Confirm_Understand}"
+                                  IsChecked="{Binding ConfirmSourceShrink}" />
+                    </StackPanel>
+                </Border>
 
                 <!-- Verification: the characters are typed in the field. Enter in the field completes the step (default button). -->
                 <TextBlock Style="{StaticResource ConfirmStep.Heading}" Text="{Binding PromptText}" />

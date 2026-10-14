@@ -67,14 +67,23 @@ internal static class AppFixtures
 
     public static DiskInventory InventoryOf(params Disk[] disks) => new(CapturedAt, FirmwareType.Uefi, disks);
 
+    /// <summary>
+    /// A 64 GiB blank destination: smaller than the source's Windows partition, but big enough for the used space plus the
+    /// margin, so the planner chooses the ShrinkSource strategy when the minimum Windows size is known (see <see cref="ShrinkFacts"/>).
+    /// </summary>
+    public static Disk ShrinkTargetDisk(string serial = "TGT-0002") => TargetDisk(size: 64 * Gib, serial: serial);
+
+    /// <summary>Facts for the shrink case: the minimum size Windows supports is 30 GiB, below the 50 GiB it needs with its margin.</summary>
+    public static PlatformFacts ShrinkFacts() => Facts(minimumWindowsSize: ByteSize.FromGiB(30));
+
     /// <summary>Facts with a usable snapshot, plenty of free space, AC power and no destination in use.</summary>
-    public static PlatformFacts Facts(bool onBattery = false, bool targetInUse = false) => new(
+    public static PlatformFacts Facts(bool onBattery = false, bool targetInUse = false, ByteSize? minimumWindowsSize = null) => new(
         new Dictionary<PartitionGuid, EncryptionState>(),
         OnBattery: onBattery,
         BatteryPercent: onBattery ? 80 : null,
         SnapshotAvailable: true,
         SnapshotFreeSpace: ByteSize.FromGiB(20),
-        MinimumWindowsSize: null,
+        MinimumWindowsSize: minimumWindowsSize,
         TargetInUse: new Dictionary<DiskId, bool>
         {
             [TargetId] = targetInUse,

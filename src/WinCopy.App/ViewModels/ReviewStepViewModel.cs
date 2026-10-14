@@ -48,6 +48,14 @@ public sealed partial class ReviewStepViewModel : ObservableObject
     [ObservableProperty]
     private PlanSummary? _summary;
 
+    /// <summary>True when the plan reduces Windows on the source temporarily (FR-021). Shows the shrink information block.</summary>
+    [ObservableProperty]
+    private bool _hasSourceShrink;
+
+    /// <summary>Localized sentence with the size of the source Windows partition before and during the copy.</summary>
+    [ObservableProperty]
+    private string _sourceShrinkText = string.Empty;
+
     /// <summary>Warnings of the plan, one per warning, each with its own "I understand" checkbox.</summary>
     public ObservableCollection<WarningItemViewModel> Warnings { get; } = [];
 
@@ -107,6 +115,8 @@ public sealed partial class ReviewStepViewModel : ObservableObject
         BeforeBar = null;
         AfterBar = null;
         Summary = null;
+        HasSourceShrink = false;
+        SourceShrinkText = string.Empty;
 
         foreach (var warning in Warnings)
         {
@@ -173,6 +183,15 @@ public sealed partial class ReviewStepViewModel : ObservableObject
         Summary = new PlanSummary(
             Loc.Format("Review_Summary_Copy", SizeText.Format(plan.Estimate.BytesToCopy)),
             Loc.Format("Review_Summary_Duration", DurationText.Format(plan.Estimate.EstimatedDuration)));
+
+        if (plan.SourceShrink is { } shrink)
+        {
+            HasSourceShrink = true;
+            SourceShrinkText = Loc.Format(
+                "Shrink_Review_Body",
+                SizeText.Format(shrink.OriginalLength),
+                SizeText.Format(shrink.ShrunkLength));
+        }
 
         UpdateValidity();
     }

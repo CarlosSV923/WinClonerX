@@ -72,6 +72,7 @@
             <TextBlock Style="{StaticResource Text.Caption}" Margin="0,4,0,0" Text="{Binding SerialText}" />
             <TextBlock Style="{StaticResource Text.Caption}" Text="{Binding CapacityText}" />
             <TextBlock Style="{StaticResource Text.Caption}" Text="{Binding BusText}" />
+            <TextBlock Style="{StaticResource Text.Caption}" Text="{Binding GuidText}" />
 
             <controls:PartitionBar Margin="0,10,0,0"
                                    Partitions="{Binding PartitionBar.Segments}"

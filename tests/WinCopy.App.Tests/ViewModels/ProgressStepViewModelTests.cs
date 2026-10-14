@@ -60,8 +60,8 @@ public sealed class ProgressStepViewModelTests
 
         vm.Percent.ShouldBe(25.0);
         vm.PercentText.ShouldBe("25%");
-        vm.BytesText.ShouldBe("25 GB of 100 GB");
-        vm.ThroughputText.ShouldBe("50 MB/s");
+        vm.BytesText.ShouldBe("25 GiB of 100 GiB");
+        vm.ThroughputText.ShouldBe("50 MiB/s");
 
         execute.Completion.SetResult(Report());
         await run;
@@ -76,7 +76,7 @@ public sealed class ProgressStepViewModelTests
 
         execute.Publish(Progress(bytesDone: 25 * Gib, bytesTotal: 100 * Gib, throughput: 50 * Mib, eta: null));
 
-        vm.BytesText.ShouldBe("25 GB de 100 GB");
+        vm.BytesText.ShouldBe("25 GiB de 100 GiB");
 
         execute.Completion.SetResult(Report());
         await run;

@@ -89,10 +89,10 @@
     <value>Actualizar</value>
   </data>
   <data name="Disks_Title" xml:space="preserve">
-    <value>Elija el disco de destino</value>
+    <value>Elige el disco de destino</value>
   </data>
   <data name="Disks_Subtitle" xml:space="preserve">
-    <value>El disco del sistema es el origen. Elija el disco que recibirá la copia. Todo lo que haya en el disco de destino se borrará.</value>
+    <value>El disco del sistema es el origen. Elige el disco que recibirá la copia. Todo lo que haya en el disco de destino se borrará.</value>
   </data>
   <data name="Disks_Loading" xml:space="preserve">
     <value>Leyendo los discos...</value>
@@ -107,13 +107,13 @@
     <value>Este equipo no se puede clonar en esta versión</value>
   </data>
   <data name="Disks_Blocked_Body" xml:space="preserve">
-    <value>Solucione los motivos siguientes y pulse Actualizar.</value>
+    <value>Soluciona los motivos siguientes y pulsa Actualizar.</value>
   </data>
   <data name="Disks_Empty_Title" xml:space="preserve">
     <value>No hay ningún disco de destino disponible</value>
   </data>
   <data name="Disks_Empty_Body" xml:space="preserve">
-    <value>Conecte un disco interno o USB de al menos {0}. Se borrará todo su contenido, así que use uno sin datos importantes y pulse Actualizar.</value>
+    <value>Conecta un disco interno o USB de al menos {0}. Se borrará todo su contenido, así que usa uno sin datos importantes y pulsa Actualizar.</value>
   </data>
   <data name="Disks_Status_Eligible" xml:space="preserve">
     <value>Apto</value>
@@ -134,7 +134,7 @@
     <value>Las comprobaciones de este equipo no se han superado, así que no se puede usar ningún disco.</value>
   </data>
   <data name="Disks_Select_Hint" xml:space="preserve">
-    <value>Pulse Espacio o Intro para seleccionar este disco.</value>
+    <value>Pulsa Espacio o Intro para seleccionar este disco.</value>
   </data>
   <data name="Disk_Automation_Name" xml:space="preserve">
     <value>{0}. {1}. {2}. {3}.</value>
@@ -215,52 +215,52 @@
     <value>Es el disco del sistema, así que no se puede usar como destino.</value>
   </data>
   <data name="Preflight_TargetInUse" xml:space="preserve">
-    <value>Este disco está en uso por Windows u otro programa. Cierre los programas que lo usan o desconéctelo y pulse Actualizar.</value>
+    <value>Este disco está en uso por Windows u otro programa. Cierra los programas que lo usan o desconéctalo y pulsa Actualizar.</value>
   </data>
   <data name="Preflight_TargetTooSmall" xml:space="preserve">
-    <value>El disco es demasiado pequeño para guardar Windows y sus datos. Le faltan {0}. Elija un disco más grande.</value>
+    <value>El disco es demasiado pequeño para guardar Windows y sus datos. Le faltan {0}. Elige un disco más grande.</value>
   </data>
   <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
     <value>Este disco tiene un tamaño de sector distinto al del disco del sistema, y esta versión no puede clonar entre ambos.</value>
   </data>
   <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
-    <value>Windows no se puede reducir lo suficiente para caber en este disco. Libere espacio en el disco del sistema o elija un disco más grande.</value>
+    <value>Windows no se puede reducir lo suficiente para caber en este disco. Libera espacio en el disco del sistema o elige un disco más grande.</value>
   </data>
   <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
-    <value>El sistema no puede crear la copia coherente que necesita mientras Windows está en uso. Compruebe que la Instantánea de volumen (VSS) está disponible y vuelva a intentarlo.</value>
+    <value>El sistema no puede crear la copia coherente que necesita mientras Windows está en uso. Comprueba que la Instantánea de volumen (VSS) está disponible y vuelve a intentarlo.</value>
   </data>
   <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
-    <value>El disco del sistema no tiene espacio libre suficiente para la copia coherente. Solo quedan {0} y hacen falta al menos 2 GB. Libere espacio y vuelva a intentarlo.</value>
+    <value>El disco del sistema no tiene espacio libre suficiente para la copia coherente. Solo quedan {0} y hacen falta al menos 2 GiB. Libera espacio y vuelve a intentarlo.</value>
   </data>
   <data name="Preflight_BitLockerOn" xml:space="preserve">
-    <value>BitLocker está activado en Windows, así que la copia no quedará cifrada. Para volver a cifrar el disco nuevo, active BitLocker en Windows después del clonado.</value>
+    <value>BitLocker está activado en Windows, así que la copia no quedará cifrada. Para volver a cifrar el disco nuevo, activa BitLocker en Windows después del clonado.</value>
   </data>
   <data name="Preflight_OnBattery" xml:space="preserve">
-    <value>Este equipo funciona con batería. Conecte el cargador antes de empezar para que no se suspenda ni se quede sin energía durante la copia.</value>
+    <value>Este equipo funciona con batería. Conecta el cargador antes de empezar para que no se suspenda ni se quede sin energía durante la copia.</value>
   </data>
   <data name="Preflight_TargetNotEmpty" xml:space="preserve">
     <value>Este disco tiene particiones o datos. Todo lo que contiene se borrará.</value>
   </data>
   <data name="Size_Tb" xml:space="preserve">
-    <value>{0} TB</value>
+    <value>{0} TiB</value>
   </data>
   <data name="Size_Gb" xml:space="preserve">
-    <value>{0} GB</value>
+    <value>{0} GiB</value>
   </data>
   <data name="Size_Mb" xml:space="preserve">
-    <value>{0} MB</value>
+    <value>{0} MiB</value>
   </data>
   <data name="Size_Kb" xml:space="preserve">
-    <value>{0} KB</value>
+    <value>{0} KiB</value>
   </data>
   <data name="Size_B" xml:space="preserve">
     <value>{0} B</value>
   </data>
   <data name="Review_Title" xml:space="preserve">
-    <value>Revise el plan</value>
+    <value>Revisa el plan</value>
   </data>
   <data name="Review_Subtitle" xml:space="preserve">
-    <value>Revise lo que va a pasar antes de continuar. Todavía no se modifica ningún disco.</value>
+    <value>Revisa lo que va a pasar antes de continuar. Todavía no se modifica ningún disco.</value>
   </data>
   <data name="Review_Loading" xml:space="preserve">
     <value>Calculando el plan...</value>
@@ -269,10 +269,10 @@
     <value>Este disco no se puede usar</value>
   </data>
   <data name="Review_Failed_Body" xml:space="preserve">
-    <value>Vuelva atrás y elija otro disco, o solucione los motivos siguientes.</value>
+    <value>Vuelve atrás y elige otro disco, o soluciona los motivos siguientes.</value>
   </data>
   <data name="Review_Failed_Generic" xml:space="preserve">
-    <value>No se pudo crear el plan. Vuelva atrás e inténtelo de nuevo.</value>
+    <value>No se pudo crear el plan. Vuelve atrás e inténtalo de nuevo.</value>
   </data>
   <data name="Review_Before" xml:space="preserve">
     <value>Antes (origen)</value>
@@ -331,6 +331,12 @@
   <data name="Disk_Serial_NotReported" xml:space="preserve">
     <value>El disco no informa del número de serie</value>
   </data>
+  <data name="Disk_Label_Guid" xml:space="preserve">
+    <value>Identificador del disco</value>
+  </data>
+  <data name="Disk_Guid_NotReported" xml:space="preserve">
+    <value>No disponible</value>
+  </data>
   <data name="Confirm_Title" xml:space="preserve">
     <value>Confirma antes de borrar</value>
   </data>
@@ -364,6 +370,18 @@
   <data name="Confirm_Failed" xml:space="preserve">
     <value>No se pudo guardar la confirmación. Inténtalo de nuevo.</value>
   </data>
+  <data name="Shrink_Heading" xml:space="preserve">
+    <value>Reducción temporal del disco original</value>
+  </data>
+  <data name="Shrink_Review_Body" xml:space="preserve">
+    <value>Windows (C:) pasará de {0} a {1} durante la copia y se restaurará al terminar</value>
+  </data>
+  <data name="Shrink_Confirm_Body" xml:space="preserve">
+    <value>Para que quepa, WinCopy reducirá temporalmente la partición de Windows del disco original de {0} a {1}. Al terminar la devolverá a su tamaño. Windows puede tardar varios minutos en mover archivos.</value>
+  </data>
+  <data name="Shrink_Confirm_Understand" xml:space="preserve">
+    <value>Entiendo y autorizo reducir temporalmente el disco original</value>
+  </data>
   <data name="Progress_Title" xml:space="preserve">
     <value>Clonado en curso</value>
   </data>
@@ -383,7 +401,7 @@
     <value>{0} de {1}</value>
   </data>
   <data name="Progress_Throughput" xml:space="preserve">
-    <value>{0} MB/s</value>
+    <value>{0} MiB/s</value>
   </data>
   <data name="Progress_Eta" xml:space="preserve">
     <value>Tiempo restante: {0}</value>
@@ -501,6 +519,12 @@
   </data>
   <data name="Result_Failed_KeepOriginal" xml:space="preserve">
     <value>Mantén tu disco original como está y sigue usándolo. Elige otro disco de destino y vuelve a intentarlo.</value>
+  </data>
+  <data name="Result_SourceRestored" xml:space="preserve">
+    <value>El disco original volvió a su tamaño original</value>
+  </data>
+  <data name="Result_SourceRestore_Failed" xml:space="preserve">
+    <value>No se pudo devolver Windows (C:) a su tamaño original. El clon es válido. Puedes recuperar el espacio desde Administración de discos → clic derecho en C: → Extender volumen</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Exportar registro</value>

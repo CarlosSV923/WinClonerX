@@ -76,6 +76,18 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <!-- Temporary shrink of the source (FR-021): a clearly visible block, only when the plan needs it. -->
+                    <Border Style="{StaticResource Card}"
+                            Margin="0,12,0,0"
+                            BorderBrush="{StaticResource Brush.Accent}"
+                            BorderThickness="2"
+                            Visibility="{Binding HasSourceShrink, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Text.Subtitle}" Text="{loc:Loc Shrink_Heading}" />
+                            <TextBlock Style="{StaticResource Text.Body}" Margin="0,6,0,0" Text="{Binding SourceShrinkText}" />
+                        </StackPanel>
+                    </Border>
+
                     <TextBlock Style="{StaticResource ReviewStep.Heading}" Text="{loc:Loc Review_Summary_Heading}" />
                     <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Summary.DataToCopy}" />
                     <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding Summary.EstimatedDuration}" />

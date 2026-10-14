@@ -68,6 +68,23 @@
                     <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Reason}" />
                 </Border>
 
+                <!-- Shrunk source (only when the plan shrank it): restored, or a prominent warning with the manual fix. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding IsSourceRestored, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding SourceRestoreText}" />
+                </Border>
+                <Border Style="{StaticResource Card}"
+                        Margin="0,16,0,0"
+                        BorderBrush="{StaticResource Brush.Danger}"
+                        BorderThickness="2"
+                        Visibility="{Binding IsSourceRestoreWarning, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource Brush.Danger}"
+                               Text="{Binding SourceRestoreText}" />
+                </Border>
+
                 <!-- Next steps (success), or keeping the original disk (failed or cancelled). -->
                 <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_NextSteps_Heading}" />
                 <ItemsControl Focusable="False" ItemsSource="{Binding NextSteps}">

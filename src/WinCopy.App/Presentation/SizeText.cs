@@ -6,7 +6,7 @@ namespace WinCopy.App.Presentation;
 
 /// <summary>
 /// Formats byte counts for people: the largest unit that keeps the number at or above one, with up to one decimal.
-/// Units are binary (1 GB = 1024 MB), the same way Windows reports disk sizes.
+/// Units are binary and labelled as such (KiB, MiB, GiB, TiB: 1 GiB = 1024 MiB), the same way Windows reports disk sizes.
 /// </summary>
 public static class SizeText
 {

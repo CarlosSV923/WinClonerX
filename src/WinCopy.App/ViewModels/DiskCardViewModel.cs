@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using WinCopy.App.Localization;
 using WinCopy.App.Presentation;
 using WinCopy.Domain.Inventory;
+using WinCopy.Domain.Planning;
 using WinCopy.Domain.Shared;
 
 namespace WinCopy.App.ViewModels;
@@ -32,14 +33,20 @@ public partial class DiskCardViewModel : ObservableObject
             .ToArray();
         PartitionBar = new PartitionBarData(segments, disk.Size);
 
-        SerialText = Loc.Format(
-            "Disk_Field_Format",
-            Loc.Get("Disk_Label_Serial"),
-            SerialNumber.Trim().Length == 0 ? Loc.Get("Disk_Serial_NotReported") : SerialNumber);
+        // An empty or all-zero serial (some USB bridges) is not shown as if it were a real number.
+        var serialShown = TargetConfirmation.UsesGuidFallback(disk) ? Loc.Get("Disk_Serial_NotReported") : SerialNumber.Trim();
+        SerialText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Serial"), serialShown);
         CapacityText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Capacity"), SizeText.Format(Capacity));
         BusText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Connection"), BusLabel);
+        GuidText = Loc.Format(
+            "Disk_Field_Format",
+            Loc.Get("Disk_Label_Guid"),
+            disk.Id.DiskGuid == Guid.Empty ? Loc.Get("Disk_Guid_NotReported") : GroupedGuid(disk.Id.DiskGuid));
         AutomationName = Loc.Format("Disk_Automation_Name", Model, SerialText, CapacityText, BusText);
     }
+
+    /// <summary>The disk GUID in the usual grouped form, 8-4-4-4-12 characters.</summary>
+    public static string GroupedGuid(Guid diskGuid) => diskGuid.ToString("D", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>The domain disk this card shows. Used by the confirmation step to erase exactly this disk.</summary>
     public Disk Disk { get; }
@@ -64,6 +71,9 @@ public partial class DiskCardViewModel : ObservableObject
 
     /// <summary>"Connection: ..." as shown on the card.</summary>
     public string BusText { get; }
+
+    /// <summary>"Disk identifier: ..." (the GUID, grouped) as shown on the card.</summary>
+    public string GuidText { get; }
 
     /// <summary>Partitions and the disk size they are drawn against.</summary>
     public PartitionBarData PartitionBar { get; }

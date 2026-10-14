@@ -23,6 +23,9 @@
     <SolidColorBrush x:Key="Brush.Border" Color="#D8DEE9" />
     <SolidColorBrush x:Key="Brush.TextPrimary" Color="#1B2433" />
     <SolidColorBrush x:Key="Brush.TextSecondary" Color="#5B6577" />
+    <!-- Disabled controls: clearly dimmer than the enabled ones, so an unavailable button does not look clickable. -->
+    <SolidColorBrush x:Key="Brush.TextDisabled" Color="#A3ABBA" />
+    <SolidColorBrush x:Key="Brush.BorderDisabled" Color="#E6EAF1" />
 
     <!-- Partition roles (disk bars). Each role keeps a distinct hue; text on top is always white or TextPrimary. -->
     <SolidColorBrush x:Key="Brush.Partition.Efi" Color="#7B61FF" />
@@ -145,7 +148,10 @@
                             <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Brush.Focus}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource Brush.Background}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource Brush.BorderDisabled}" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.TextDisabled}" />
+                            <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

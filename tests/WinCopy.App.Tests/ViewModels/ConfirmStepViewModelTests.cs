@@ -13,6 +13,9 @@ public sealed class ConfirmStepViewModelTests
 {
     private const string SerialWithSuffix = "SN-AB7F";
 
+    /// <summary>GUID of the test target (AppFixtures.TargetId), in the grouped form the prompt shows.</summary>
+    private const string GroupedTargetGuid = "00000000-0000-0000-0000-000000000200";
+
     [Fact]
     public void CloneNowIsDisabledUntilTheSuffixMatches()
     {
@@ -82,13 +85,34 @@ public sealed class ConfirmStepViewModelTests
         vm.Prepare(target, plan, new HashSet<PreflightCode>());
 
         vm.UsesGuidFallback.ShouldBeTrue();
-        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Guid", "XXXX"));
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Guid", GroupedTargetGuid));
 
         vm.TypedSuffix = "0200";
         vm.IsSuffixValid.ShouldBeTrue();
 
         vm.TypedSuffix = "0002";
         vm.IsSuffixValid.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AnAllZeroSerialAsksForTheGuidAndNeverShowsTheZeros()
+    {
+        using var _ = new EnglishCulture();
+        var (target, plan) = Plan(AppFixtures.TargetDisk(serial: "0000000000000000"));
+        var vm = new ConfirmStepViewModel(new FakeConfirmClonePlan(plan));
+
+        vm.Prepare(target, plan, new HashSet<PreflightCode>());
+
+        vm.UsesGuidFallback.ShouldBeTrue();
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Guid", GroupedTargetGuid));
+        vm.PromptText.ShouldContain(GroupedTargetGuid);
+        vm.TargetCard.ShouldNotBeNull();
+        vm.TargetCard.SerialText.ShouldBe(Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Serial"), Loc.Get("Disk_Serial_NotReported")));
+        vm.TargetCard.SerialText.ShouldNotContain("0000");
+        vm.TargetCard.GuidText.ShouldBe(Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Guid"), GroupedTargetGuid));
+
+        vm.TypedSuffix = "0200";
+        vm.IsSuffixValid.ShouldBeTrue();
     }
 
     [Fact]

@@ -17,7 +17,7 @@ namespace WinCopy.App.ViewModels;
 /// </summary>
 public sealed partial class ProgressStepViewModel : ObservableObject
 {
-    private const double BytesPerMegabyte = 1024.0 * 1024.0;
+    private const double BytesPerMebibyte = 1024.0 * 1024.0;
 
     private readonly IExecuteClone _execute;
     private readonly IUiDispatcher _dispatcher;
@@ -41,11 +41,11 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     /// <summary>Localized percentage, rounded down so it does not show 100% before the end.</summary>
     public string PercentText => Loc.Format("Progress_Percent", (int)Math.Floor(Percent));
 
-    /// <summary>Localized "X GB of Y GB" (in Spanish, "X GB de Y GB").</summary>
+    /// <summary>Localized "X GiB of Y GiB" (in Spanish, "X GiB de Y GiB").</summary>
     [ObservableProperty]
     private string _bytesText = string.Empty;
 
-    /// <summary>Localized throughput in megabytes per second.</summary>
+    /// <summary>Localized throughput in mebibytes per second.</summary>
     [ObservableProperty]
     private string _throughputText = string.Empty;
 
@@ -141,7 +141,7 @@ public sealed partial class ProgressStepViewModel : ObservableObject
             SizeText.Format(new ByteSize(progress.BytesTotal)));
         ThroughputText = Loc.Format(
             "Progress_Throughput",
-            (progress.ThroughputBytesPerSecond / BytesPerMegabyte).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture));
+            (progress.ThroughputBytesPerSecond / BytesPerMebibyte).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture));
         EtaText = Loc.Format(
             "Progress_Eta",
             progress.Eta is { } eta ? DurationText.Format(eta) : Loc.Get("Progress_Eta_Calculating"));

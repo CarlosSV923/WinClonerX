@@ -49,7 +49,7 @@ public sealed class PreflightTextTests
             Severity.Blocking,
             new Dictionary<string, object> { ["Shortfall"] = ByteSize.FromGiB(23) });
 
-        PreflightText.Message(check).ShouldContain("23 GB");
+        PreflightText.Message(check).ShouldContain("23 GiB");
     }
 
     [Fact]

@@ -14,6 +14,9 @@ internal sealed class FakeConfirmClonePlan(ClonePlan plan) : IConfirmClonePlan
 
     public string? LastTypedSuffix { get; private set; }
 
+    /// <summary>The shrink authorization the view model passed in the last call.</summary>
+    public bool? LastConfirmSourceShrink { get; private set; }
+
     /// <summary>When set, the next call fails with this exception instead of confirming.</summary>
     public Exception? NextFailure { get; set; }
 
@@ -23,6 +26,7 @@ internal sealed class FakeConfirmClonePlan(ClonePlan plan) : IConfirmClonePlan
         LastPlanId = id;
         LastAcceptedWarnings = acceptedWarnings;
         LastTypedSuffix = typedSuffix;
+        LastConfirmSourceShrink = confirmSourceShrink;
 
         if (NextFailure is { } failure)
         {

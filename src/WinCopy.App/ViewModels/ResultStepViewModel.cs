@@ -60,6 +60,18 @@ public sealed partial class ResultStepViewModel : ObservableObject
     [ObservableProperty]
     private string _reason = string.Empty;
 
+    /// <summary>True when the source was shrunk and went back to its original size (FR-021a). Shown as a confirmation.</summary>
+    [ObservableProperty]
+    private bool _isSourceRestored;
+
+    /// <summary>True when the source was shrunk and could not be restored. Shown as a prominent warning with the way to fix it.</summary>
+    [ObservableProperty]
+    private bool _isSourceRestoreWarning;
+
+    /// <summary>Localized text of the restore state. Empty when the run did not shrink the source.</summary>
+    [ObservableProperty]
+    private string _sourceRestoreText = string.Empty;
+
     public bool IsSuccess => Outcome == CloneOutcome.Completed;
 
     public bool IsFailure => Outcome is CloneOutcome.Failed or CloneOutcome.Cancelled;
@@ -95,6 +107,26 @@ public sealed partial class ResultStepViewModel : ObservableObject
         else
         {
             ShowFailure(report.Outcome, failureCode);
+        }
+
+        ShowSourceRestore(report.SourceRestored);
+    }
+
+    /// <summary>
+    /// The restore state of a shrunk source: confirmed, or a warning with the manual fix. Null (no shrink) shows nothing.
+    /// </summary>
+    private void ShowSourceRestore(bool? sourceRestored)
+    {
+        switch (sourceRestored)
+        {
+            case true:
+                IsSourceRestored = true;
+                SourceRestoreText = Loc.Get("Result_SourceRestored");
+                break;
+            case false:
+                IsSourceRestoreWarning = true;
+                SourceRestoreText = Loc.Get("Result_SourceRestore_Failed");
+                break;
         }
     }
 
@@ -158,5 +190,8 @@ public sealed partial class ResultStepViewModel : ObservableObject
         RecoveryText = string.Empty;
         NextSteps.Clear();
         Reason = string.Empty;
+        IsSourceRestored = false;
+        IsSourceRestoreWarning = false;
+        SourceRestoreText = string.Empty;
     }
 }

@@ -14,7 +14,7 @@ public sealed record PartitionBarData(IReadOnlyList<PartitionSegment> Segments, 
 /// <summary>Size change of one partition between the source and the destination.</summary>
 /// <param name="Label">Localized partition name.</param>
 /// <param name="DeltaBytes">Destination length minus source length.</param>
-/// <param name="Text">Localized line such as "Windows: +40 GB".</param>
+/// <param name="Text">Localized line such as "Windows: +40 GiB".</param>
 public sealed record PartitionChange(string Label, long DeltaBytes, string Text);
 
 /// <summary>Plan summary, already formatted for display.</summary>

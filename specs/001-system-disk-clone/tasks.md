@@ -208,7 +208,7 @@ el origen vuelve a su tamaño original. Después, en VM, arrancar los dos discos
 - [X] T085 [P] [US2] Tests de `CloneExecution` con las fases `ShrinkSource` y `RestoreSource` en `tests/WinCopy.Domain.Tests/Execution/CloneExecutionShrinkTests.cs`: `RestoreSource` se ejecuta tras éxito, fallo y cancelación; un fallo de `RestoreSource` se registra como compensación fallida sin ocultar el error original (FR-021a)
 - [X] T086 [P] [US2] Tests del orquestador con reducción en `tests/WinCopy.Application.Tests/UseCases/ExecuteCloneShrinkTests.cs`: la reducción ocurre antes de la instantánea; si Windows no puede reducir lo suficiente, se aborta **antes** de tocar el destino (US2 escenario 2); restauración en todos los desenlaces
 - [ ] T087 [US2] Test de integración en `tests/WinCopy.Infrastructure.IntegrationTests/Cloning/CloneToSmallerTests.cs`: un VHDX de origen de 40 GB con 8 GB de datos se clona a un VHDX de 25 GB. El clon es válido, los archivos son idénticos y la partición del origen recupera su tamaño original
-- [ ] T088 [P] [US2] Tests de ViewModels en `tests/WinCopy.App.Tests/ViewModels/ShrinkFlowTests.cs`: indicación de estrategia en el paso 1, panel de reducción con casilla propia en el paso 3 y estado de la restauración en el paso 5
+- [X] T088 [P] [US2] Tests de ViewModels en `tests/WinCopy.App.Tests/ViewModels/ShrinkFlowTests.cs`: indicación de estrategia en el paso 1, panel de reducción con casilla propia en el paso 3 y estado de la restauración en el paso 5
 
 ### Implementation for User Story 2
 
@@ -216,8 +216,8 @@ el origen vuelve a su tamaño original. Después, en VM, arrancar los dos discos
 - [X] T090 [US2] Añadir las fases `ShrinkSource` y `RestoreSource` (compensación obligatoria) a `CloneExecution` en `src/WinCopy.Domain/Execution/` y al orquestador `ExecuteClone` en `src/WinCopy.Application/UseCases/Execution/ExecuteClone.cs`
 - [X] T091 [US2] Implementar `StorageSourceResizer` (`MSFT_Partition.GetSupportedSize` y `MSFT_Partition.Resize` vía `System.Management`; nunca sobre una partición distinta de la de Windows del origen; emite `DiskOperation` con `Operation = Shrink`/`Restore`) en `src/WinCopy.Infrastructure.Windows/Storage/StorageSourceResizer.cs`
 - [X] T092 [US2] Ampliar `PlatformFactsProvider` con el mínimo de reducción soportado en `src/WinCopy.Infrastructure.Windows/Platform/PlatformFactsProvider.cs`
-- [ ] T093 [US2] Actualizar la interfaz: indicación "Hay que reducir Windows en el disco original" en `src/WinCopy.App/Controls/DiskCard.xaml`, panel de reducción con casilla propia en `src/WinCopy.App/Views/ConfirmStepView.xaml` y estado de restauración (o aviso destacado con instrucciones) en `src/WinCopy.App/Views/ResultStepView.xaml`
-- [ ] T094 [US2] Añadir los textos de la reducción y la restauración a `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx`
+- [X] T093 [US2] Actualizar la interfaz: indicación "Hay que reducir Windows en el disco original" en `src/WinCopy.App/Controls/DiskCard.xaml`, panel de reducción con casilla propia en `src/WinCopy.App/Views/ConfirmStepView.xaml` y estado de restauración (o aviso destacado con instrucciones) en `src/WinCopy.App/Views/ResultStepView.xaml`
+- [X] T094 [US2] Añadir los textos de la reducción y la restauración a `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx`
 
 **Checkpoint**: US1 y US2 funcionan cada una por su lado.
 

@@ -273,7 +273,7 @@ public sealed partial class WizardViewModel : ObservableObject
     private void OnStepPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(DisksStepViewModel.IsValid) or nameof(ReviewStepViewModel.IsValid)
-            or nameof(ConfirmStepViewModel.IsSuffixValid))
+            or nameof(ConfirmStepViewModel.IsReadyToClone))
         {
             RefreshStepValidity();
         }
@@ -290,7 +290,7 @@ public sealed partial class WizardViewModel : ObservableObject
                 IsCurrentStepValid = ReviewStep.IsValid;
                 break;
             case WizardStepKind.Confirm when _confirm is not null:
-                IsCurrentStepValid = _confirm.IsSuffixValid;
+                IsCurrentStepValid = _confirm.IsReadyToClone;
                 break;
         }
     }
