@@ -393,17 +393,10 @@ public sealed class BitLockerSnapshotSpike
     {
         ops.AssertLetterOnDisk(letter, diskNumber);
 
-        using SafeDeviceHandle volume = SpikeVolumeCopy.OpenDevice(@"\\.\" + letter + ":", 0, 0);
-        try
-        {
-            SpikeVolumeCopy.ReadNtfsVolumeData(volume);
-            return true;
-        }
-        catch (Win32Exception ex)
-        {
-            Log($"{letter}: does not answer NTFS queries: {ex.Message}");
-            return false;
-        }
+        var drive = new DriveInfo(letter + @":\");
+        string format = drive.IsReady ? drive.DriveFormat : "(not ready)";
+        Log($"{letter}: file system reported by GetVolumeInformation = {format}.");
+        return string.Equals(format, "NTFS", StringComparison.OrdinalIgnoreCase);
     }
 
     private static Dictionary<string, string> WriteTestFiles(char letter)
