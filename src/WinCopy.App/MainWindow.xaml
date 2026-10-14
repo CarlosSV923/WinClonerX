@@ -23,6 +23,15 @@
         <DataTemplate DataType="{x:Type vm:ReviewStepViewModel}">
             <views:ReviewStepView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ConfirmStepViewModel}">
+            <views:ConfirmStepView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProgressStepViewModel}">
+            <views:ProgressStepView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ResultStepViewModel}">
+            <views:ResultStepView />
+        </DataTemplate>
         <!-- Placeholder for steps whose page does not exist yet. -->
         <DataTemplate DataType="{x:Type vm:WizardStep}">
             <Border Style="{StaticResource Card}">
@@ -54,10 +63,17 @@
             </DockPanel>
         </Border>
 
-        <!-- Content area: the page of the current step (or its placeholder). -->
-        <ContentControl Grid.Row="0" Grid.Column="1"
-                        Margin="24,24,24,12"
-                        Content="{Binding CurrentPage}" />
+        <!-- Content area: an optional notice above the page of the current step (or its placeholder). -->
+        <DockPanel Grid.Row="0" Grid.Column="1" Margin="24,24,24,12">
+            <Border DockPanel.Dock="Top"
+                    Style="{StaticResource Card}"
+                    Margin="0,0,0,12"
+                    BorderBrush="{StaticResource Brush.Danger}"
+                    Visibility="{Binding HasNotice, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Notice}" />
+            </Border>
+            <ContentControl Content="{Binding CurrentPage}" />
+        </DockPanel>
 
         <!-- Bottom bar: Back and Next. -->
         <StackPanel Grid.Row="1" Grid.Column="1"
@@ -70,10 +86,12 @@
                     Content="{loc:Loc Common_Back}"
                     AutomationProperties.Name="{loc:Loc Common_Back}"
                     Command="{Binding BackCommand}" />
+            <!-- Hidden on steps 3 and 4: step 3 has its own "Clone now" button and step 4 advances by itself. -->
             <Button Style="{StaticResource Button.Primary}"
                     MinWidth="120"
                     Content="{loc:Loc Common_Next}"
                     AutomationProperties.Name="{loc:Loc Common_Next}"
+                    Visibility="{Binding IsNextVisible, Converter={StaticResource BoolToVisibility}}"
                     Command="{Binding NextCommand}" />
         </StackPanel>
     </Grid>

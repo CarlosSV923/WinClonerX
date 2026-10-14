@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using WinCopy.App.Services;
 using WinCopy.App.ViewModels;
 using WinCopy.Application;
 using WinCopy.Infrastructure.Windows;
@@ -20,8 +21,13 @@ internal static class ServiceRegistration
         services.AddWinCopyApplication();
         services.AddWinCopyInfrastructure(options => options.AppVersion = appVersion);
 
+        services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
+
         services.AddSingleton<DisksStepViewModel>();
         services.AddSingleton<ReviewStepViewModel>();
+        services.AddSingleton<ConfirmStepViewModel>();
+        services.AddSingleton<ProgressStepViewModel>();
+        services.AddSingleton<ResultStepViewModel>();
         services.AddSingleton<WizardViewModel>();
         services.AddSingleton<MainWindow>();
     }

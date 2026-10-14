@@ -1,6 +1,9 @@
 using Shouldly;
+using WinCopy.App.Localization;
 using WinCopy.App.Tests.Fakes;
 using WinCopy.App.ViewModels;
+using WinCopy.Application.UseCases.Planning;
+using WinCopy.Domain.Execution;
 using WinCopy.Domain.Inventory;
 using Xunit;
 
@@ -94,6 +97,160 @@ public sealed class WizardStepWiringTests
         wizard.DisksStep.ShouldBeNull();
         wizard.ReviewStep.ShouldBeNull();
         wizard.CurrentPage.ShouldBeSameAs(wizard.CurrentStep);
+    }
+
+    [Fact]
+    public async Task NextFromReviewShowsTheConfirmPageWithTheTargetDisk()
+    {
+        using var _ = new EnglishCulture();
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+
+        h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Confirm);
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Confirm);
+        h.Confirm.TargetCard!.Model.ShouldBe(AppFixtures.TargetDisk().Model);
+        h.Confirm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Serial", "XXXX"));
+        h.Wizard.IsCurrentStepValid.ShouldBeFalse();
+        // Step 3 has its own action: the generic Next button is hidden and disabled.
+        h.Wizard.IsNextVisible.ShouldBeFalse();
+        h.Wizard.NextCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task TypingTheSuffixValidatesStepThreeAndEnablesOnlyCloneNow()
+    {
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+
+        h.Confirm.TypedSuffix = "0002";
+
+        h.Wizard.IsCurrentStepValid.ShouldBeTrue();
+        h.Wizard.NextCommand.CanExecute(null).ShouldBeFalse();
+        h.Confirm.CloneNowCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task CloneNowRunsTheCloneAndEndsOnTheResultPage()
+    {
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+
+        h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Progress);
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Progress);
+        h.Wizard.IsNextVisible.ShouldBeFalse();
+        h.Wizard.BackCommand.CanExecute(null).ShouldBeFalse();
+        h.Execute.LastPlanId.ShouldBe(h.Review.Plan!.Id);
+        h.ConfirmPlan.LastTypedSuffix.ShouldBe("0002");
+
+        h.Execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.CopyData));
+        h.Progress.Phases.Count.ShouldBe(1);
+
+        var report = Report();
+        h.Execute.Completion.SetResult(report);
+        await h.Wizard.ExecutionCompletion;
+
+        h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Result);
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Result);
+        h.Result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task APlanThatChangedReturnsToTheDisksStepWithANotice()
+    {
+        using var _ = new EnglishCulture();
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        h.ConfirmPlan.NextFailure = new PlanInvalidatedException(h.Review.Plan!.Id, "DisksChanged");
+
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+
+        h.Wizard.CurrentIndex.ShouldBe(0);
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Disks);
+        h.Wizard.HasNotice.ShouldBeTrue();
+        h.Wizard.Notice.ShouldBe(Loc.Get("Confirm_PlanInvalidated"));
+        h.Review.HasPlan.ShouldBeFalse();
+        h.Inventory.CallCount.ShouldBe(2, "the disks are read again");
+        h.Execute.CallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task BackFromConfirmReturnsToReviewWithItsPlan()
+    {
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+
+        h.Wizard.BackCommand.Execute(null);
+
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Review);
+        h.Wizard.IsCurrentStepValid.ShouldBeTrue();
+        h.Review.HasPlan.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ResultStepIsReachedWithTheReportOfTheRun()
+    {
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+
+        h.Execute.Completion.SetResult(Report(CloneOutcome.Failed));
+        await h.Wizard.ExecutionCompletion;
+
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Result);
+        h.Result.IsFailure.ShouldBeTrue();
+        h.Result.IsSuccess.ShouldBeFalse();
+    }
+
+    private static readonly ExecutionId Run = new(Guid.Parse("00000000-0000-0000-0000-0000000000e1"));
+    private static readonly DateTimeOffset Now = new(2026, 10, 14, 10, 0, 0, TimeSpan.Zero);
+
+    private static CloneResultReport Report(CloneOutcome outcome = CloneOutcome.Completed) => new(
+        outcome,
+        new VerificationResult(true, []),
+        null,
+        null,
+        RecoveryEnvironmentState.Configured,
+        TimeSpan.FromMinutes(30),
+        "log.clef",
+        [NextStepCode.ShutDownAndReplaceDisk]);
+
+    private sealed record Harness(
+        WizardViewModel Wizard,
+        DisksStepViewModel Disks,
+        ReviewStepViewModel Review,
+        ConfirmStepViewModel Confirm,
+        ProgressStepViewModel Progress,
+        ResultStepViewModel Result,
+        FakeExecuteClone Execute,
+        FakeConfirmClonePlan ConfirmPlan,
+        FakeGetInventoryAndEligibility Inventory);
+
+    /// <summary>Full five-step wizard on a fresh system disk and a blank USB target, with the disks already selected and loaded.</summary>
+    private static async Task<Harness> CreateAtReview(CancellationToken ct)
+    {
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var inventoryFake = new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory));
+        var disks = new DisksStepViewModel(inventoryFake);
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value;
+        var confirmPlan = new FakeConfirmClonePlan(plan);
+        var confirm = new ConfirmStepViewModel(confirmPlan);
+        var execute = new FakeExecuteClone();
+        var progress = new ProgressStepViewModel(execute, new TestUiDispatcher());
+        var result = new ResultStepViewModel();
+        var wizard = new WizardViewModel(disks, review, confirm, progress, result);
+
+        await disks.LoadAsync(ct);
+        disks.SelectTargetCommand.Execute(disks.Targets.Single());
+        await wizard.NextCommand.ExecuteAsync(null);
+
+        return new Harness(wizard, disks, review, confirm, progress, result, execute, confirmPlan, inventoryFake);
     }
 
     private static (WizardViewModel Wizard, DisksStepViewModel Disks, ReviewStepViewModel Review) Create(DiskInventory inventory)

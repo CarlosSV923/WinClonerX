@@ -16,6 +16,7 @@ public partial class DiskCardViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(disk);
 
+        Disk = disk;
         DiskId = disk.Id;
         Model = disk.Model;
         SerialNumber = disk.SerialNumber;
@@ -31,11 +32,17 @@ public partial class DiskCardViewModel : ObservableObject
             .ToArray();
         PartitionBar = new PartitionBarData(segments, disk.Size);
 
-        SerialText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Serial"), SerialNumber);
+        SerialText = Loc.Format(
+            "Disk_Field_Format",
+            Loc.Get("Disk_Label_Serial"),
+            SerialNumber.Trim().Length == 0 ? Loc.Get("Disk_Serial_NotReported") : SerialNumber);
         CapacityText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Capacity"), SizeText.Format(Capacity));
         BusText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Connection"), BusLabel);
         AutomationName = Loc.Format("Disk_Automation_Name", Model, SerialText, CapacityText, BusText);
     }
+
+    /// <summary>The domain disk this card shows. Used by the confirmation step to erase exactly this disk.</summary>
+    public Disk Disk { get; }
 
     /// <summary>Identifier of the disk.</summary>
     public DiskId DiskId { get; }

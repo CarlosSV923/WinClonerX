@@ -1,0 +1,81 @@
+<UserControl x:Class="WinCopy.App.Views.ProgressStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WinCopy.App.Localization"
+             xmlns:vm="clr-namespace:WinCopy.App.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="560" d:DesignWidth="760">
+    <UserControl.Resources>
+        <Style x:Key="ProgressStep.Heading" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
+            <Setter Property="Margin" Value="0,20,0,8" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource Text.Title}" Text="{loc:Loc Progress_Title}" />
+            <TextBlock Style="{StaticResource Text.Body}"
+                       Margin="0,6,0,0"
+                       Foreground="{StaticResource Brush.TextSecondary}"
+                       Text="{loc:Loc Progress_Subtitle}" />
+        </StackPanel>
+
+        <!-- TODO(US3): Cancel asks for confirmation and is enabled; until then it is shown disabled. -->
+        <Button DockPanel.Dock="Bottom"
+                Style="{StaticResource Button.Secondary}"
+                HorizontalAlignment="Left"
+                Margin="0,12,0,0"
+                MinWidth="120"
+                Content="{loc:Loc Common_Cancel}"
+                AutomationProperties.Name="{loc:Loc Common_Cancel}"
+                IsEnabled="{Binding IsCancelAvailable}"
+                ToolTip="{loc:Loc Common_ComingSoon}"
+                ToolTipService.ShowOnDisabled="True" />
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,8,0,0">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Text.Subtitle}" Text="{Binding CurrentPhaseText}" />
+
+                <ProgressBar Height="18"
+                             Margin="0,12,0,0"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding Percent}"
+                             AutomationProperties.Name="{loc:Loc Progress_Bar_Name}"
+                             AutomationProperties.HelpText="{Binding PercentText}" />
+
+                <TextBlock Style="{StaticResource Text.Subtitle}" Margin="0,8,0,0" Text="{Binding PercentText}" />
+                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding BytesText}" />
+                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding ThroughputText}" />
+                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding EtaText}" />
+
+                <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{loc:Loc Progress_Warning_NoChanges}" />
+                </Border>
+
+                <TextBlock Style="{StaticResource ProgressStep.Heading}" Text="{loc:Loc Progress_Phases_Heading}" />
+                <ItemsControl Focusable="False" ItemsSource="{Binding Phases}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:PhaseItemViewModel}">
+                            <Grid Margin="0,4,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Name}" />
+                                <TextBlock Grid.Column="1"
+                                           Style="{StaticResource Text.Caption}"
+                                           Margin="16,0,0,0"
+                                           Text="{Binding StateText}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
