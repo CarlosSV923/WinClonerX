@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using WinCopy.Infrastructure.IntegrationTests.Fixtures;
 using WinCopy.Infrastructure.Windows.Interop;
@@ -72,14 +73,18 @@ internal sealed class StorageCommandException : InvalidOperationException
     }
 }
 
-/// <summary>Partition facts read back from PowerShell.</summary>
+/// <summary>
+/// Partition facts read back from PowerShell. <see cref="GptGuid"/> is the GPT unique partition id (<c>MSFT_Partition.Guid</c>),
+/// the same value that <c>WmiStorageQuery</c> looks up.
+/// </summary>
 internal sealed record PartitionInfo(
     int DiskNumber,
     int PartitionNumber,
     char? DriveLetter,
     long OffsetBytes,
     long SizeBytes,
-    IReadOnlyList<string> AccessPaths);
+    IReadOnlyList<string> AccessPaths,
+    Guid GptGuid);
 
 /// <summary>BitLocker state of a volume, as reported by <c>Get-BitLockerVolume</c>.</summary>
 internal sealed record BitLockerStatus(string VolumeStatus, string ProtectionStatus, int EncryptionPercentage);
@@ -99,11 +104,14 @@ internal sealed class VirtualDiskStorageOps
     private const string PartitionJsonScript =
         "[pscustomobject]@{ DiskNumber = [int]$p.DiskNumber; PartitionNumber = [int]$p.PartitionNumber; " +
         "DriveLetter = [string]$p.DriveLetter; OffsetBytes = [long]$p.Offset; SizeBytes = [long]$p.Size; " +
-        "AccessPaths = @($p.AccessPaths) } | ConvertTo-Json -Compress";
+        "GptGuid = [string]$p.Guid; AccessPaths = @($p.AccessPaths) } | ConvertTo-Json -Compress";
 
     private const string BitLockerJsonScript =
         "[pscustomobject]@{ VolumeStatus = [string]$v.VolumeStatus; ProtectionStatus = [string]$v.ProtectionStatus; " +
         "EncryptionPercentage = [int]$v.EncryptionPercentage } | ConvertTo-Json -Compress";
+
+    private const int MaxNtfsLabelLength = 32;
+    private const int MaxFat32LabelLength = 11;
 
     private const string ErrorPreamble =
         "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue'; $WarningPreference = 'SilentlyContinue'; try { ";
@@ -217,6 +225,28 @@ internal sealed class VirtualDiskStorageOps
         return CheckedPartition(stdout, diskNumber);
     }
 
+    /// <summary>
+    /// Creates a GPT partition of exactly <paramref name="sizeBytes"/> with the GPT type <paramref name="gptType"/>. A drive
+    /// letter is assigned only when <paramref name="assignLetter"/> is true.
+    /// </summary>
+    public PartitionInfo CreateGptPartition(int diskNumber, long sizeBytes, Guid gptType, bool assignLetter)
+    {
+        AssertSafeTarget(diskNumber);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sizeBytes);
+        if (gptType == Guid.Empty)
+        {
+            throw new ArgumentException("The GPT type must not be empty.", nameof(gptType));
+        }
+
+        string typeText = gptType.ToString("B", CultureInfo.InvariantCulture);
+        string letterArgument = assignLetter ? " -AssignDriveLetter" : string.Empty;
+        string stdout = RunChecked(
+            $"$p = New-Partition -DiskNumber {diskNumber} -Size {sizeBytes} -GptType '{typeText}'{letterArgument}; " +
+            $"$p = Get-Partition -DiskNumber {diskNumber} -PartitionNumber $p.PartitionNumber; " +
+            PartitionJsonScript);
+        return CheckedPartition(stdout, diskNumber);
+    }
+
     public PartitionInfo AssignDriveLetter(int diskNumber, int partitionNumber)
     {
         AssertSafeTarget(diskNumber);
@@ -249,14 +279,21 @@ internal sealed class VirtualDiskStorageOps
     }
 
     /// <summary>Formats the partition behind <paramref name="letter"/> as NTFS. The letter must be on <paramref name="diskNumber"/>.</summary>
-    public void FormatNtfs(int diskNumber, char letter)
-    {
-        AssertSafeTarget(diskNumber);
-        RequireDriveLetter(letter);
-        AssertLetterOnDisk(letter, diskNumber);
+    public void FormatNtfs(int diskNumber, char letter) => FormatNtfs(diskNumber, letter, string.Empty);
 
-        RunChecked($"Format-Volume -DriveLetter '{letter}' -FileSystem NTFS -Confirm:$false -Force | Out-Null");
-    }
+    /// <summary>
+    /// Formats the partition behind <paramref name="letter"/> as NTFS with <paramref name="label"/> (an empty label means none).
+    /// The letter must be on <paramref name="diskNumber"/>.
+    /// </summary>
+    public void FormatNtfs(int diskNumber, char letter, string label) =>
+        Format(diskNumber, letter, "NTFS", label, MaxNtfsLabelLength);
+
+    /// <summary>
+    /// Formats the partition behind <paramref name="letter"/> as FAT32 with <paramref name="label"/> (an empty label means none).
+    /// The letter must be on <paramref name="diskNumber"/>.
+    /// </summary>
+    public void FormatFat32(int diskNumber, char letter, string label) =>
+        Format(diskNumber, letter, "FAT32", label, MaxFat32LabelLength);
 
     /// <summary>Turns on BitLocker with a password protector and used-space-only encryption.</summary>
     public void EnableBitLockerWithPassword(int diskNumber, char letter, string password)
@@ -295,6 +332,34 @@ internal sealed class VirtualDiskStorageOps
     private static UnsafeStorageTargetException Refuse(int diskNumber, string reason) =>
         new($"Refusing storage command on disk {diskNumber}: {reason}.");
 
+    private void Format(int diskNumber, char letter, string fileSystem, string label, int maxLabelLength)
+    {
+        AssertSafeTarget(diskNumber);
+        RequireDriveLetter(letter);
+        ArgumentNullException.ThrowIfNull(label);
+        RequireVolumeLabel(label, maxLabelLength);
+        AssertLetterOnDisk(letter, diskNumber);
+
+        string labelArgument = label.Length > 0 ? $" -NewFileSystemLabel '{label}'" : string.Empty;
+        RunChecked($"Format-Volume -DriveLetter '{letter}' -FileSystem {fileSystem}{labelArgument} -Confirm:$false -Force | Out-Null");
+    }
+
+    // The label goes into a PowerShell string, so only characters that cannot end the quoting are accepted.
+    private static void RequireVolumeLabel(string label, int maxLength)
+    {
+        if (label.Length > maxLength || !label.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or ' '))
+        {
+            throw new ArgumentException(
+                $"A volume label must be at most {maxLength} ASCII letters, digits, spaces, '-' or '_'.",
+                nameof(label));
+        }
+    }
+
+    private static Guid ParseGptGuid(string? text) =>
+        Guid.TryParse(text, out Guid value) && value != Guid.Empty
+            ? value
+            : throw new StorageCommandException($"PowerShell reported no GPT unique id ('{text}').");
+
     private static void RequireDriveLetter(char letter)
     {
         if (!char.IsAsciiLetterUpper(letter))
@@ -320,7 +385,8 @@ internal sealed class VirtualDiskStorageOps
             ParseDriveLetter(ReadString(root, "DriveLetter")),
             root.GetProperty("OffsetBytes").GetInt64(),
             root.GetProperty("SizeBytes").GetInt64(),
-            ReadStrings(root, "AccessPaths"));
+            ReadStrings(root, "AccessPaths"),
+            ParseGptGuid(ReadString(root, "GptGuid")));
     }
 
     private static char? ParseDriveLetter(string? text) =>

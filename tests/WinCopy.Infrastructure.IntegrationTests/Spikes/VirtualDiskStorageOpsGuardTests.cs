@@ -44,6 +44,46 @@ public sealed class VirtualDiskStorageOpsGuardTests
     }
 
     [Fact]
+    public void RefusesNewCommandsOnUnregisteredDiskBeforeAnyProcessStarts()
+    {
+        var runner = new RecordingRunner();
+        var reader = new FakeVolumeReader();
+        var ops = new VirtualDiskStorageOps(runner, reader);
+
+        Should.Throw<UnsafeStorageTargetException>(
+            () => ops.CreateGptPartition(UnregisteredDiskNumber, 1024 * 1024, Guid.NewGuid(), assignLetter: true));
+        Should.Throw<UnsafeStorageTargetException>(() => ops.FormatFat32(UnregisteredDiskNumber, 'Z', "SYSTEM"));
+        Should.Throw<UnsafeStorageTargetException>(() => ops.FormatNtfs(UnregisteredDiskNumber, 'Z', "Windows"));
+
+        runner.Scripts.ShouldBeEmpty();
+        reader.Calls.ShouldBe(0);
+    }
+
+    [Fact]
+    public void RefusesVolumeLabelThatCouldEndThePowerShellQuoting()
+    {
+        VirtualDiskRegistry.Register(AcceptedDiskNumber);
+        try
+        {
+            var runner = new RecordingRunner();
+            var reader = new FakeVolumeReader();
+            reader.DisksByVolume[FakeVolumeReader.WindowsVolume] = [0u];
+            reader.DisksByVolume[FakeVolumeReader.SystemVolume] = [0u];
+            var ops = new VirtualDiskStorageOps(runner, reader);
+
+            Should.Throw<ArgumentException>(() => ops.FormatNtfs(AcceptedDiskNumber, 'Z', "Win'dows"));
+            Should.Throw<ArgumentException>(() => ops.FormatFat32(AcceptedDiskNumber, 'Z', "TOO-LONG-LABEL"));
+            Should.Throw<ArgumentException>(() => ops.FormatNtfs(AcceptedDiskNumber, 'Z', new string('N', 33)));
+
+            runner.Scripts.ShouldBeEmpty();
+        }
+        finally
+        {
+            VirtualDiskRegistry.Unregister(AcceptedDiskNumber);
+        }
+    }
+
+    [Fact]
     public void RefusesRegisteredDiskThatIsNotFileBackedVirtual()
     {
         VirtualDiskRegistry.Register(NotVirtualDiskNumber);
