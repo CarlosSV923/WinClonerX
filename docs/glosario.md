@@ -68,6 +68,8 @@ Valores usados por más de un contexto.
 | Sufijo esperado | `TargetConfirmation.ExpectedSuffix` | Los 4 últimos caracteres del número de serie del destino en mayúsculas o, si no tiene, los 4 últimos del GUID de disco. Es lo que la persona debe escribir para confirmar. |
 | Espacio requerido | `CapacityPolicy.Required` | Lo ocupado más el margen: lo mínimo que debe tener la partición de Windows del destino. |
 | Área utilizable | `TargetLayoutCalculator` (primer y último byte) | Espacio del destino donde pueden colocarse las particiones: empieza en el primer byte utilizable y termina antes de las entradas y la cabecera GPT de respaldo. |
+| Diseño del destino | `TargetLayout` | Tabla GPT completa que se escribirá en el destino: GUID de disco nuevo, tamaño y sector del disco y una entrada por partición. Lo produce `ClonePlan.ToTargetLayout`. |
+| Entrada del diseño | `TargetLayoutEntry` | Partición del diseño del destino: tipo, identificador nuevo, extensión y, copiados del origen, atributos y nombre GPT. |
 
 ## Ejecución
 
@@ -75,10 +77,15 @@ Valores usados por más de un contexto.
 |---------|------------------|------------|
 | Ejecución de clonado | `CloneExecution` | Aplicación de un plan confirmado: avanza por sus fases, registra el progreso y los fallos y genera el informe final. |
 | Estado de ejecución | `ExecutionState` | Situación de una ejecución: `Pending`, `Running`, `Cancelling`, `Cancelled`, `Failing`, `Failed` o `Completed`. |
-| Fase | `ExecutionPhase` | Paso de una ejecución, en este orden: `Revalidate`, `ShrinkSource`, `Snapshot`, `PrepareTarget`, `CopyData`, `CommitLayout`, `ExpandFileSystem`, `RepairBoot`, `StructuralVerification`, `FullVerification`, `Cleanup` y `RestoreSource`. `ShrinkSource`, `ExpandFileSystem`, `FullVerification` y `RestoreSource` son condicionales. |
+| Fase | `ExecutionPhase` | Paso de una ejecución, en este orden: `Revalidate`, `ShrinkSource`, `Snapshot`, `PrepareTarget`, `CopyData`, `CommitLayout`, `ExpandFileSystem`, `RepairBoot`, `StructuralVerification`, `FullVerification`, `Cleanup` y `RestoreSource`. `ShrinkSource`, `ExpandFileSystem`, `FullVerification` y `RestoreSource` son condicionales. `Done` no es una fase planificada: marca una ejecución completada. |
 | Compromiso del diseño | `CommitLayout` | Fase en la que se escribe la tabla de particiones del destino, que es el último paso que hace visible el diseño. Antes de ella el destino no puede arrancar, y si se cancela después, el diseño se borra. |
 | Instantánea | `ISnapshotSet` | Copia coherente de los volúmenes del origen, obtenida con VSS al iniciar la ejecución, de la que se leen los datos del clon mientras Windows sigue en uso. Se elimina al terminar. |
-| Compensación | `Compensations` | Acción que deshace un efecto parcial cuando la ejecución se cancela o falla, y su resultado. Se ejecutan en orden fijo: borrar el diseño del destino si se llegó a `CommitLayout`, borrar la instantánea, retirar los montajes temporales, restaurar el tamaño del origen si se redujo y permitir de nuevo la suspensión. |
+| Compensación | `CompensationKind` (resultado: `CompensationRecord`, lista `Compensations`) | Acción que deshace un efecto parcial cuando la ejecución se cancela o falla, y su resultado. Se ejecutan en orden fijo: borrar el diseño del destino si se llegó a `CommitLayout`, borrar la instantánea, retirar los montajes temporales, restaurar el tamaño del origen si se redujo y permitir de nuevo la suspensión. Solo aplican las que corresponden a las fases iniciadas. |
+| Identificador de ejecución | `ExecutionId` | GUID que identifica una ejecución de clonado. No puede estar vacío. |
+| Cancelación pendiente | `CancelPending` (interno) | Cancelación pedida durante `CommitLayout`, que no se puede interrumpir. La ejecución sigue en marcha y pasa a `Cancelling` al completarse esa fase. |
+| Fases planificadas | `PlannedPhases` | Fases que una ejecución va a recorrer, en orden. Las condicionales solo aparecen si aplican al plan. |
+| Invariante de origen | `CloneExecution.PhaseMayModifySource` | Regla de que el disco de origen solo se modifica en `ShrinkSource` y `RestoreSource`. |
+| Desenlace | `CloneOutcome` | Resultado final de una ejecución: `Completed`, `Cancelled` o `Failed`. Debe corresponder al estado final de la ejecución. |
 | Fallo de ejecución | `ExecutionFailure` | Motivo por el que una ejecución falla: código, fase en la que ocurrió y detalle técnico. |
 | Progreso | `CloneProgress` | Avance medido de la copia: bytes copiados, bytes totales, rendimiento y tiempo restante estimado (`Eta`), cuando existe. |
 | Verificación estructural | `Structural` | Comprobación que se hace siempre al terminar: la tabla de particiones coincide con el plan, cada volumen se puede leer y la configuración de arranque está presente. |
@@ -87,7 +94,7 @@ Valores usados por más de un contexto.
 | Registro de operación | `LogFile` | Archivo con las fases, el resultado, la duración y los errores de una ejecución. Puede exportarse. |
 | Evento de dominio | `ExecutionStarted`, `PhaseStarted`, `PhaseCompleted`, `ProgressReported`, `CompensationCompleted`, `ExecutionCompleted`, `ExecutionCancelled`, `ExecutionFailed` | Hecho ocurrido durante una ejecución. Se registra en el log y alimenta la interfaz. |
 | Informe de resultado | `CloneResultReport` | Resultado final de una ejecución: desenlace (`Completed`, `Cancelled` o `Failed`), verificaciones, estado del origen, entorno de recuperación, duración, registro y pasos siguientes. |
-| Entorno de recuperación | `RecoveryEnvironment` | Estado del entorno de recuperación del clon: `Configured` (configurado) o `Warning` (aviso que no impide arrancar). |
+| Entorno de recuperación | `RecoveryEnvironmentState` | Estado del entorno de recuperación del clon: `Configured` (configurado) o `Warning` (aviso que no impide arrancar). |
 | Pasos siguientes | `NextStepCode` | Código de la acción que la persona debe hacer tras el clonado, por ejemplo intercambiar los discos o elegir el arranque. |
 
 ## Reparación de arranque
@@ -99,7 +106,9 @@ Valores usados por más de un contexto.
 | Partición EFI del clon | `EspPartition` | Partición de sistema EFI del disco nuevo, desde la que arranca el firmware. |
 | Partición de recuperación del clon | `RecoveryPartition` | Partición de recuperación del disco nuevo, si el origen la tenía. |
 | Reescritura de MountedDevices | `MountedDevicesRewrite` | Ajuste que mantiene el volumen de Windows del clon como `C:` con su nuevo identificador de partición y elimina las entradas que apuntan a identificadores antiguos. |
-| Pasos de reparación | `Steps` | Acciones de la reparación de arranque, en orden: `RewriteMountedDevices`, `RebuildBcd` y `ReconfigureWinRe`. |
+| Pasos de reparación | `BootRepairStep` (propiedad `Steps`) | Acciones de la reparación de arranque, en orden: `RewriteMountedDevices`, `RebuildBcd` y `ReconfigureWinRe`. Este último solo si el origen tiene partición de recuperación. |
+| Valor GPT de MountedDevices | `MountedDevicesRewrite.GptValue` | Valor de 24 bytes que identifica una partición en `MountedDevices`: el prefijo ASCII `DMIO:ID:` seguido del GUID de la partición en formato binario. |
+| Valor obsoleto | `MountedDevicesRewrite.IsStale` | Valor de `MountedDevices` que apunta a una partición del origen y debe eliminarse del clon. |
 | Reconstrucción de la BCD | `RebuildBcd` | Paso que crea la configuración de arranque del clon apuntando a su propio volumen de Windows. |
 | Reconfiguración de WinRE | `ReconfigureWinRe` | Paso que configura el entorno de recuperación del clon para que use su partición de Windows y su partición de recuperación. |
 

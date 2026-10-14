@@ -147,7 +147,7 @@ public static class PreflightEvaluator
 
     private static PreflightCheck BitLockerCheck(Disk source, PlatformFacts facts)
     {
-        var encrypted = source.Partitions.Count(partition => IsBitLockerOn(partition, facts));
+        var encrypted = source.Partitions.Count(partition => IsBitLockerProtected(partition, facts));
 
         return encrypted > 0
             ? Warn(PreflightCode.BitLockerOn, Data(("Volumes", encrypted)))
@@ -166,9 +166,13 @@ public static class PreflightEvaluator
             : Warn(PreflightCode.OnBattery);
     }
 
-    private static bool IsBitLockerOn(Partition partition, PlatformFacts facts) =>
-        partition.Volume?.Encryption == EncryptionState.BitLockerOn
-        || (facts.Encryption.TryGetValue(partition.UniqueId, out var state) && state == EncryptionState.BitLockerOn);
+    // Un volumen con BitLocker suspendido también se clona sin cifrar: cuenta igual que uno activo.
+    private static bool IsBitLockerProtected(Partition partition, PlatformFacts facts) =>
+        IsBitLockerState(partition.Volume?.Encryption)
+        || (facts.Encryption.TryGetValue(partition.UniqueId, out var state) && IsBitLockerState(state));
+
+    private static bool IsBitLockerState(EncryptionState? state) =>
+        state is EncryptionState.BitLockerOn or EncryptionState.BitLockerSuspended;
 
     private static bool IsInUse(Disk target, PlatformFacts facts) =>
         !facts.TargetInUse.TryGetValue(target.Id, out var inUse)

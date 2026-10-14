@@ -174,6 +174,32 @@ public sealed class ClonePlan
         InvalidationReason = reason;
     }
 
+    /// <summary>
+    /// Construye el diseño que se escribirá en el destino: el GUID de disco nuevo y, por cada correspondencia, el tipo,
+    /// los atributos y el nombre de la partición de origen con su identificador y extensión nuevos.
+    /// Lanza <see cref="InvalidOperationException"/> si el disco no es el destino del plan.
+    /// </summary>
+    public TargetLayout ToTargetLayout(Disk targetDisk)
+    {
+        ArgumentNullException.ThrowIfNull(targetDisk);
+
+        if (targetDisk.Id != Target)
+        {
+            throw new InvalidOperationException("El disco indicado no es el destino de este plan.");
+        }
+
+        var entries = Mappings
+            .Select(mapping => new TargetLayoutEntry(
+                mapping.Source.Type,
+                mapping.NewUniqueId,
+                mapping.TargetExtent,
+                mapping.Source.Attributes,
+                mapping.Source.Name))
+            .ToArray();
+
+        return new TargetLayout(NewDiskGuid, targetDisk.Size, targetDisk.LogicalSectorSize, entries);
+    }
+
     private void EnsureDraft(string message)
     {
         if (Status != PlanStatus.Draft)
