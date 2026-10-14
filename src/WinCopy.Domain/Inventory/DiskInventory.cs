@@ -22,7 +22,10 @@ public sealed record DiskInventory(DateTimeOffset CapturedAt, FirmwareType Firmw
     /// <summary>Disco del sistema, o null si el inventario no es soportado.</summary>
     public Disk? SystemDisk => IsSupported ? Disks.First(disk => disk.IsSystem) : null;
 
-    /// <summary>Busca un disco por su identificador. Solo compara el GUID de disco.</summary>
+    /// <summary>
+    /// Busca un disco por su identificador, con la igualdad de <see cref="DiskId"/>: por GUID de disco y, en discos
+    /// sin GPT (GUID vacío), por número de disco.
+    /// </summary>
     public Disk? FindDisk(DiskId id) => Disks.FirstOrDefault(disk => disk.Id == id);
 
     /// <summary>Calcula la huella de identidad y diseño de los discos de origen y destino.</summary>

@@ -12,7 +12,7 @@ Valores usados por más de un contexto.
 | Destino | `Target` | Disco elegido por la persona para recibir el clon. Se borra por completo al ejecutarse el plan. |
 | Tamaño en bytes | `ByteSize` | Cantidad de bytes, siempre mayor o igual que cero, con formato en GiB y GB. |
 | Tamaño de sector | `SectorSize` | Tamaño de sector lógico o físico de un disco. En la versión 1 solo puede valer 512 o 4096 bytes. |
-| Identificador de disco | `DiskId` | Número de disco del sistema más el GUID de disco. La identidad es el GUID; el número solo sirve para las APIs. |
+| Identificador de disco | `DiskId` | Número de disco del sistema más el GUID de disco. Con GUID, la identidad es el GUID y el número se ignora. Sin GUID (RAW o MBR, `Guid.Empty`), dos identificadores son iguales solo si tienen el mismo número; uno con GUID nunca es igual a uno sin GUID. |
 | Identificador de partición GPT | `PartitionGuid` | GUID único de una partición GPT. No puede estar vacío. |
 | Tipo de partición GPT | `GptPartitionType` | GUID que identifica el tipo de una partición GPT. Las constantes conocidas son ESP, MSR, datos básicos, recuperación, LDM y Spaces. |
 | Extensión | `Extent` | Tramo contiguo de un disco, definido por su desplazamiento y su longitud en bytes. El desplazamiento está alineado al sector y la longitud es mayor que cero. |

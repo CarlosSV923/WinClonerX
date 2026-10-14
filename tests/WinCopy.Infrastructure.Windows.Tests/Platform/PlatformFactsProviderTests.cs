@@ -283,9 +283,10 @@ public sealed class PlatformFactsProviderTests
     }
 
     [Fact]
-    public async Task NonGptDisksThatShareTheEmptyGuidCombineTheirResults()
+    public async Task NonGptDisksWithTheEmptyGuidKeepSeparateResults()
     {
-        // Two non-GPT disks both have Guid.Empty, so their DiskId is the same. An in-use result must not be overwritten.
+        // Two non-GPT disks both have Guid.Empty; DiskId then falls back to the disk number, so each disk keeps its own
+        // in-use result and one disk's state can never be attributed to the other.
         var volumes = new FakeVolumePaths();
         volumes.Paths[new PartitionGuid(TargetDataPartition)] = TargetVolume;
         volumes.Paths[new PartitionGuid(TargetSecondPartition)] = TargetSecondVolume;
@@ -300,7 +301,9 @@ public sealed class PlatformFactsProviderTests
 
         var facts = await Run(inventory, probe: probe, volumePaths: volumes);
 
-        facts.TargetInUse[new DiskId(5, Guid.Empty)].ShouldBeTrue();
+        facts.TargetInUse.Count(pair => pair.Key.DiskGuid == Guid.Empty).ShouldBe(2);
+        facts.TargetInUse[new DiskId(5, Guid.Empty)].ShouldBeFalse();
+        facts.TargetInUse[new DiskId(6, Guid.Empty)].ShouldBeTrue();
     }
 
     [Fact]

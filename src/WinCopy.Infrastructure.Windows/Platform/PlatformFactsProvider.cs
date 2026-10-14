@@ -133,7 +133,8 @@ internal sealed class PlatformFactsProvider : IPlatformFactsProvider
                 }
             }
 
-            // Two non-GPT disks share Guid.Empty and therefore DiskId, so the results are combined: in use wins.
+            // DiskId falls back to the disk number for non-GPT disks, so keys are distinct. The merge stays as a
+            // defensive fail-safe: if a key ever repeated, "in use" would win.
             bool previouslyInUse = inUse.TryGetValue(disk.Id, out bool previous) && previous;
             inUse[disk.Id] = previouslyInUse || diskInUse;
         }
