@@ -47,6 +47,13 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   - Las particiones sin sistema de archivos reconocido (EFI, MSR y datos no NTFS), completas.
 - **Motivo**: es lo que pide FR-016 y SC-003. El mapa de la instantánea coincide exactamente con los
   datos coherentes que se copian.
+- **Lección del spike S3 (2026-10-13)**: la región final se calcula con la **longitud real del
+  dispositivo de origen** (`IOCTL_DISK_GET_LENGTH_INFO`), no solo con `NumberSectors`. El dispositivo de una
+  instantánea, sobre todo el de un volumen BitLocker, puede terminar antes. Además, el sector de arranque
+  de respaldo de NTFS está en el desplazamiento `NumberSectors × BytesPerSector`, que es el último sector
+  de la partición y queda fuera del volumen NTFS. Si no se puede leer del origen, se reconstruye a partir
+  del sector de arranque primario, porque NTFS exige que sean idénticos. Este cálculo debe ser una función
+  pura con pruebas unitarias en el adaptador de la US1 (`SnapshotVolumeSource`).
 - **Alternativas**:
   - Copia sector a sector completa: incumple FR-016.
   - Copia a nivel de archivos: obligaría a reconstruir NTFS, ACL, enlaces y flujos alternativos, y es
@@ -90,6 +97,13 @@ Fuentes de Microsoft consultadas el 2026-10-13:
     Así el destino siempre queda "completo y verificado" o "no inicializado".
 - **Lo que valida el spike S1**: (a) que Windows permite escribir en bruto en un disco fuera de línea;
   (b) que la GPT escrita a mano se reconoce después de `UPDATE_PROPERTIES`.
+- **Resultado S1 (2026-10-13, VHDX 256 MiB, 512e, Windows 11 build 26300)**: ✅ **ruta principal confirmada**.
+  - Con el disco fuera de línea (no persistente), todas las escrituras en bruto se completaron: patrón de
+    datos, MBR protector, cabeceras y entradas GPT primarias y de respaldo.
+  - Al volver a ponerlo en línea, `IOCTL_DISK_UPDATE_PROPERTIES` + `GET_DRIVE_LAYOUT_EX` devolvieron la GPT
+    escrita a mano con su GUID de disco y la partición con su tipo, desplazamiento y tamaño exactos.
+  - Los datos releídos coinciden byte a byte.
+  - No hace falta la alternativa.
 - **Alternativa si S1 falla**: crear el diseño con `IOCTL_DISK_CREATE_DISK` +
   `IOCTL_DISK_SET_DRIVE_LAYOUT_EX`, con el atributo GPT *no default drive letter* activado en todas las
   particiones durante la copia, y escribir en cada volumen bloqueado y desmontado. El "compromiso" pasa a
