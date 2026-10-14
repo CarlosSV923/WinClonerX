@@ -1,6 +1,8 @@
+using System.ComponentModel;
 using WinCopy.Application.Errors;
 using WinCopy.Application.Ports;
 using WinCopy.Domain.Shared;
+using WinCopy.Infrastructure.Windows.RawIo;
 
 namespace WinCopy.Infrastructure.Windows.Snapshots;
 
@@ -9,8 +11,7 @@ namespace WinCopy.Infrastructure.Windows.Snapshots;
 /// All VSS calls for the set run on the MTA worker thread that created it.
 /// </summary>
 /// <remarks>
-/// T060 only creates and deletes the set. The volume sources arrive in T061, so <see cref="OpenVolume"/> is not
-/// implemented yet.
+/// <see cref="OpenVolume"/> opens the snapshot device of a partition as a read-only block source (T061).
 /// </remarks>
 internal sealed class VssSnapshotSet : ISnapshotSet
 {
@@ -38,10 +39,38 @@ internal sealed class VssSnapshotSet : ISnapshotSet
     /// <summary>Device path of each partition's snapshot, for example <c>\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopyN</c>.</summary>
     internal IReadOnlyDictionary<PartitionGuid, string> DevicePaths { get; }
 
-    /// <summary>Not implemented yet. The SnapshotVolumeSource that T061 adds replaces this method.</summary>
-    /// <exception cref="NotImplementedException">Always thrown until T061 is done.</exception>
-    public IBlockSource OpenVolume(PartitionGuid partition) =>
-        throw new NotImplementedException("SnapshotVolumeSource arrives in T061");
+    /// <summary>
+    /// Opens the snapshot of <paramref name="partition"/> as a read-only block source. Each call opens a new device handle,
+    /// and the caller disposes the source.
+    /// </summary>
+    /// <exception cref="KeyNotFoundException">The set has no snapshot for <paramref name="partition"/>.</exception>
+    /// <exception cref="PlatformException">The snapshot device cannot be opened or read.</exception>
+    public IBlockSource OpenVolume(PartitionGuid partition)
+    {
+        if (!DevicePaths.TryGetValue(partition, out string? devicePath))
+        {
+            throw new KeyNotFoundException(
+                $"The snapshot set has no snapshot for the partition {partition.Value}.");
+        }
+
+        ISnapshotDevice device;
+        try
+        {
+            device = new Win32SnapshotDevice(devicePath);
+        }
+        catch (Win32Exception ex)
+        {
+            PlatformErrorCode code = ex.NativeErrorCode switch
+            {
+                5 => PlatformErrorCode.AccessDenied,
+                2 or 3 => PlatformErrorCode.DeviceNotFound,
+                _ => PlatformErrorCode.SourceReadError,
+            };
+            throw new PlatformException(code, $"Could not open the snapshot device {devicePath}.", ex);
+        }
+
+        return new SnapshotVolumeSource(device);
+    }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

@@ -117,17 +117,6 @@ public sealed class VssSnapshotServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task OpenVolumeIsNotImplementedYet()
-    {
-        _resolver.Paths[Partition1] = VolumePath;
-        ISnapshotSet set = await CreateService().CreateAsync([Partition1], CancellationToken.None);
-
-        Should.Throw<NotImplementedException>(() => set.OpenVolume(Partition1));
-
-        await set.DisposeAsync();
-    }
-
-    [Fact]
     public async Task DoSnapshotSetFailureAbortsDeletesAndThrowsSnapshotFailed()
     {
         _resolver.Paths[Partition1] = VolumePath;
