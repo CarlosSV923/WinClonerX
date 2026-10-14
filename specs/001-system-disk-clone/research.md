@@ -59,6 +59,10 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   NTFS aplica comprobaciones de límites en un volumen montado y, sin esa llamada, la lectura más allá del
   último clúster termina antes de tiempo. `SnapshotVolumeSource` debe hacer esta llamada al abrir el
   dispositivo de la instantánea.
+- **Decisión de implementación (T041)**: con DASD habilitado, el sector de respaldo es legible, como
+  demostró S3. Si aun así queda fuera de la longitud del dispositivo, `VolumeAllocationPlanner` **lanza una
+  excepción y la ejecución aborta**. No se reconstruye a partir del primario: se prefiere no clonar antes
+  que fabricar datos.
 - **Alternativas**:
   - Copia sector a sector completa: incumple FR-016.
   - Copia a nivel de archivos: obligaría a reconstruir NTFS, ACL, enlaces y flujos alternativos, y es
