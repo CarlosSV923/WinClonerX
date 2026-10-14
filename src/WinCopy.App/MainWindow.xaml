@@ -6,6 +6,8 @@
         xmlns:local="clr-namespace:WinCopy.App"
         xmlns:loc="clr-namespace:WinCopy.App.Localization"
         xmlns:controls="clr-namespace:WinCopy.App.Controls"
+        xmlns:views="clr-namespace:WinCopy.App.Views"
+        xmlns:vm="clr-namespace:WinCopy.App.ViewModels"
         xmlns:themes="clr-namespace:WinCopy.App.Themes"
         mc:Ignorable="d"
         Title="{loc:Loc App_Title}"
@@ -13,6 +15,23 @@
         MinWidth="900" MinHeight="600"
         Background="{StaticResource Brush.Background}"
         FontFamily="{x:Static themes:WinCopyFonts.Text}">
+    <Window.Resources>
+        <!-- Each page is shown by the type of the current content (CurrentPage). -->
+        <DataTemplate DataType="{x:Type vm:DisksStepViewModel}">
+            <views:DisksStepView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReviewStepViewModel}">
+            <views:ReviewStepView />
+        </DataTemplate>
+        <!-- Placeholder for steps whose page does not exist yet. -->
+        <DataTemplate DataType="{x:Type vm:WizardStep}">
+            <Border Style="{StaticResource Card}">
+                <TextBlock Style="{StaticResource Text.Subtitle}"
+                           Text="{Binding TitleKey, Converter={StaticResource LocKeyConverter}}" />
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
@@ -35,19 +54,10 @@
             </DockPanel>
         </Border>
 
-        <!-- Content area: the current step. Placeholder until the step pages exist. -->
+        <!-- Content area: the page of the current step (or its placeholder). -->
         <ContentControl Grid.Row="0" Grid.Column="1"
                         Margin="24,24,24,12"
-                        Content="{Binding CurrentStep}">
-            <ContentControl.ContentTemplate>
-                <DataTemplate>
-                    <Border Style="{StaticResource Card}">
-                        <TextBlock Style="{StaticResource Text.Subtitle}"
-                                   Text="{Binding TitleKey, Converter={StaticResource LocKeyConverter}}" />
-                    </Border>
-                </DataTemplate>
-            </ContentControl.ContentTemplate>
-        </ContentControl>
+                        Content="{Binding CurrentPage}" />
 
         <!-- Bottom bar: Back and Next. -->
         <StackPanel Grid.Row="1" Grid.Column="1"

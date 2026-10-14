@@ -85,4 +85,244 @@
   <data name="Icon_Check" xml:space="preserve">
     <value>&#xE73E;</value>
   </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Disks_Title" xml:space="preserve">
+    <value>Choose the destination disk</value>
+  </data>
+  <data name="Disks_Subtitle" xml:space="preserve">
+    <value>Your system disk is the source. Pick the disk that will receive the copy. Everything on the destination disk will be erased.</value>
+  </data>
+  <data name="Disks_Loading" xml:space="preserve">
+    <value>Reading disks...</value>
+  </data>
+  <data name="Disks_Source_Heading" xml:space="preserve">
+    <value>System disk (source)</value>
+  </data>
+  <data name="Disks_Targets_Heading" xml:space="preserve">
+    <value>Destination disks</value>
+  </data>
+  <data name="Disks_Blocked_Title" xml:space="preserve">
+    <value>This computer cannot be cloned in this version</value>
+  </data>
+  <data name="Disks_Blocked_Body" xml:space="preserve">
+    <value>Fix the reasons below, then press Refresh.</value>
+  </data>
+  <data name="Disks_Empty_Title" xml:space="preserve">
+    <value>No destination disk is available</value>
+  </data>
+  <data name="Disks_Empty_Body" xml:space="preserve">
+    <value>Connect an internal or USB disk of at least {0}. Everything on it will be erased, so use a disk without important data, then press Refresh.</value>
+  </data>
+  <data name="Disks_Status_Eligible" xml:space="preserve">
+    <value>Eligible</value>
+  </data>
+  <data name="Disks_Status_NotEligible" xml:space="preserve">
+    <value>Not eligible</value>
+  </data>
+  <data name="Disks_Strategy_Extend" xml:space="preserve">
+    <value>Windows will be extended</value>
+  </data>
+  <data name="Disks_Strategy_Shrink" xml:space="preserve">
+    <value>Windows on the original disk will have to be shrunk</value>
+  </data>
+  <data name="Disks_Shortfall" xml:space="preserve">
+    <value>Missing {0}</value>
+  </data>
+  <data name="Disks_Reason_GlobalBlocked" xml:space="preserve">
+    <value>The checks for this computer failed, so no disk can be used.</value>
+  </data>
+  <data name="Disks_Select_Hint" xml:space="preserve">
+    <value>Press Space or Enter to select this disk.</value>
+  </data>
+  <data name="Disk_Automation_Name" xml:space="preserve">
+    <value>{0}. {1}. {2}. {3}.</value>
+  </data>
+  <data name="Disk_Field_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Disk_Label_Serial" xml:space="preserve">
+    <value>Serial number</value>
+  </data>
+  <data name="Disk_Label_Capacity" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="Disk_Label_Connection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="Disks_Bus_Internal" xml:space="preserve">
+    <value>Internal</value>
+  </data>
+  <data name="Disks_Bus_Usb" xml:space="preserve">
+    <value>USB</value>
+  </data>
+  <data name="Disks_Bus_Virtual" xml:space="preserve">
+    <value>Virtual</value>
+  </data>
+  <data name="Partition_Role_EfiSystem" xml:space="preserve">
+    <value>EFI</value>
+  </data>
+  <data name="Partition_Role_MsReserved" xml:space="preserve">
+    <value>MSR</value>
+  </data>
+  <data name="Partition_Role_Windows" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Partition_Role_Recovery" xml:space="preserve">
+    <value>Recovery</value>
+  </data>
+  <data name="Partition_Role_Data" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Partition_Role_Unsupported" xml:space="preserve">
+    <value>Unsupported</value>
+  </data>
+  <data name="Partition_Role_Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Partition_Tooltip" xml:space="preserve">
+    <value>{0}: {1} of {2}</value>
+  </data>
+  <data name="Partition_Tooltip_NoUsage" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Severity_Pass" xml:space="preserve">
+    <value>Passed</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Severity_Blocking" xml:space="preserve">
+    <value>Blocks cloning</value>
+  </data>
+  <data name="Preflight_Reason_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Preflight_FirmwareNotUefi" xml:space="preserve">
+    <value>This computer does not start in UEFI mode, so it cannot be cloned in this version.</value>
+  </data>
+  <data name="Preflight_SourceNotGpt" xml:space="preserve">
+    <value>The system disk does not use the GPT partition style, which this version requires.</value>
+  </data>
+  <data name="Preflight_UnsupportedDiskKind" xml:space="preserve">
+    <value>The system disk uses a storage setup this version does not support, such as dynamic disks, RAID or Storage Spaces.</value>
+  </data>
+  <data name="Preflight_MultipleWindows" xml:space="preserve">
+    <value>The system disk does not contain exactly one Windows installation, so there is nothing clear to clone.</value>
+  </data>
+  <data name="Preflight_TargetIsSystem" xml:space="preserve">
+    <value>This is the system disk, so it cannot be used as the destination.</value>
+  </data>
+  <data name="Preflight_TargetInUse" xml:space="preserve">
+    <value>This disk is in use by Windows or another program. Close the programs that use it or disconnect it, then press Refresh.</value>
+  </data>
+  <data name="Preflight_TargetTooSmall" xml:space="preserve">
+    <value>The disk is too small to hold Windows and its data. It needs {0} more. Choose a larger disk.</value>
+  </data>
+  <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
+    <value>This disk uses a different sector size than the system disk, and this version cannot clone between them.</value>
+  </data>
+  <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
+    <value>Windows cannot be shrunk enough to fit on this disk. Free up space on the system disk or choose a larger disk.</value>
+  </data>
+  <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
+    <value>The system cannot create the consistent copy it needs while Windows is running. Check that Volume Shadow Copy is available, then try again.</value>
+  </data>
+  <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
+    <value>The system disk does not have enough free space for the consistent copy. Only {0} is free and at least 2 GB is needed. Free up space and try again.</value>
+  </data>
+  <data name="Preflight_BitLockerOn" xml:space="preserve">
+    <value>BitLocker is on for Windows, so the copy will not be encrypted. To encrypt the new disk again, turn BitLocker on in Windows after cloning.</value>
+  </data>
+  <data name="Preflight_OnBattery" xml:space="preserve">
+    <value>This computer is running on battery. Connect the charger before you start so it does not sleep or run out of power during the copy.</value>
+  </data>
+  <data name="Preflight_TargetNotEmpty" xml:space="preserve">
+    <value>This disk has partitions or data. Everything on it will be erased.</value>
+  </data>
+  <data name="Size_Tb" xml:space="preserve">
+    <value>{0} TB</value>
+  </data>
+  <data name="Size_Gb" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
+  <data name="Size_Mb" xml:space="preserve">
+    <value>{0} MB</value>
+  </data>
+  <data name="Size_Kb" xml:space="preserve">
+    <value>{0} KB</value>
+  </data>
+  <data name="Size_B" xml:space="preserve">
+    <value>{0} B</value>
+  </data>
+  <data name="Review_Title" xml:space="preserve">
+    <value>Review the plan</value>
+  </data>
+  <data name="Review_Subtitle" xml:space="preserve">
+    <value>Check what will happen before you continue. No disk is changed yet.</value>
+  </data>
+  <data name="Review_Loading" xml:space="preserve">
+    <value>Calculating the plan...</value>
+  </data>
+  <data name="Review_Failed_Title" xml:space="preserve">
+    <value>This disk cannot be used</value>
+  </data>
+  <data name="Review_Failed_Body" xml:space="preserve">
+    <value>Go back and choose another disk, or fix the reasons below.</value>
+  </data>
+  <data name="Review_Failed_Generic" xml:space="preserve">
+    <value>The plan could not be created. Go back and try again.</value>
+  </data>
+  <data name="Review_Before" xml:space="preserve">
+    <value>Before (source)</value>
+  </data>
+  <data name="Review_After" xml:space="preserve">
+    <value>After (destination)</value>
+  </data>
+  <data name="Review_Partitions_Heading" xml:space="preserve">
+    <value>Partitions</value>
+  </data>
+  <data name="Review_Change_Grow" xml:space="preserve">
+    <value>+{0}</value>
+  </data>
+  <data name="Review_Change_Shrink" xml:space="preserve">
+    <value>-{0}</value>
+  </data>
+  <data name="Review_Change_None" xml:space="preserve">
+    <value>No change</value>
+  </data>
+  <data name="Review_Change_Line" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Review_Summary_Heading" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Review_Summary_Copy" xml:space="preserve">
+    <value>Data to copy: {0}</value>
+  </data>
+  <data name="Review_Summary_Duration" xml:space="preserve">
+    <value>Estimated duration: {0}</value>
+  </data>
+  <data name="Review_Duration_Hours" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="Review_Duration_Minutes" xml:space="preserve">
+    <value>About {0} min</value>
+  </data>
+  <data name="Review_Duration_UnderMinute" xml:space="preserve">
+    <value>Less than a minute</value>
+  </data>
+  <data name="Review_Warnings_Heading" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="Review_Warning_Understand" xml:space="preserve">
+    <value>I understand</value>
+  </data>
+  <data name="Review_VerifyAll" xml:space="preserve">
+    <value>Verify all data (roughly doubles the duration)</value>
+  </data>
+  <data name="Review_VerifyAll_ComingSoon" xml:space="preserve">
+    <value>Coming soon</value>
+  </data>
 </root>

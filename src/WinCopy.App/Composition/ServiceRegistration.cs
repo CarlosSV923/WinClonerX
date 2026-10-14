@@ -20,6 +20,8 @@ internal static class ServiceRegistration
         services.AddWinCopyApplication();
         services.AddWinCopyInfrastructure(options => options.AppVersion = appVersion);
 
+        services.AddSingleton<DisksStepViewModel>();
+        services.AddSingleton<ReviewStepViewModel>();
         services.AddSingleton<WizardViewModel>();
         services.AddSingleton<MainWindow>();
     }

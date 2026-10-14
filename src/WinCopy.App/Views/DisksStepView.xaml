@@ -1,0 +1,121 @@
+<UserControl x:Class="WinCopy.App.Views.DisksStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WinCopy.App.Localization"
+             xmlns:vm="clr-namespace:WinCopy.App.ViewModels"
+             xmlns:controls="clr-namespace:WinCopy.App.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="560" d:DesignWidth="760">
+    <UserControl.Resources>
+        <Style x:Key="DisksStep.Heading" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
+            <Setter Property="Margin" Value="0,20,0,8" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Title and instructions. -->
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource Text.Title}" Text="{loc:Loc Disks_Title}" />
+            <TextBlock Style="{StaticResource Text.Body}"
+                       Margin="0,6,0,0"
+                       Foreground="{StaticResource Brush.TextSecondary}"
+                       Text="{loc:Loc Disks_Subtitle}" />
+            <TextBlock Style="{StaticResource Text.Body}"
+                       Margin="0,12,0,0"
+                       Text="{loc:Loc Disks_Loading}"
+                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,8,0,0">
+            <StackPanel>
+                <!-- Global block: the system cannot be cloned, so the panel replaces the list. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,8,0,0"
+                        BorderBrush="{StaticResource Brush.Danger}"
+                        Visibility="{Binding IsGlobalPanelVisible, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Subtitle}" Text="{loc:Loc Disks_Blocked_Title}" />
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="0,6,0,0" Text="{loc:Loc Disks_Blocked_Body}" />
+                        <ItemsControl Margin="0,10,0,0"
+                                      Focusable="False"
+                                      ItemsSource="{Binding GlobalBlockReasons}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Style="{StaticResource Button.Secondary}"
+                                Margin="0,14,0,0"
+                                HorizontalAlignment="Left"
+                                Content="{loc:Loc Common_Refresh}"
+                                AutomationProperties.Name="{loc:Loc Common_Refresh}"
+                                Command="{Binding RefreshCommand}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Source: the system disk, shown but not selectable. -->
+                <StackPanel Visibility="{Binding HasSourceDisk, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource DisksStep.Heading}" Text="{loc:Loc Disks_Source_Heading}" />
+                    <controls:DiskCard DataContext="{Binding SourceDisk}" />
+                </StackPanel>
+
+                <!-- Destinations: one card per eligible or not eligible disk. -->
+                <TextBlock Style="{StaticResource DisksStep.Heading}"
+                           Text="{loc:Loc Disks_Targets_Heading}"
+                           Visibility="{Binding IsListVisible, Converter={StaticResource BoolToVisibility}}" />
+                <ListBox x:Name="TargetList"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                         ScrollViewer.CanContentScroll="False"
+                         AutomationProperties.Name="{loc:Loc Disks_Targets_Heading}"
+                         ItemsSource="{Binding Targets}"
+                         SelectedItem="{Binding SelectedTarget, Mode=TwoWay}"
+                         Visibility="{Binding IsListVisible, Converter={StaticResource BoolToVisibility}}"
+                         PreviewKeyDown="TargetList_PreviewKeyDown">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <!-- Only eligible destinations can be focused as selectable items; the others are skipped by arrow keys. -->
+                            <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0,0,0,10" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="AutomationProperties.Name" Value="{Binding AutomationName}" />
+                            <Setter Property="AutomationProperties.HelpText" Value="{Binding HelpText}" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:TargetDiskItemViewModel}">
+                            <controls:DiskCard />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Empty state: what is needed and a refresh button. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,8,0,0"
+                        Visibility="{Binding IsEmptyPanelVisible, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Subtitle}" Text="{loc:Loc Disks_Empty_Title}" />
+                        <TextBlock Style="{StaticResource Text.Body}" Margin="0,6,0,0" Text="{Binding EmptyStateBody}" />
+                        <Button Style="{StaticResource Button.Secondary}"
+                                Margin="0,14,0,0"
+                                HorizontalAlignment="Left"
+                                Content="{loc:Loc Common_Refresh}"
+                                AutomationProperties.Name="{loc:Loc Common_Refresh}"
+                                Command="{Binding RefreshCommand}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

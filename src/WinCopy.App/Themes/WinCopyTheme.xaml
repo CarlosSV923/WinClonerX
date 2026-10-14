@@ -31,6 +31,8 @@
     <SolidColorBrush x:Key="Brush.Partition.Recovery" Color="#E8A317" />
     <SolidColorBrush x:Key="Brush.Partition.Data" Color="#14A38B" />
     <SolidColorBrush x:Key="Brush.Partition.Free" Color="#E5E9F0" />
+    <!-- Overlay drawn over the used part of a partition segment. -->
+    <SolidColorBrush x:Key="Brush.Partition.Used" Color="#66000000" />
 
     <!-- Typography -->
     <Style x:Key="Text.Title" TargetType="TextBlock">

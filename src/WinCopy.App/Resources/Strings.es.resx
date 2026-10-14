@@ -85,4 +85,244 @@
   <data name="Icon_Check" xml:space="preserve">
     <value>&#xE73E;</value>
   </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="Disks_Title" xml:space="preserve">
+    <value>Elija el disco de destino</value>
+  </data>
+  <data name="Disks_Subtitle" xml:space="preserve">
+    <value>El disco del sistema es el origen. Elija el disco que recibirá la copia. Todo lo que haya en el disco de destino se borrará.</value>
+  </data>
+  <data name="Disks_Loading" xml:space="preserve">
+    <value>Leyendo los discos...</value>
+  </data>
+  <data name="Disks_Source_Heading" xml:space="preserve">
+    <value>Disco del sistema (origen)</value>
+  </data>
+  <data name="Disks_Targets_Heading" xml:space="preserve">
+    <value>Discos de destino</value>
+  </data>
+  <data name="Disks_Blocked_Title" xml:space="preserve">
+    <value>Este equipo no se puede clonar en esta versión</value>
+  </data>
+  <data name="Disks_Blocked_Body" xml:space="preserve">
+    <value>Solucione los motivos siguientes y pulse Actualizar.</value>
+  </data>
+  <data name="Disks_Empty_Title" xml:space="preserve">
+    <value>No hay ningún disco de destino disponible</value>
+  </data>
+  <data name="Disks_Empty_Body" xml:space="preserve">
+    <value>Conecte un disco interno o USB de al menos {0}. Se borrará todo su contenido, así que use uno sin datos importantes y pulse Actualizar.</value>
+  </data>
+  <data name="Disks_Status_Eligible" xml:space="preserve">
+    <value>Apto</value>
+  </data>
+  <data name="Disks_Status_NotEligible" xml:space="preserve">
+    <value>No apto</value>
+  </data>
+  <data name="Disks_Strategy_Extend" xml:space="preserve">
+    <value>Se ampliará Windows</value>
+  </data>
+  <data name="Disks_Strategy_Shrink" xml:space="preserve">
+    <value>Hay que reducir Windows en el disco original</value>
+  </data>
+  <data name="Disks_Shortfall" xml:space="preserve">
+    <value>Faltan {0}</value>
+  </data>
+  <data name="Disks_Reason_GlobalBlocked" xml:space="preserve">
+    <value>Las comprobaciones de este equipo no se han superado, así que no se puede usar ningún disco.</value>
+  </data>
+  <data name="Disks_Select_Hint" xml:space="preserve">
+    <value>Pulse Espacio o Intro para seleccionar este disco.</value>
+  </data>
+  <data name="Disk_Automation_Name" xml:space="preserve">
+    <value>{0}. {1}. {2}. {3}.</value>
+  </data>
+  <data name="Disk_Field_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Disk_Label_Serial" xml:space="preserve">
+    <value>Número de serie</value>
+  </data>
+  <data name="Disk_Label_Capacity" xml:space="preserve">
+    <value>Capacidad</value>
+  </data>
+  <data name="Disk_Label_Connection" xml:space="preserve">
+    <value>Conexión</value>
+  </data>
+  <data name="Disks_Bus_Internal" xml:space="preserve">
+    <value>Interno</value>
+  </data>
+  <data name="Disks_Bus_Usb" xml:space="preserve">
+    <value>USB</value>
+  </data>
+  <data name="Disks_Bus_Virtual" xml:space="preserve">
+    <value>Virtual</value>
+  </data>
+  <data name="Partition_Role_EfiSystem" xml:space="preserve">
+    <value>EFI</value>
+  </data>
+  <data name="Partition_Role_MsReserved" xml:space="preserve">
+    <value>MSR</value>
+  </data>
+  <data name="Partition_Role_Windows" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Partition_Role_Recovery" xml:space="preserve">
+    <value>Recuperación</value>
+  </data>
+  <data name="Partition_Role_Data" xml:space="preserve">
+    <value>Datos</value>
+  </data>
+  <data name="Partition_Role_Unsupported" xml:space="preserve">
+    <value>No compatible</value>
+  </data>
+  <data name="Partition_Role_Free" xml:space="preserve">
+    <value>Libre</value>
+  </data>
+  <data name="Partition_Tooltip" xml:space="preserve">
+    <value>{0}: {1} de {2}</value>
+  </data>
+  <data name="Partition_Tooltip_NoUsage" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Severity_Pass" xml:space="preserve">
+    <value>Superada</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>Aviso</value>
+  </data>
+  <data name="Severity_Blocking" xml:space="preserve">
+    <value>Bloquea la clonación</value>
+  </data>
+  <data name="Preflight_Reason_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Preflight_FirmwareNotUefi" xml:space="preserve">
+    <value>Este equipo no arranca en modo UEFI, así que no se puede clonar en esta versión.</value>
+  </data>
+  <data name="Preflight_SourceNotGpt" xml:space="preserve">
+    <value>El disco del sistema no usa el estilo de particiones GPT, que esta versión necesita.</value>
+  </data>
+  <data name="Preflight_UnsupportedDiskKind" xml:space="preserve">
+    <value>El disco del sistema usa una configuración de almacenamiento que esta versión no soporta, como discos dinámicos, RAID o Espacios de almacenamiento.</value>
+  </data>
+  <data name="Preflight_MultipleWindows" xml:space="preserve">
+    <value>El disco del sistema no contiene exactamente una instalación de Windows, así que no hay nada claro que clonar.</value>
+  </data>
+  <data name="Preflight_TargetIsSystem" xml:space="preserve">
+    <value>Es el disco del sistema, así que no se puede usar como destino.</value>
+  </data>
+  <data name="Preflight_TargetInUse" xml:space="preserve">
+    <value>Este disco está en uso por Windows u otro programa. Cierre los programas que lo usan o desconéctelo y pulse Actualizar.</value>
+  </data>
+  <data name="Preflight_TargetTooSmall" xml:space="preserve">
+    <value>El disco es demasiado pequeño para guardar Windows y sus datos. Le faltan {0}. Elija un disco más grande.</value>
+  </data>
+  <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
+    <value>Este disco tiene un tamaño de sector distinto al del disco del sistema, y esta versión no puede clonar entre ambos.</value>
+  </data>
+  <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
+    <value>Windows no se puede reducir lo suficiente para caber en este disco. Libere espacio en el disco del sistema o elija un disco más grande.</value>
+  </data>
+  <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
+    <value>El sistema no puede crear la copia coherente que necesita mientras Windows está en uso. Compruebe que la Instantánea de volumen (VSS) está disponible y vuelva a intentarlo.</value>
+  </data>
+  <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
+    <value>El disco del sistema no tiene espacio libre suficiente para la copia coherente. Solo quedan {0} y hacen falta al menos 2 GB. Libere espacio y vuelva a intentarlo.</value>
+  </data>
+  <data name="Preflight_BitLockerOn" xml:space="preserve">
+    <value>BitLocker está activado en Windows, así que la copia no quedará cifrada. Para volver a cifrar el disco nuevo, active BitLocker en Windows después del clonado.</value>
+  </data>
+  <data name="Preflight_OnBattery" xml:space="preserve">
+    <value>Este equipo funciona con batería. Conecte el cargador antes de empezar para que no se suspenda ni se quede sin energía durante la copia.</value>
+  </data>
+  <data name="Preflight_TargetNotEmpty" xml:space="preserve">
+    <value>Este disco tiene particiones o datos. Todo lo que contiene se borrará.</value>
+  </data>
+  <data name="Size_Tb" xml:space="preserve">
+    <value>{0} TB</value>
+  </data>
+  <data name="Size_Gb" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
+  <data name="Size_Mb" xml:space="preserve">
+    <value>{0} MB</value>
+  </data>
+  <data name="Size_Kb" xml:space="preserve">
+    <value>{0} KB</value>
+  </data>
+  <data name="Size_B" xml:space="preserve">
+    <value>{0} B</value>
+  </data>
+  <data name="Review_Title" xml:space="preserve">
+    <value>Revise el plan</value>
+  </data>
+  <data name="Review_Subtitle" xml:space="preserve">
+    <value>Revise lo que va a pasar antes de continuar. Todavía no se modifica ningún disco.</value>
+  </data>
+  <data name="Review_Loading" xml:space="preserve">
+    <value>Calculando el plan...</value>
+  </data>
+  <data name="Review_Failed_Title" xml:space="preserve">
+    <value>Este disco no se puede usar</value>
+  </data>
+  <data name="Review_Failed_Body" xml:space="preserve">
+    <value>Vuelva atrás y elija otro disco, o solucione los motivos siguientes.</value>
+  </data>
+  <data name="Review_Failed_Generic" xml:space="preserve">
+    <value>No se pudo crear el plan. Vuelva atrás e inténtelo de nuevo.</value>
+  </data>
+  <data name="Review_Before" xml:space="preserve">
+    <value>Antes (origen)</value>
+  </data>
+  <data name="Review_After" xml:space="preserve">
+    <value>Después (destino)</value>
+  </data>
+  <data name="Review_Partitions_Heading" xml:space="preserve">
+    <value>Particiones</value>
+  </data>
+  <data name="Review_Change_Grow" xml:space="preserve">
+    <value>+{0}</value>
+  </data>
+  <data name="Review_Change_Shrink" xml:space="preserve">
+    <value>-{0}</value>
+  </data>
+  <data name="Review_Change_None" xml:space="preserve">
+    <value>Sin cambios</value>
+  </data>
+  <data name="Review_Change_Line" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Review_Summary_Heading" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Review_Summary_Copy" xml:space="preserve">
+    <value>Datos a copiar: {0}</value>
+  </data>
+  <data name="Review_Summary_Duration" xml:space="preserve">
+    <value>Duración estimada: {0}</value>
+  </data>
+  <data name="Review_Duration_Hours" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="Review_Duration_Minutes" xml:space="preserve">
+    <value>Unos {0} min</value>
+  </data>
+  <data name="Review_Duration_UnderMinute" xml:space="preserve">
+    <value>Menos de un minuto</value>
+  </data>
+  <data name="Review_Warnings_Heading" xml:space="preserve">
+    <value>Avisos</value>
+  </data>
+  <data name="Review_Warning_Understand" xml:space="preserve">
+    <value>Entiendo</value>
+  </data>
+  <data name="Review_VerifyAll" xml:space="preserve">
+    <value>Verificar todos los datos (aprox. duplica la duración)</value>
+  </data>
+  <data name="Review_VerifyAll_ComingSoon" xml:space="preserve">
+    <value>Disponible próximamente</value>
+  </data>
 </root>

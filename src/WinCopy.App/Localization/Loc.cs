@@ -22,4 +22,15 @@ public static class Loc
 
         return ResourceManager.GetString(key, CultureInfo.CurrentUICulture) ?? $"[[{key}]]";
     }
+
+    /// <summary>
+    /// Returns the localized text for <paramref name="key"/> with its <c>{0}</c>, <c>{1}</c>... placeholders filled in.
+    /// The arguments are formatted with <see cref="CultureInfo.CurrentCulture"/>, which Windows sets to the same language.
+    /// </summary>
+    public static string Format(string key, params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+
+        return string.Format(CultureInfo.CurrentCulture, Get(key), args);
+    }
 }
