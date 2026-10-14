@@ -28,7 +28,6 @@ public sealed class BitLockerSnapshotSpike
     private const int FileBytes = 1024 * 1024;
     private const int HashBlockBytes = 32;
     private const int BootRegionBytes = 4096;
-    private const int BackupSectorBytes = SpikeVolumeCopy.SectorBytes;
 
     private static readonly ByteSize DiskSize = ByteSize.FromMiB(512);
     private static readonly TimeSpan EncryptionTimeout = TimeSpan.FromMinutes(5);
@@ -171,9 +170,11 @@ public sealed class BitLockerSnapshotSpike
     }
 
     /// <summary>
-    /// Copies the boot sector, the used clusters, the region after the last full cluster and the backup boot sector from the
-    /// snapshot to the target partition. The target disk is opened only through <see cref="DiskWriteGuard"/>. Before the
-    /// write, the target volume, if Windows mounted one, is locked and dismounted by its volume GUID path.
+    /// Copies the boot sector, the used clusters, the tail after the last full cluster and the NTFS backup boot sector from
+    /// the snapshot to the target partition. The backup sits at <c>NumberSectors * BytesPerSector</c>, the sector right after
+    /// the volume. If the snapshot device does not reach that far, the backup is synthesized from the primary boot sector.
+    /// The target disk is opened only through <see cref="DiskWriteGuard"/>. Before the write, the target volume, if Windows
+    /// mounted one, is locked and dismounted by its volume GUID path.
     /// </summary>
     private static void CopyToTarget(
         VirtualDiskStorageOps ops,
@@ -188,8 +189,34 @@ public sealed class BitLockerSnapshotSpike
 
         long partitionOffset = targetPartition.OffsetBytes;
         long clusterBytes = ntfs.BytesPerCluster;
-        long volumeBytes = ntfs.NumberSectors * ntfs.BytesPerSector;
+        long sectorBytes = ntfs.BytesPerSector;
+        long volumeBytes = ntfs.NumberSectors * sectorBytes;
         long tailStart = ntfs.TotalClusters * clusterBytes;
+
+        long sourceLength;
+        string sourceLengthMethod;
+        try
+        {
+            sourceLength = SpikeVolumeCopy.GetDeviceLength(snapshot);
+            sourceLengthMethod = "IOCTL_DISK_GET_LENGTH_INFO";
+        }
+        catch (Win32Exception ex)
+        {
+            sourceLength = volumeBytes;
+            sourceLengthMethod = $"fallback NumberSectors*BytesPerSector, because the IOCTL failed: {ex.Message}";
+        }
+
+        Log($"Source device length {sourceLength} bytes ({sourceLengthMethod}). TotalClusters*cluster = {tailStart}, " +
+            $"NumberSectors*sector = {volumeBytes}, target partition = {targetPartition.SizeBytes} bytes.");
+
+        // Plans the tail and the backup before any lock or write. It throws if the backup does not fit the target.
+        NtfsTailPlan plan = NtfsTailPlan.Plan(
+            ntfs.TotalClusters,
+            clusterBytes,
+            ntfs.NumberSectors,
+            sectorBytes,
+            sourceLength,
+            targetPartition.SizeBytes);
 
         string? volumePath = VolumeGuidPath(targetPartition);
         SafeDeviceHandle? volumeLock = null;
@@ -209,6 +236,9 @@ public sealed class BitLockerSnapshotSpike
             using SafeDeviceHandle physical = DiskWriteGuard.Default.OpenDiskForWrite(targetDiskNumber);
             long copiedClusterBytes = 0;
 
+            // Primary boot sector, read once. It goes with the boot region and is the source of a synthesized backup.
+            byte[] primary = SpikeVolumeCopy.ReadBytes(snapshot, 0, SpikeVolumeCopy.SectorBytes, buffer);
+
             // Boot sector.
             SpikeVolumeCopy.CopyRange(snapshot, 0, physical, partitionOffset, BootRegionBytes, buffer);
 
@@ -221,18 +251,42 @@ public sealed class BitLockerSnapshotSpike
                 copiedClusterBytes += length;
             }
 
-            // Tail after the last full cluster, which is outside the cluster bitmap.
-            if (volumeBytes > tailStart)
+            // Tail after the last full cluster, which is outside the cluster bitmap. Empty when the snapshot ends first.
+            if (plan.TailLength > 0)
             {
-                SpikeVolumeCopy.CopyRange(snapshot, tailStart, physical, partitionOffset + tailStart, volumeBytes - tailStart, buffer);
+                SpikeVolumeCopy.CopyRange(
+                    snapshot,
+                    plan.TailOffset,
+                    physical,
+                    partitionOffset + plan.TailOffset,
+                    plan.TailLength,
+                    buffer);
             }
 
-            // NTFS backup boot sector, in the last sector of the volume.
-            long backupOffset = volumeBytes - BackupSectorBytes;
-            SpikeVolumeCopy.CopyRange(snapshot, backupOffset, physical, partitionOffset + backupOffset, BackupSectorBytes, buffer);
+            // NTFS backup boot sector, in the sector right after the volume.
+            string backupSource;
+            if (plan.BackupFromSource)
+            {
+                SpikeVolumeCopy.CopyRange(
+                    snapshot,
+                    plan.BackupOffset,
+                    physical,
+                    partitionOffset + plan.BackupOffset,
+                    SpikeVolumeCopy.SectorBytes,
+                    buffer);
+                backupSource = "read from source";
+            }
+            else
+            {
+                // NTFS requires the backup to be identical to the primary, so the primary is checked before it is copied.
+                SpikeVolumeCopy.ValidateNtfsBootSector(primary);
+                SpikeVolumeCopy.WriteBytes(physical, partitionOffset + plan.BackupOffset, primary, buffer);
+                backupSource = "synthesized from primary";
+            }
 
+            Log($"Backup boot sector: {backupSource} at volume offset {plan.BackupOffset}.");
             Log($"Copied {copiedClusterBytes / (1024 * 1024)} MiB of used clusters in {runs.Count} runs, " +
-                $"plus the boot sector, the {volumeBytes - tailStart} byte tail and the backup boot sector.");
+                $"plus the boot sector, the {plan.TailLength} byte tail and the backup boot sector.");
         }
         finally
         {

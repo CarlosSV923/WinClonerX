@@ -8,6 +8,68 @@ namespace WinCopy.Infrastructure.IntegrationTests.Spikes;
 /// <summary>A run of consecutive used clusters, in NTFS logical cluster numbers (LCN).</summary>
 internal readonly record struct ClusterRun(long StartLcn, long ClusterCount);
 
+/// <summary>
+/// Where the tail and the NTFS backup boot sector go on the target partition. <see cref="Plan"/> is pure: it does no I/O.
+/// All values are byte offsets relative to the start of the volume.
+/// </summary>
+/// <param name="TailOffset">First byte after the last full cluster (<c>TotalClusters * BytesPerCluster</c>).</param>
+/// <param name="TailLength">Bytes to copy from the tail, rounded down to whole sectors. Zero when there is no tail to copy.</param>
+/// <param name="BackupOffset">Offset of the NTFS backup boot sector: <c>NumberSectors * BytesPerSector</c>.</param>
+/// <param name="BackupFromSource">
+/// True when the snapshot holds the backup sector and it is read from there. False when it must be synthesized from the
+/// primary boot sector.
+/// </param>
+internal readonly record struct NtfsTailPlan(long TailOffset, long TailLength, long BackupOffset, bool BackupFromSource)
+{
+    /// <summary>Size of the NTFS boot sector, which is also the size of the backup copy.</summary>
+    private const long BackupBytes = SpikeVolumeCopy.SectorBytes;
+
+    /// <summary>
+    /// Computes the tail and backup placement. The NTFS backup boot sector is not in the last sector of the volume as
+    /// <c>NumberSectors - 1</c>; it is the sector right after the volume, at byte <c>NumberSectors * BytesPerSector</c>,
+    /// which is the last sector of the partition.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The backup boot sector would end beyond the target partition.</exception>
+    public static NtfsTailPlan Plan(
+        long totalClusters,
+        long bytesPerCluster,
+        long numberSectors,
+        long bytesPerSector,
+        long sourceLength,
+        long targetPartitionLength)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(totalClusters);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bytesPerCluster);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberSectors);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bytesPerSector);
+        ArgumentOutOfRangeException.ThrowIfNegative(sourceLength);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(targetPartitionLength);
+
+        long tailOffset = checked(totalClusters * bytesPerCluster);
+        long volumeBytes = checked(numberSectors * bytesPerSector);
+        long backupOffset = volumeBytes;
+        long backupEnd = checked(backupOffset + BackupBytes);
+
+        if (backupEnd > targetPartitionLength)
+        {
+            throw new InvalidOperationException(
+                $"The NTFS backup boot sector would end at byte {backupEnd}, beyond the target partition " +
+                $"({targetPartitionLength} bytes). The target is too small for this volume.");
+        }
+
+        // The tail runs up to the end of the volume, but never past the end of the snapshot device.
+        long usableEnd = Math.Min(volumeBytes, sourceLength);
+        usableEnd -= usableEnd % bytesPerSector;
+
+        long tailLength = Math.Max(0, usableEnd - tailOffset);
+        tailLength -= tailLength % bytesPerSector;
+
+        bool backupFromSource = backupEnd <= sourceLength;
+
+        return new NtfsTailPlan(tailOffset, tailLength, backupOffset, backupFromSource);
+    }
+}
+
 /// <summary>Spike-local ReadFile, WriteFile and SetFilePointerEx. Only the spike uses them.</summary>
 internal static unsafe partial class SpikeWin32
 {
@@ -226,6 +288,99 @@ internal static class SpikeVolumeCopy
             }
 
             copied += chunk;
+        }
+    }
+
+    /// <summary>IOCTL_DISK_GET_LENGTH_INFO: the length of a device or volume in bytes. Throws when the device refuses it.</summary>
+    public static unsafe long GetDeviceLength(SafeDeviceHandle device)
+    {
+        GET_LENGTH_INFORMATION info = default;
+        bool ok = Kernel32.DeviceIoControl(
+            device,
+            IoControlCodes.IOCTL_DISK_GET_LENGTH_INFO,
+            null,
+            0,
+            &info,
+            (uint)sizeof(GET_LENGTH_INFORMATION),
+            out uint returned,
+            IntPtr.Zero);
+
+        if (!ok)
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError(), "IOCTL_DISK_GET_LENGTH_INFO failed.");
+        }
+
+        if (returned < (uint)sizeof(GET_LENGTH_INFORMATION))
+        {
+            throw new InvalidOperationException($"IOCTL_DISK_GET_LENGTH_INFO returned only {returned} bytes.");
+        }
+
+        return info.Length;
+    }
+
+    /// <summary>
+    /// Reads <paramref name="length"/> bytes at <paramref name="sourceOffset"/> through <paramref name="buffer"/> and returns
+    /// them as a managed array. Offset and length must be multiples of 512 bytes.
+    /// </summary>
+    public static unsafe byte[] ReadBytes(SafeDeviceHandle source, long sourceOffset, int length, AlignedBuffer buffer)
+    {
+        CheckSectorAligned(sourceOffset, length, buffer);
+
+        fixed (byte* pointer = buffer.Span)
+        {
+            SeekTo(source, sourceOffset);
+            ReadExactly(source, pointer, length);
+        }
+
+        byte[] result = new byte[length];
+        buffer.Span[..length].CopyTo(result);
+        return result;
+    }
+
+    /// <summary>
+    /// Writes <paramref name="data"/> at <paramref name="targetOffset"/> through <paramref name="buffer"/>. Offset and length
+    /// must be multiples of 512 bytes, and the data must fit in the buffer. The caller passes a handle from
+    /// <see cref="DiskWriteGuard"/>.
+    /// </summary>
+    public static unsafe void WriteBytes(SafeDeviceHandle target, long targetOffset, ReadOnlySpan<byte> data, AlignedBuffer buffer)
+    {
+        CheckSectorAligned(targetOffset, data.Length, buffer);
+
+        data.CopyTo(buffer.Span);
+        fixed (byte* pointer = buffer.Span)
+        {
+            SeekTo(target, targetOffset);
+            WriteExactly(target, pointer, data.Length);
+        }
+    }
+
+    /// <summary>
+    /// Checks that a 512-byte sector is a primary NTFS boot sector: OEM ID "NTFS    " at offset 3 and the 0x55 0xAA signature
+    /// at offsets 510 and 511. Throws when it is not, so a broken primary is never copied to the backup position.
+    /// </summary>
+    public static void ValidateNtfsBootSector(ReadOnlySpan<byte> sector)
+    {
+        if (sector.Length != SectorBytes)
+        {
+            throw new InvalidOperationException($"The boot sector is {sector.Length} bytes; expected {SectorBytes}.");
+        }
+
+        if (!sector.Slice(3, 8).SequenceEqual("NTFS    "u8))
+        {
+            throw new InvalidOperationException("The primary boot sector has no NTFS OEM ID at offset 3; the backup cannot be synthesized.");
+        }
+
+        if (sector[510] != 0x55 || sector[511] != 0xAA)
+        {
+            throw new InvalidOperationException("The primary boot sector has no 0x55 0xAA signature; the backup cannot be synthesized.");
+        }
+    }
+
+    private static void CheckSectorAligned(long offset, long length, AlignedBuffer buffer)
+    {
+        if (offset < 0 || length <= 0 || offset % SectorBytes != 0 || length % SectorBytes != 0 || length > buffer.Length)
+        {
+            throw new ArgumentException("Offset must be a non-negative multiple of 512 bytes, and length a positive multiple of 512 that fits the buffer.");
         }
     }
 
