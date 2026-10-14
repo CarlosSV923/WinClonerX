@@ -193,6 +193,7 @@ public sealed class InteropLayoutTests
     [InlineData(nameof(IoControlCodes.FSCTL_GET_NTFS_VOLUME_DATA), DeviceFileSystem, 25u, Buffered, AccessAny)]
     [InlineData(nameof(IoControlCodes.FSCTL_GET_VOLUME_BITMAP), DeviceFileSystem, 27u, NeitherMethod, AccessAny)]
     [InlineData(nameof(IoControlCodes.FSCTL_EXTEND_VOLUME), DeviceFileSystem, 60u, Buffered, AccessAny)]
+    [InlineData(nameof(IoControlCodes.FSCTL_ALLOW_EXTENDED_DASD_IO), DeviceFileSystem, 32u, NeitherMethod, AccessAny)]
     public void IoControlConstantEqualsCtlCodeOfItsComponents(
         string constantName, uint deviceType, uint function, uint method, uint access)
     {

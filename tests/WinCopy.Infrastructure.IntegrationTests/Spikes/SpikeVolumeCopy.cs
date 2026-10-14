@@ -405,6 +405,18 @@ internal static class SpikeVolumeCopy
         }
     }
 
+    /// <summary>
+    /// FSCTL_ALLOW_EXTENDED_DASD_IO on a mounted volume handle. Lets reads reach the sectors after the last NTFS cluster,
+    /// which NTFS otherwise refuses with a short read.
+    /// </summary>
+    public static unsafe void AllowExtendedDasdIo(SafeDeviceHandle h)
+    {
+        if (!Kernel32.DeviceIoControl(h, IoControlCodes.FSCTL_ALLOW_EXTENDED_DASD_IO, null, 0, null, 0, out _, IntPtr.Zero))
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError(), "FSCTL_ALLOW_EXTENDED_DASD_IO failed.");
+        }
+    }
+
     /// <summary>Releases the lock taken by <see cref="LockAndDismount"/> and closes the handle.</summary>
     public static void UnlockAndClose(SafeDeviceHandle volume)
     {

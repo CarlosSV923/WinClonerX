@@ -31,6 +31,7 @@ internal static class IoControlCodes
     public const uint FSCTL_GET_NTFS_VOLUME_DATA = 0x00090064;
     public const uint FSCTL_GET_VOLUME_BITMAP = 0x0009006F;
     public const uint FSCTL_EXTEND_VOLUME = 0x000900F0;
+    public const uint FSCTL_ALLOW_EXTENDED_DASD_IO = 0x00090083;
 
     /// <summary>Equivalent of the Win32 CTL_CODE macro.</summary>
     public static uint CtlCode(uint deviceType, uint function, uint method, uint access) =>

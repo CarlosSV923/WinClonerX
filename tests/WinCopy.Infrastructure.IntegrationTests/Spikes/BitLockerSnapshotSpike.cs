@@ -98,6 +98,9 @@ public sealed class BitLockerSnapshotSpike
                 Kernel32.GENERIC_READ,
                 Kernel32.FILE_FLAG_NO_BUFFERING);
 
+            SpikeVolumeCopy.AllowExtendedDasdIo(snapshot);
+            Log("Extended DASD I/O allowed on the snapshot handle.");
+
             NTFS_VOLUME_DATA_BUFFER ntfs = SpikeVolumeCopy.ReadNtfsVolumeData(snapshot);
             List<ClusterRun> runs = SpikeVolumeCopy.ReadUsedRuns(snapshot, ntfs.TotalClusters, out long usedClusters);
             double usedFraction = ntfs.TotalClusters == 0 ? 0 : usedClusters / (double)ntfs.TotalClusters;
