@@ -30,7 +30,8 @@ diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-
 | `DiskOperation` | `Disk`, `Operation` (Read/Write/Lock/Offline/Online/CommitLayout/DeleteLayout/Shrink/Restore/Extend), `Offset?`, `Length?`, `DurationMs`, `Result` | Operaciones de disco (las lecturas y escrituras se agregan por tramo, no por búfer) |
 | `ProgressReported` | `BytesDone`, `BytesTotal`, `ThroughputBps`, `EtaSeconds?` | Como máximo 1 cada 5 s |
 | `ExternalToolRun` | `Tool` (bcdboot/reagentc), `Arguments`, `ExitCode`, `StdOut`, `StdErr` | Herramientas del sistema |
-| `CompensationCompleted` | `Compensation`, `Result` | En cancelación o fallo |
+| `CompensationCompleted` | `Compensation`, `Result` (`Succeeded`/`Failed`) | En cancelación o fallo |
+| `CleanupFailed` (Warning) | `Step`, `TechnicalDetail` | Un paso de la limpieza (soltar montajes, borrar la instantánea, cerrar el destino) falló después de una verificación correcta. El clon sigue siendo válido y el resultado es `Completed` |
 | `ExecutionCompleted` / `ExecutionCancelled` / `ExecutionFailed` | `Outcome`, `FailureCode?`, `Phase?`, `TechnicalDetail?`, `DurationMs` | Al terminar |
 
 ## Exportación

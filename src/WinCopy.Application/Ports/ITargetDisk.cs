@@ -5,7 +5,9 @@ namespace WinCopy.Application.Ports;
 /// <summary>
 /// Acceso de escritura y lectura en bruto al disco de destino (R4). Solo se obtiene con un <see cref="ClonePlan"/> confirmado,
 /// mediante <see cref="ITargetDiskFactory"/>. Las escrituras y lecturas deben estar alineadas al sector.
-/// Dispose libera el disco y lo deja en línea solo si el compromiso se completó.
+/// Dispose libera los bloqueos y, si el disco sigue fuera de línea, lo vuelve a poner en línea. Un clon a medias ya
+/// tiene la tabla de particiones borrada (compensación DeleteTargetLayout o límites borrados al prepararlo), así que
+/// en línea se ve como un disco sin inicializar y nunca puede arrancar.
 /// </summary>
 public interface ITargetDisk : IAsyncDisposable
 {
