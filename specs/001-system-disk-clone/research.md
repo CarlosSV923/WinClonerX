@@ -54,6 +54,11 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   de la partición y queda fuera del volumen NTFS. Si no se puede leer del origen, se reconstruye a partir
   del sector de arranque primario, porque NTFS exige que sean idénticos. Este cálculo debe ser una función
   pura con pruebas unitarias en el adaptador de la US1 (`SnapshotVolumeSource`).
+- **Lección 2 del spike S3**: el manejador del volumen de origen necesita
+  **`FSCTL_ALLOW_EXTENDED_DASD_IO`** (0x00090083) antes de leer la región final y el sector de respaldo.
+  NTFS aplica comprobaciones de límites en un volumen montado y, sin esa llamada, la lectura más allá del
+  último clúster termina antes de tiempo. `SnapshotVolumeSource` debe hacer esta llamada al abrir el
+  dispositivo de la instantánea.
 - **Alternativas**:
   - Copia sector a sector completa: incumple FR-016.
   - Copia a nivel de archivos: obligaría a reconstruir NTFS, ACL, enlaces y flujos alternativos, y es
@@ -206,6 +211,14 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   el spike no dependa de la interop VSS de la US1, la instantánea se crea con WMI
   `Win32_ShadowCopy.Create`. Lo que se valida es el comportamiento de la pila de volúmenes con BitLocker,
   que es el mismo con ambas vías.
+- **Resultado S3 (2026-10-13, VHDX 512 MiB, BitLocker `FullyEncrypted`/`On`)**: ✅ **ruta principal
+  confirmada**.
+  - La instantánea del volumen cifrado se lee descifrada como NTFS: volumen, mapa de clústeres y datos.
+  - Se copiaron solo los clústeres usados (62 MiB en 9 tramos), el sector 0, la región final y el sector
+    de arranque de respaldo.
+  - El destino se monta como **NTFS sin cifrar** (`FullyDecrypted`/`Off`) y los **20/20 archivos**
+    coinciden con su SHA-256.
+  - BitLocker sigue siendo un **aviso** (decisión 7), no un bloqueo.
   **Alternativa**: si el resultado no es válido, BitLocker pasa a ser bloqueante en la v1 y hay que
   suspender o descifrar antes. Eso requiere revisar la decisión 7 con la persona usuaria.
 
