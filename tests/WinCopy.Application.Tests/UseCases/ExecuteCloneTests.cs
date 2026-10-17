@@ -368,17 +368,15 @@ public sealed class ExecuteCloneTests
     }
 
     [Fact]
-    public async Task EveryLogEventCarriesTheExecutionIdAndTheRunIsBracketed()
+    public async Task EveryLogEventLeavesTheEnvelopeNamesToTheAdapterAndTheRunIsBracketed()
     {
         var h = new Harness();
 
         await h.RunAsync(Ct);
 
-        var first = h.Log.Events.First();
-        var executionId = first.Properties["ExecutionId"];
-        first.Event.ShouldBe("ExecutionStarted");
+        h.Log.Events.First().Event.ShouldBe("ExecutionStarted");
         h.Log.Events.Last().Event.ShouldBe("ExecutionCompleted");
-        h.Log.Events.All(e => Equals(e.Properties["ExecutionId"], executionId)).ShouldBeTrue();
+        h.Log.Events.SelectMany(e => e.Properties.Keys).Intersect(LogEvent.ReservedPropertyNames).ShouldBeEmpty();
         h.Log.Events.Count(e => e.Event == "PhaseStarted").ShouldBe(HappyPhases.Length);
         h.Log.Events.Count(e => e.Event == "PhaseCompleted").ShouldBe(HappyPhases.Length);
         h.Log.Events.Where(e => e.Event == "PhaseCompleted").All(e => e.Properties.ContainsKey("DurationMs")).ShouldBeTrue();
@@ -399,7 +397,39 @@ public sealed class ExecuteCloneTests
         failed.Properties["Phase"].ShouldBe("Snapshot");
         failed.Properties.ContainsKey("TechnicalDetail").ShouldBeTrue();
         failed.Properties.ContainsKey("DurationMs").ShouldBeTrue();
-        failed.Properties["ExecutionId"].ShouldBe(h.Log.Events.First().Properties["ExecutionId"]);
+        failed.Properties.Keys.Intersect(LogEvent.ReservedPropertyNames).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(FaultPoint.CopyData)]
+    [InlineData(FaultPoint.CommitLayout)]
+    public async Task AFailingLogStillRunsTheCompensationsAndTheRunEndsFailed(FaultPoint fault)
+    {
+        var h = new Harness();
+        h.Log.FailOn[nameof(IExecutionLog.Record)] = new InvalidOperationException("log full");
+        h.Inject(fault);
+
+        var report = await h.RunAsync(Ct);
+
+        report.Outcome.ShouldBe(CloneOutcome.Failed);
+        h.Events.OfType<ExecutionFailed>().Single().Failure.Phase.ShouldBe(Enum.Parse<ExecutionPhase>(fault.ToString()));
+        h.Compensations().ShouldBe(ExpectedCompensations(fault));
+        h.Target.Calls.Contains("DeleteLayoutAsync").ShouldBe(ExpectedCompensations(fault).Contains(CompensationKind.DeleteTargetLayout));
+        h.Power.IsSleepBlocked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task AFailingLogDoesNotTurnACompletedCloneIntoAFailure()
+    {
+        var h = new Harness();
+        h.Log.FailOn[nameof(IExecutionLog.Record)] = new InvalidOperationException("log full");
+
+        var report = await h.RunAsync(Ct);
+
+        report.Outcome.ShouldBe(CloneOutcome.Completed);
+        h.Phases().ShouldBe(HappyPhases);
+        h.Events.OfType<ExecutionCompleted>().Count().ShouldBe(1);
+        h.Power.IsSleepBlocked.ShouldBeFalse();
     }
 
     [Fact]
@@ -517,7 +547,7 @@ public sealed class ExecuteCloneTests
         var warnings = h.Log.Events.Where(e => e.Event == "CleanupFailed" && (string?)e.Properties["Step"] == step).ToArray();
         warnings.ShouldNotBeEmpty();
         warnings.ShouldAllBe(w => w.Level == LogLevelKind.Warning
-            && Equals(w.Properties["ExecutionId"], h.Log.Events[0].Properties["ExecutionId"]));
+            && !w.Properties.Keys.Any(key => LogEvent.ReservedPropertyNames.Contains(key)));
         h.Events.OfType<ExecutionFailed>().ShouldBeEmpty();
     }
 

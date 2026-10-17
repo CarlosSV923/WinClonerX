@@ -70,10 +70,10 @@ public sealed class ExecuteClone(
         {
             var startedAt = clock.UtcNow;
             var run = new ExecutionRun(plan, CloneExecution.Start(new ExecutionId(Guid.NewGuid()), plan, startedAt), startedAt, sleep);
-            Flush(run);
 
             try
             {
+                Flush(run);
                 await RunPhasesAsync(run, ct);
                 return FinishCompleted(run);
             }
@@ -155,7 +155,7 @@ public sealed class ExecuteClone(
         {
             plan.Invalidate(DisksChangedReason);
             planStore.Save(plan);
-            log.Record(ExecutionLogEvents.PlanInvalidated(run.Id, plan.Id, DisksChangedReason));
+            Record(ExecutionLogEvents.PlanInvalidated(plan.Id, DisksChangedReason));
             throw new ExecutionAbortException(DisksChangedReason, "El inventario de los discos cambió después de planificar; hay que volver a planificar.");
         }
 
@@ -227,7 +227,7 @@ public sealed class ExecuteClone(
             var detail = ex.ToString();
             run.Execution.RecordRestoreFailure(detail);
             run.SourceRestored = false;
-            log.Record(ExecutionLogEvents.SourceRestoreFailed(run.Id, shrink.Partition, shrink.OriginalLength, detail));
+            Record(ExecutionLogEvents.SourceRestoreFailed(shrink.Partition, shrink.OriginalLength, detail));
         }
     }
 
@@ -380,7 +380,7 @@ public sealed class ExecuteClone(
     {
         foreach (var failure in await ReleaseMountsAsync(run))
         {
-            LogCleanupFailure(run, "ReleaseMounts", failure);
+            LogCleanupFailure("ReleaseMounts", failure);
         }
 
         if (run.Snapshot is { } snapshot)
@@ -391,7 +391,7 @@ public sealed class ExecuteClone(
             }
             catch (Exception ex)
             {
-                LogCleanupFailure(run, "DisposeSnapshot", ex.ToString());
+                LogCleanupFailure("DisposeSnapshot", ex.ToString());
             }
 
             run.Snapshot = null;
@@ -405,15 +405,15 @@ public sealed class ExecuteClone(
             }
             catch (Exception ex)
             {
-                LogCleanupFailure(run, "DisposeTarget", ex.ToString());
+                LogCleanupFailure("DisposeTarget", ex.ToString());
             }
 
             run.Target = null;
         }
     }
 
-    private void LogCleanupFailure(ExecutionRun run, string step, string technicalDetail) =>
-        log.Record(ExecutionLogEvents.CleanupFailed(run.Id, step, technicalDetail));
+    private void LogCleanupFailure(string step, string technicalDetail) =>
+        Record(ExecutionLogEvents.CleanupFailed(step, technicalDetail));
 
     private CloneResultReport FinishCompleted(ExecutionRun run)
     {
@@ -566,7 +566,7 @@ public sealed class ExecuteClone(
         }
         catch (Exception ex)
         {
-            log.Record(ExecutionLogEvents.CleanupFailed(run.Id, "DisposeTarget", ex.ToString()));
+            Record(ExecutionLogEvents.CleanupFailed("DisposeTarget", ex.ToString()));
         }
     }
 
@@ -619,6 +619,23 @@ public sealed class ExecuteClone(
         }
     }
 
+    /// <summary>
+    /// Escribe un evento en el registro sin dejar que un fallo del registro interrumpa la ejecución: si el registro lanza una
+    /// excepción, la fase en curso y las compensaciones deben seguir igualmente (una compensación saltada dejaría el destino o
+    /// el origen a medio hacer). Los eventos se publican a los suscriptores aunque el registro falle.
+    /// </summary>
+    private void Record(LogEvent e)
+    {
+        try
+        {
+            log.Record(e);
+        }
+        catch (Exception)
+        {
+            // A propósito: un fallo al escribir el registro no debe detener la fase ni saltarse una compensación.
+        }
+    }
+
     /// <summary>Publica los eventos pendientes a los suscriptores y los registra. El progreso se registra como mucho cada 5 s.</summary>
     private void Flush(ExecutionRun run)
     {
@@ -629,7 +646,7 @@ public sealed class ExecuteClone(
                 var logged = domainEvent is not ProgressReported progress || ShouldLogProgress(run, progress.At);
                 if (logged)
                 {
-                    log.Record(ToLogEvent(domainEvent, run));
+                    Record(ToLogEvent(domainEvent, run));
                 }
 
                 _subject.Publish(domainEvent);
@@ -652,14 +669,14 @@ public sealed class ExecuteClone(
 
     private static LogEvent ToLogEvent(ExecutionEvent domainEvent, ExecutionRun run) => domainEvent switch
     {
-        ExecutionStarted => ExecutionLogEvents.Started(domainEvent.Id, run.Plan.Id),
-        PhaseStarted started => ExecutionLogEvents.PhaseStarted(started.Id, started.Phase),
-        PhaseCompleted completed => ExecutionLogEvents.PhaseCompleted(completed.Id, completed.Phase, completed.Duration),
-        ProgressReported progress => ExecutionLogEvents.ProgressReported(progress.Id, progress.Progress),
-        CompensationCompleted compensation => ExecutionLogEvents.CompensationCompleted(compensation.Id, compensation.Kind, compensation.Success, compensation.Detail),
-        ExecutionCompleted completed => ExecutionLogEvents.Completed(completed.Id, run.Elapsed, run.RecoveryDetail),
-        ExecutionCancelled cancelled => ExecutionLogEvents.Cancelled(cancelled.Id, run.Elapsed),
-        ExecutionFailed failed => ExecutionLogEvents.Failed(failed.Id, run.Elapsed, failed.Failure),
+        ExecutionStarted => ExecutionLogEvents.Started(run.Plan.Id),
+        PhaseStarted started => ExecutionLogEvents.PhaseStarted(started.Phase),
+        PhaseCompleted completed => ExecutionLogEvents.PhaseCompleted(completed.Phase, completed.Duration),
+        ProgressReported progress => ExecutionLogEvents.ProgressReported(progress.Progress),
+        CompensationCompleted compensation => ExecutionLogEvents.CompensationCompleted(compensation.Kind, compensation.Success, compensation.Detail),
+        ExecutionCompleted completed => ExecutionLogEvents.Completed(run.Elapsed, run.RecoveryDetail),
+        ExecutionCancelled => ExecutionLogEvents.Cancelled(run.Elapsed),
+        ExecutionFailed failed => ExecutionLogEvents.Failed(run.Elapsed, failed.Failure),
         _ => throw new InvalidOperationException("Evento de ejecución sin registro: " + domainEvent.GetType().Name),
     };
 
@@ -703,8 +720,6 @@ public sealed class ExecuteClone(
         public DateTimeOffset StartedAt { get; } = startedAt;
 
         public SleepBlock Sleep { get; } = sleep;
-
-        public ExecutionId Id => Execution.Id;
 
         public Disk? FreshTarget { get; set; }
 

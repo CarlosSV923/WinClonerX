@@ -241,9 +241,11 @@ public sealed partial class WizardViewModel : ObservableObject
         {
             report = await _progress.StartAsync(planId);
         }
-        catch (InvalidOperationException)
+        catch (Exception)
         {
-            // The use case refuses to run a plan that is not confirmed. Nothing was touched, so the result says it failed.
+            // The use case throws for plan preconditions (an unknown or unconfirmed plan): nothing was touched, so the result says
+            // it failed. Any other unexpected exception must also end on the result page, so the wizard never stays stuck on the
+            // progress page while the run is over.
             report = new CloneResultReport(
                 CloneOutcome.Failed,
                 null,

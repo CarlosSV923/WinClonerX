@@ -28,7 +28,6 @@ internal sealed class SerilogExecutionLog : IExecutionLog, IDisposable
     private const string InventoryEntryName = "inventory.json";
     private const int CopyBufferSize = 81920;
 
-    private static readonly string[] ReservedPropertyNames = ["Event", "ExecutionId", "AppVersion"];
     private static readonly JsonSerializerOptions InventoryJsonOptions = new() { WriteIndented = true };
 
     private readonly object _gate = new();
@@ -92,7 +91,7 @@ internal sealed class SerilogExecutionLog : IExecutionLog, IDisposable
             ILogger context = _context;
             foreach (KeyValuePair<string, object?> property in e.Properties)
             {
-                if (Array.IndexOf(ReservedPropertyNames, property.Key) >= 0)
+                if (LogEvent.ReservedPropertyNames.Contains(property.Key))
                 {
                     throw new ArgumentException(
                         $"Property name '{property.Key}' is reserved by the log envelope.", nameof(e));

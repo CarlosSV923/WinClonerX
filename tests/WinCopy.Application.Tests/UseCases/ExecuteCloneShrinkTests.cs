@@ -244,7 +244,7 @@ public sealed class ExecuteCloneShrinkTests
         warning.Properties["Partition"].ShouldBe(h.Plan.SourceShrink!.Partition.Value.ToString("D", CultureInfo.InvariantCulture));
         warning.Properties["OriginalLength"].ShouldBe(h.Plan.SourceShrink!.OriginalLength.Bytes);
         warning.Properties.ContainsKey("TechnicalDetail").ShouldBeTrue();
-        warning.Properties["ExecutionId"].ShouldBe(h.Log.Events[0].Properties["ExecutionId"]);
+        warning.Properties.Keys.Intersect(LogEvent.ReservedPropertyNames).ShouldBeEmpty();
     }
 
     [Fact]

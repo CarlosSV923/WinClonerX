@@ -207,6 +207,23 @@ public sealed class WizardStepWiringTests
         h.Result.IsSuccess.ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task AnUnexpectedExceptionFromTheRunStillEndsOnAFailedResultPage()
+    {
+        var h = await CreateAtReview(TestContext.Current.CancellationToken);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+
+        h.Execute.Completion.SetException(new ArgumentException("unexpected", "logEvent"));
+        await h.Wizard.ExecutionCompletion;
+
+        h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Result);
+        h.Wizard.CurrentPage.ShouldBeSameAs(h.Result);
+        h.Result.IsFailure.ShouldBeTrue();
+        h.Result.IsSuccess.ShouldBeFalse();
+    }
+
     private static readonly ExecutionId Run = new(Guid.Parse("00000000-0000-0000-0000-0000000000e1"));
     private static readonly DateTimeOffset Now = new(2026, 10, 14, 10, 0, 0, TimeSpan.Zero);
 

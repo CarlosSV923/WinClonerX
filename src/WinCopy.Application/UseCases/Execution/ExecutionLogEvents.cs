@@ -7,27 +7,27 @@ using WinCopy.Domain.Shared;
 namespace WinCopy.Application.UseCases.Execution;
 
 /// <summary>
-/// Construye los eventos de ejecución del registro de operación (contracts/log-events.md). Todos llevan la propiedad
-/// <c>ExecutionId</c>. Los valores son primitivos o textos, para que se serialicen igual en CLEF.
+/// Construye los eventos de ejecución del registro de operación (contracts/log-events.md). No añaden <c>ExecutionId</c>: el
+/// adaptador de registro lo escribe en la cabecera de cada línea, junto con <c>AppVersion</c>. Los valores son primitivos o
+/// textos, para que se serialicen igual en CLEF.
 /// </summary>
 internal static class ExecutionLogEvents
 {
     /// <summary>La ejecución ha empezado para el plan indicado.</summary>
-    public static LogEvent Started(ExecutionId id, PlanId plan) =>
-        Create("ExecutionStarted", id, LogLevelKind.Information, ("PlanId", Text(plan.Value)));
+    public static LogEvent Started(PlanId plan) =>
+        Create("ExecutionStarted", LogLevelKind.Information, ("PlanId", Text(plan.Value)));
 
     /// <summary>Ha empezado una fase.</summary>
-    public static LogEvent PhaseStarted(ExecutionId id, ExecutionPhase phase) =>
-        Create("PhaseStarted", id, LogLevelKind.Information, ("Phase", phase.ToString()));
+    public static LogEvent PhaseStarted(ExecutionPhase phase) =>
+        Create("PhaseStarted", LogLevelKind.Information, ("Phase", phase.ToString()));
 
     /// <summary>Ha terminado una fase, tras la duración indicada.</summary>
-    public static LogEvent PhaseCompleted(ExecutionId id, ExecutionPhase phase, TimeSpan duration) =>
-        Create("PhaseCompleted", id, LogLevelKind.Information, ("Phase", phase.ToString()), ("DurationMs", Milliseconds(duration)));
+    public static LogEvent PhaseCompleted(ExecutionPhase phase, TimeSpan duration) =>
+        Create("PhaseCompleted", LogLevelKind.Information, ("Phase", phase.ToString()), ("DurationMs", Milliseconds(duration)));
 
     /// <summary>Avance de la copia medido, con su rendimiento y el tiempo restante si ya se conoce.</summary>
-    public static LogEvent ProgressReported(ExecutionId id, CloneProgress progress) => Create(
+    public static LogEvent ProgressReported(CloneProgress progress) => Create(
         "ProgressReported",
-        id,
         LogLevelKind.Information,
         ("BytesDone", progress.BytesDone),
         ("BytesTotal", progress.BytesTotal),
@@ -35,35 +35,31 @@ internal static class ExecutionLogEvents
         ("EtaSeconds", progress.Eta is { } eta ? eta.TotalSeconds : (double?)null));
 
     /// <summary>Una compensación ha terminado. Un fallo se registra como advertencia y no oculta el error original.</summary>
-    public static LogEvent CompensationCompleted(ExecutionId id, CompensationKind kind, bool success, string? detail) => Create(
+    public static LogEvent CompensationCompleted(CompensationKind kind, bool success, string? detail) => Create(
         "CompensationCompleted",
-        id,
         success ? LogLevelKind.Information : LogLevelKind.Warning,
         ("Compensation", kind.ToString()),
         ("Result", success ? "Succeeded" : "Failed"),
         ("TechnicalDetail", detail));
 
     /// <summary>La ejecución ha completado todas sus fases. El detalle opcional recoge avisos no bloqueantes, como WinRE.</summary>
-    public static LogEvent Completed(ExecutionId id, TimeSpan duration, string? technicalDetail) => Create(
+    public static LogEvent Completed(TimeSpan duration, string? technicalDetail) => Create(
         "ExecutionCompleted",
-        id,
         LogLevelKind.Information,
         ("Outcome", CloneOutcome.Completed.ToString()),
         ("TechnicalDetail", technicalDetail),
         ("DurationMs", Milliseconds(duration)));
 
     /// <summary>La ejecución ha terminado tras cancelarse y completar las compensaciones.</summary>
-    public static LogEvent Cancelled(ExecutionId id, TimeSpan duration) => Create(
+    public static LogEvent Cancelled(TimeSpan duration) => Create(
         "ExecutionCancelled",
-        id,
         LogLevelKind.Warning,
         ("Outcome", CloneOutcome.Cancelled.ToString()),
         ("DurationMs", Milliseconds(duration)));
 
     /// <summary>La ejecución ha fallado en una fase, con su código estable y el detalle técnico.</summary>
-    public static LogEvent Failed(ExecutionId id, TimeSpan duration, ExecutionFailure failure) => Create(
+    public static LogEvent Failed(TimeSpan duration, ExecutionFailure failure) => Create(
         "ExecutionFailed",
-        id,
         LogLevelKind.Error,
         ("Outcome", CloneOutcome.Failed.ToString()),
         ("FailureCode", failure.Code),
@@ -72,9 +68,8 @@ internal static class ExecutionLogEvents
         ("DurationMs", Milliseconds(duration)));
 
     /// <summary>El plan se invalida porque cambió el estado de los discos antes de ejecutarlo (FR-011).</summary>
-    public static LogEvent PlanInvalidated(ExecutionId id, PlanId plan, string reason) => Create(
+    public static LogEvent PlanInvalidated(PlanId plan, string reason) => Create(
         "PlanInvalidated",
-        id,
         LogLevelKind.Warning,
         ("PlanId", Text(plan.Value)),
         ("Reason", reason));
@@ -83,9 +78,8 @@ internal static class ExecutionLogEvents
     /// Un paso de liberación de recursos ha fallado (montajes, instantánea o destino). No cambia el desenlace de la ejecución:
     /// <c>Step</c> indica cuál ha fallado.
     /// </summary>
-    public static LogEvent CleanupFailed(ExecutionId id, string step, string technicalDetail) => Create(
+    public static LogEvent CleanupFailed(string step, string technicalDetail) => Create(
         "CleanupFailed",
-        id,
         LogLevelKind.Warning,
         ("Step", step),
         ("TechnicalDetail", technicalDetail));
@@ -94,17 +88,16 @@ internal static class ExecutionLogEvents
     /// La restauración del tamaño original del origen ha fallado tras un clon verificado. No cambia el desenlace (el clon es
     /// válido y la ejecución termina como Completed con SourceRestored = false), pero la partición del origen queda reducida.
     /// </summary>
-    public static LogEvent SourceRestoreFailed(ExecutionId id, PartitionGuid partition, ByteSize originalLength, string technicalDetail) => Create(
+    public static LogEvent SourceRestoreFailed(PartitionGuid partition, ByteSize originalLength, string technicalDetail) => Create(
         "SourceRestoreFailed",
-        id,
         LogLevelKind.Warning,
         ("Partition", Text(partition.Value)),
         ("OriginalLength", originalLength.Bytes),
         ("TechnicalDetail", technicalDetail));
 
-    private static LogEvent Create(string name, ExecutionId id, LogLevelKind level, params (string Key, object? Value)[] entries)
+    private static LogEvent Create(string name, LogLevelKind level, params (string Key, object? Value)[] entries)
     {
-        var properties = new Dictionary<string, object?>(StringComparer.Ordinal) { ["ExecutionId"] = Text(id.Value) };
+        var properties = new Dictionary<string, object?>(StringComparer.Ordinal);
         foreach (var (key, value) in entries)
         {
             properties[key] = value;
