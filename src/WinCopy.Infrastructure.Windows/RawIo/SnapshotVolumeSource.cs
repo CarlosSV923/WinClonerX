@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using WinCopy.Application.Errors;
 using WinCopy.Application.Ports;
@@ -28,10 +27,15 @@ internal interface ISnapshotDevice : IDisposable
     /// <summary>
     /// FSCTL_GET_VOLUME_BITMAP from <paramref name="startingLcn"/>. The bitmap bits are written to the start of
     /// <paramref name="output"/> without the header, least significant bit first. Returns the number of bytes written.
+    /// <paramref name="chunkStartingLcn"/> is the first cluster of the chunk. The device may round it down to a multiple of
+    /// 8, so it can be below <paramref name="startingLcn"/>.
+    /// <paramref name="chunkClusters"/> is the number of clusters this chunk covers, from <paramref name="chunkStartingLcn"/>.
+    /// It is not the BitmapSize of the header, which counts the clusters from the chunk to the END OF THE VOLUME. The next
+    /// request starts at <c>chunkStartingLcn + chunkClusters</c>.
     /// <paramref name="moreData"/> is true when the output was full and more of the bitmap remains.
     /// </summary>
     int ReadBitmapChunk(
-        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long bitmapSizeClusters, out bool moreData);
+        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long chunkClusters, out bool moreData);
 
     /// <summary>Reads at the absolute device offset. Returns fewer bytes than requested only when the device ends.</summary>
     int Read(long offset, Span<byte> alignedDestination);
@@ -44,8 +48,6 @@ internal interface ISnapshotDevice : IDisposable
 internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
 {
     private const int ErrorMoreData = 234;
-
-    private static readonly int BitmapHeaderBytes = Unsafe.SizeOf<VOLUME_BITMAP_BUFFER>();
 
     private readonly SafeDeviceHandle _handle;
 
@@ -135,13 +137,15 @@ internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
 
     /// <inheritdoc />
     /// <remarks>
-    /// ERROR_MORE_DATA (234) means the output buffer is full, so it is success with <paramref name="moreData"/> true.
+    /// ERROR_MORE_DATA (234) means the output buffer is full, so it is success with <paramref name="moreData"/> true. The
+    /// header and the byte count are checked by <see cref="VolumeBitmapParser"/>. BitmapSize there counts the clusters to the
+    /// end of the volume, not the clusters in this buffer.
     /// </remarks>
     public int ReadBitmapChunk(
-        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long bitmapSizeClusters, out bool moreData)
+        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long chunkClusters, out bool moreData)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(startingLcn);
-        if (output.Length <= BitmapHeaderBytes)
+        if (output.Length <= VolumeBitmapParser.HeaderBytes)
         {
             throw new ArgumentException("The output buffer is too small for a volume bitmap.", nameof(output));
         }
@@ -149,6 +153,7 @@ internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
         var input = new STARTING_LCN_INPUT_BUFFER { StartingLcn = startingLcn };
         bool ok;
         int error = 0;
+        uint returned = 0;
 
         fixed (byte* outputPointer = output)
         {
@@ -159,7 +164,7 @@ internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
                 (uint)sizeof(STARTING_LCN_INPUT_BUFFER),
                 outputPointer,
                 (uint)output.Length,
-                out _,
+                out returned,
                 IntPtr.Zero);
 
             if (!ok)
@@ -173,20 +178,8 @@ internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
             throw new Win32Exception(error, "FSCTL_GET_VOLUME_BITMAP failed.");
         }
 
-        VOLUME_BITMAP_BUFFER header = MemoryMarshal.Read<VOLUME_BITMAP_BUFFER>(output);
-        long bitmapBytes = (header.BitmapSize + 7) / 8;
-        if (header.BitmapSize <= 0 || BitmapHeaderBytes + bitmapBytes > output.Length)
-        {
-            throw new InvalidOperationException($"Unexpected volume bitmap header at cluster {startingLcn}.");
-        }
-
-        // The bits follow the header. Span.CopyTo handles the overlap, so the bits move to the start of the output.
-        output.Slice(BitmapHeaderBytes, (int)bitmapBytes).CopyTo(output);
-
-        chunkStartingLcn = header.StartingLcn;
-        bitmapSizeClusters = header.BitmapSize;
         moreData = !ok;
-        return (int)bitmapBytes;
+        return VolumeBitmapParser.Parse(output, returned, moreData, out chunkStartingLcn, out chunkClusters);
     }
 
     /// <inheritdoc />
@@ -230,12 +223,13 @@ internal sealed unsafe class Win32SnapshotDevice : ISnapshotDevice
 /// </summary>
 internal sealed class SnapshotVolumeSource : IBlockSource
 {
-    /// <summary>Size of the output buffer for each FSCTL_GET_VOLUME_BITMAP call.</summary>
+    /// <summary>Size of the output buffer for each FSCTL_GET_VOLUME_BITMAP call, header included.</summary>
     internal const int BitmapChunkBytes = 1024 * 1024;
 
     private readonly ISnapshotDevice _device;
     private readonly long _length;
     private readonly NTFS_VOLUME_DATA_BUFFER _volume;
+    private readonly int _bitmapChunkBytes;
     private VolumeAllocation? _allocation;
     private bool _disposed;
 
@@ -246,6 +240,19 @@ internal sealed class SnapshotVolumeSource : IBlockSource
     /// </summary>
     /// <exception cref="PlatformException">The device refuses the geometry queries.</exception>
     internal SnapshotVolumeSource(ISnapshotDevice device)
+        : this(device, BitmapChunkBytes)
+    {
+    }
+
+    /// <summary>
+    /// As <see cref="SnapshotVolumeSource(ISnapshotDevice)"/>, with the output buffer size of each bitmap call given.
+    /// Tests pass a small size to make a small volume need several chunks.
+    /// </summary>
+    /// <param name="device">The device. It is disposed when the constructor fails.</param>
+    /// <param name="bitmapChunkBytes">The output buffer size of each bitmap call, header included. It must be larger than the header.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="bitmapChunkBytes"/> is not larger than the bitmap header.</exception>
+    /// <exception cref="PlatformException">The device refuses the geometry queries.</exception>
+    internal SnapshotVolumeSource(ISnapshotDevice device, int bitmapChunkBytes)
     {
         ArgumentNullException.ThrowIfNull(device);
 
@@ -253,6 +260,8 @@ internal sealed class SnapshotVolumeSource : IBlockSource
         NTFS_VOLUME_DATA_BUFFER volume;
         try
         {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(bitmapChunkBytes, VolumeBitmapParser.HeaderBytes);
+
             device.AllowExtendedDasdIo();
             length = device.GetLength();
             volume = device.GetNtfsVolumeData();
@@ -277,6 +286,7 @@ internal sealed class SnapshotVolumeSource : IBlockSource
         _device = device;
         _length = length;
         _volume = volume;
+        _bitmapChunkBytes = bitmapChunkBytes;
     }
 
     /// <inheritdoc />
@@ -397,15 +407,16 @@ internal sealed class SnapshotVolumeSource : IBlockSource
     }
 
     /// <summary>
-    /// Walks the volume bitmap from cluster 0 and returns the runs of used clusters. Runs that cross a chunk boundary are
-    /// merged. The walk ends when the bitmap reaches the last cluster. A bitmap that stops early is an error, because
-    /// the clusters that are missing would never be copied.
+    /// Walks the volume bitmap from cluster 0 and returns the runs of used clusters. Each call covers the clusters from the
+    /// returned start up to the chunk's cluster count, and the next call starts where that chunk ends. Runs that cross a
+    /// chunk boundary are merged. The walk ends when the bitmap reaches the last cluster. A bitmap that stops early is an
+    /// error, because the clusters that are missing would never be copied.
     /// </summary>
     private List<(long StartLcn, long Count)> ReadUsedRuns(CancellationToken ct)
     {
         long totalClusters = _volume.TotalClusters;
         var runs = new List<(long StartLcn, long Count)>();
-        byte[] chunk = new byte[BitmapChunkBytes];
+        byte[] chunk = new byte[_bitmapChunkBytes];
         long nextLcn = 0;
 
         while (true)
@@ -413,22 +424,30 @@ internal sealed class SnapshotVolumeSource : IBlockSource
             ct.ThrowIfCancellationRequested();
 
             long requested = nextLcn;
-            int bytes = _device.ReadBitmapChunk(requested, chunk, out long chunkStart, out long bitmapSize, out bool moreData);
+            int bytes = _device.ReadBitmapChunk(requested, chunk, out long chunkStart, out long chunkClusters, out bool moreData);
 
-            // The device may start the bitmap before the requested cluster, so the clusters below it are skipped.
-            if (chunkStart > requested || bitmapSize <= 0 || chunkStart + bitmapSize <= requested ||
-                bytes < (bitmapSize + 7) / 8 || bytes > chunk.Length)
+            // The device may start the bitmap before the requested cluster, so the clusters below it are skipped. The chunk
+            // must reach past the request, or the walk would not advance.
+            if (chunkStart > requested || chunkClusters <= 0 || chunkStart + chunkClusters <= requested ||
+                bytes < (chunkClusters + 7) / 8 || bytes > chunk.Length)
             {
                 throw new InvalidOperationException(
-                    $"Unexpected volume bitmap at cluster {requested}: it starts at {chunkStart} and has {bitmapSize} clusters.");
+                    $"Unexpected volume bitmap at cluster {requested}: it starts at {chunkStart} and covers {chunkClusters} clusters.");
             }
 
-            long chunkEnd = Math.Min(chunkStart + bitmapSize, totalClusters);
+            // A chunk with more data after it must end on a byte boundary, or the next chunk would not line up with its bits.
+            if (moreData && chunkClusters % 8 != 0)
+            {
+                throw new InvalidOperationException(
+                    $"The volume bitmap chunk at cluster {chunkStart} covers {chunkClusters} clusters, not a whole number of bytes.");
+            }
+
+            long chunkEnd = Math.Min(chunkStart + chunkClusters, totalClusters);
             IReadOnlyList<(long StartLcn, long Count)> chunkRuns =
                 VolumeAllocationPlanner.UsedRuns(chunk.AsSpan(0, bytes), chunkStart, totalClusters);
             AppendClipped(runs, chunkRuns, requested, chunkEnd);
 
-            nextLcn = chunkStart + bitmapSize;
+            nextLcn = chunkStart + chunkClusters;
             if (nextLcn >= totalClusters)
             {
                 break;

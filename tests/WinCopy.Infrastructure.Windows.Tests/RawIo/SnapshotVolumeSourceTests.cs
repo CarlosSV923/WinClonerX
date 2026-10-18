@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Shouldly;
 using WinCopy.Application.Errors;
 using WinCopy.Application.Ports.Models;
@@ -41,6 +42,21 @@ public sealed class SnapshotVolumeSourceTests
         BytesPerSector = Sector,
     };
 
+    /// <summary>A volume of <paramref name="clusters"/> clusters with the same geometry as <see cref="SmallVolume"/>.</summary>
+    private static NTFS_VOLUME_DATA_BUFFER VolumeOf(long clusters) => new()
+    {
+        TotalClusters = clusters,
+        BytesPerCluster = Cluster,
+        NumberSectors = clusters * (Cluster / Sector),
+        BytesPerSector = Sector,
+    };
+
+    /// <summary>The device length of <see cref="VolumeOf"/>: the sectors of the volume plus the backup boot sector.</summary>
+    private static long LengthOf(long clusters) => (clusters * (Cluster / Sector) + 1) * Sector;
+
+    /// <summary>The output buffer size for a bitmap chunk of <paramref name="clusters"/> clusters, header included.</summary>
+    private static int ChunkBytes(int clusters) => VolumeBitmapParser.HeaderBytes + clusters / 8;
+
     [Fact]
     public void CallsAllowExtendedDasdIoBeforeAnyOtherCall()
     {
@@ -59,17 +75,20 @@ public sealed class SnapshotVolumeSourceTests
         source.Length.ShouldBe(new ByteSize(SmallLength));
     }
 
-    [Fact]
-    public async Task MergesARunThatCrossesTheBitmapChunkBoundary()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MergesARunThatCrossesTheBitmapChunkBoundary(bool reportsNoByteCountOnMoreData)
     {
-        // Chunks of 64 clusters: the run 60..67 starts in the first chunk and ends in the second.
-        var device = new FakeSnapshotDevice(SmallVolume(), SmallLength) { ChunkClusters = 64 };
+        // Chunks of 64 clusters: the run 60..67 starts in the first chunk and ends in the second. The second theory case
+        // is a device that reports no byte count when the buffer is full, so the whole buffer is taken as present.
+        var device = new FakeSnapshotDevice(SmallVolume(), SmallLength) { ReportsNoByteCountOnMoreData = reportsNoByteCountOnMoreData };
         for (long lcn = 60; lcn < 68; lcn++)
         {
             device.UsedClusters.Add(lcn);
         }
 
-        using var source = new SnapshotVolumeSource(device);
+        using var source = new SnapshotVolumeSource(device, ChunkBytes(64));
 
         VolumeAllocation allocation = await source.GetAllocationAsync(CancellationToken.None);
 
@@ -83,13 +102,42 @@ public sealed class SnapshotVolumeSourceTests
     }
 
     [Fact]
+    public async Task ReadsAVolumeThatNeedsManyChunksAndMergesRunsAcrossThem()
+    {
+        // 1024 clusters in chunks of 16: 64 bitmap calls. The run 100..499 crosses 25 chunks.
+        const long clusters = 1024;
+        var device = new FakeSnapshotDevice(VolumeOf(clusters), LengthOf(clusters));
+        for (long lcn = 100; lcn < 500; lcn++)
+        {
+            device.UsedClusters.Add(lcn);
+        }
+
+        device.UsedClusters.Add(1000);
+        device.UsedClusters.Add(clusters - 1);
+
+        using var source = new SnapshotVolumeSource(device, ChunkBytes(16));
+
+        VolumeAllocation allocation = await source.GetAllocationAsync(CancellationToken.None);
+
+        // Each call starts where the previous chunk ended, so no cluster is skipped or read twice.
+        device.BitmapRequests.ShouldBe(Enumerable.Range(0, 64).Select(i => (long)i * 16));
+        allocation.UsedRanges.ShouldBe([
+            new Extent(0, 8192),
+            new Extent(100 * Cluster, 400 * Cluster),
+            new Extent(1000 * Cluster, Cluster),
+            new Extent((clusters - 1) * Cluster, 4608),
+        ]);
+    }
+
+    [Fact]
     public async Task IncludesTheBootRegionTheTailAndTheBackupBootSectorWithTheS3Geometry()
     {
-        var device = new FakeSnapshotDevice(S3Volume(), S3Length) { ChunkClusters = 8192 };
+        // 8192-cluster chunks: 16 bitmap calls for the 126959 clusters of the S3 volume.
+        var device = new FakeSnapshotDevice(S3Volume(), S3Length);
         device.UsedClusters.Add(5);
         device.UsedClusters.Add(S3TotalClusters - 1);
 
-        using var source = new SnapshotVolumeSource(device);
+        using var source = new SnapshotVolumeSource(device, ChunkBytes(8192));
 
         VolumeAllocation allocation = await source.GetAllocationAsync(CancellationToken.None);
 
@@ -104,8 +152,8 @@ public sealed class SnapshotVolumeSourceTests
     [Fact]
     public async Task CachesTheAllocationSoTheDeviceIsQueriedOnce()
     {
-        var device = new FakeSnapshotDevice(SmallVolume(), SmallLength) { ChunkClusters = 64 };
-        using var source = new SnapshotVolumeSource(device);
+        var device = new FakeSnapshotDevice(SmallVolume(), SmallLength);
+        using var source = new SnapshotVolumeSource(device, ChunkBytes(64));
 
         VolumeAllocation first = await source.GetAllocationAsync(CancellationToken.None);
         int callsAfterFirst = device.BitmapCalls;
@@ -209,6 +257,16 @@ public sealed class SnapshotVolumeSourceTests
     }
 
     [Fact]
+    public void ConstructorRejectsAChunkThatCannotHoldTheHeaderAndDisposesTheDevice()
+    {
+        var device = new FakeSnapshotDevice(SmallVolume(), SmallLength);
+
+        Should.Throw<ArgumentOutOfRangeException>(() => new SnapshotVolumeSource(device, VolumeBitmapParser.HeaderBytes));
+
+        device.DisposeCount.ShouldBe(1);
+    }
+
+    [Fact]
     public void OpenVolumeRejectsAPartitionWithoutASnapshot()
     {
         var set = new VssSnapshotSet(
@@ -224,7 +282,9 @@ public sealed class SnapshotVolumeSourceTests
 
 /// <summary>
 /// Fake <see cref="ISnapshotDevice"/> over a volume with a bitmap of <see cref="UsedClusters"/>. It records each call in
-/// order. The bitmap is returned in chunks of <see cref="ChunkClusters"/> clusters, as FSCTL_GET_VOLUME_BITMAP does.
+/// order. Each bitmap call builds the raw FSCTL_GET_VOLUME_BITMAP output that Windows would produce for the buffer it
+/// is given, and runs it through <see cref="VolumeBitmapParser"/>, so the fake follows the device contract and not the
+/// parser's own output.
 /// </summary>
 internal sealed class FakeSnapshotDevice(NTFS_VOLUME_DATA_BUFFER volume, long length) : ISnapshotDevice
 {
@@ -232,7 +292,14 @@ internal sealed class FakeSnapshotDevice(NTFS_VOLUME_DATA_BUFFER volume, long le
 
     public HashSet<long> UsedClusters { get; } = [];
 
-    public int ChunkClusters { get; set; } = 64;
+    /// <summary>The starting cluster of each bitmap call, in order.</summary>
+    public List<long> BitmapRequests { get; } = [];
+
+    /// <summary>
+    /// When true, a call that fails with ERROR_MORE_DATA reports 0 bytes, as a driver may do if it does not set
+    /// lpBytesReturned on overflow.
+    /// </summary>
+    public bool ReportsNoByteCountOnMoreData { get; set; }
 
     /// <summary>Bytes missing from each read, which makes the read short.</summary>
     public int ShortReadBy { get; set; }
@@ -269,25 +336,37 @@ internal sealed class FakeSnapshotDevice(NTFS_VOLUME_DATA_BUFFER volume, long le
     }
 
     public int ReadBitmapChunk(
-        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long bitmapSizeClusters, out bool moreData)
+        long startingLcn, Span<byte> output, out long chunkStartingLcn, out long chunkClusters, out bool moreData)
     {
         Calls.Add("ReadBitmapChunk");
+        BitmapRequests.Add(startingLcn);
 
-        long clusters = Math.Min(ChunkClusters, volume.TotalClusters - startingLcn);
-        int bytes = (int)((clusters + 7) / 8);
-        output[..bytes].Clear();
-        for (int bit = 0; bit < clusters; bit++)
+        // As FSCTL_GET_VOLUME_BITMAP does: the start is rounded down to a multiple of 8, and BitmapSize counts the clusters
+        // from that start to the end of the volume. A buffer that cannot hold the rest fails with ERROR_MORE_DATA and
+        // holds the bitmap bytes that fit after the header.
+        long start = startingLcn & ~7L;
+        long bitmapSize = volume.TotalClusters - start;
+        long neededBytes = (bitmapSize + 7) / 8;
+        long presentBytes = Math.Min(neededBytes, output.Length - VolumeBitmapParser.HeaderBytes);
+        moreData = presentBytes < neededBytes;
+
+        var header = new VOLUME_BITMAP_BUFFER { StartingLcn = start, BitmapSize = bitmapSize };
+        MemoryMarshal.Write(output, in header);
+
+        Span<byte> bits = output.Slice(VolumeBitmapParser.HeaderBytes, (int)presentBytes);
+        bits.Clear();
+        for (long bit = 0; bit < presentBytes * 8 && start + bit < volume.TotalClusters; bit++)
         {
-            if (UsedClusters.Contains(startingLcn + bit))
+            if (UsedClusters.Contains(start + bit))
             {
-                output[bit >> 3] |= (byte)(1 << (bit & 7));
+                bits[(int)(bit >> 3)] |= (byte)(1 << (int)(bit & 7));
             }
         }
 
-        chunkStartingLcn = startingLcn;
-        bitmapSizeClusters = clusters;
-        moreData = startingLcn + clusters < volume.TotalClusters;
-        return bytes;
+        uint returned = ReportsNoByteCountOnMoreData && moreData
+            ? 0
+            : (uint)(VolumeBitmapParser.HeaderBytes + presentBytes);
+        return VolumeBitmapParser.Parse(output, returned, moreData, out chunkStartingLcn, out chunkClusters);
     }
 
     public int Read(long offset, Span<byte> alignedDestination)
