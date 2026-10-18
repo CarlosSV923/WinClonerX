@@ -61,6 +61,14 @@ internal static partial class Kernel32
         char* lpszVolumeName,
         uint cchBufferLength);
 
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static unsafe partial bool GetVolumePathNamesForVolumeNameW(
+        string lpszVolumeName,
+        char* lpszVolumePathNames,
+        uint cchBufferLength,
+        out uint lpcchReturnLength);
+
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool CloseHandle(IntPtr hObject);

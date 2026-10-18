@@ -7,9 +7,9 @@ namespace WinCopy.Infrastructure.Windows.Logging;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Operations are aggregated per range (tramo), not per buffer. The caller begins one scope per contiguous range
-/// or per high-level operation (Lock, Offline, Online, CommitLayout, DeleteLayout, Shrink, Restore, Extend), never
-/// per I/O buffer. Recording every buffer would flood the log and slow the copy down.
+/// Operations are aggregated, not per buffer. The caller begins one scope per copy (one Read and one Write per partition)
+/// or per high-level operation (Lock, Offline, Online, CommitLayout, DeleteLayout, Shrink, Restore, Extend), never per
+/// range or per I/O buffer. Recording every buffer would flood the log and slow the copy down.
 /// </para>
 /// <para>
 /// Allowed operation names: Read, Write, Lock, Offline, Online, CommitLayout, DeleteLayout, Shrink, Restore, Extend.

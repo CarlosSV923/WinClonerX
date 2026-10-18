@@ -19,7 +19,7 @@ internal sealed class DiskOperationScope : IDisposable
     private readonly string _disk;
     private readonly string _operation;
     private readonly long? _offset;
-    private readonly long? _length;
+    private long? _length;
     private readonly DateTimeOffset _start;
 
     private string? _result;
@@ -41,6 +41,12 @@ internal sealed class DiskOperationScope : IDisposable
         _offset = offset;
         _length = length;
         _start = clock.UtcNow;
+    }
+
+    /// <summary>Sets the byte length the event reports, for an operation whose length is known only when it ends.</summary>
+    public void SetLength(long length)
+    {
+        _length = length;
     }
 
     /// <summary>Marks the operation as completed successfully.</summary>

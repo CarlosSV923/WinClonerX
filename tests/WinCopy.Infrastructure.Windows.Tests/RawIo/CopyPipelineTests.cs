@@ -137,7 +137,7 @@ public sealed class CopyPipelineTests
     }
 
     [Fact]
-    public async Task OneReadAndOneWriteOperationIsRecordedPerRangeNotPerChunk()
+    public async Task OneReadAndOneWriteOperationIsRecordedPerCopyNotPerRangeOrChunk()
     {
         Extent[] ranges = [new(0, 6 * Mib), new(8 * Mib, Mib)];
         var log = new RecordingExecutionLog();
@@ -145,8 +145,29 @@ public sealed class CopyPipelineTests
         await NewPipeline(log: log).CopyAsync(new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges)), Allocation(ranges), new MemoryTargetDisk(16 * Mib), 0, new RecordingProgress(), CancellationToken.None);
 
         var operations = Operations(log);
-        operations.Count(o => o == "Read").ShouldBe(2);
-        operations.Count(o => o == "Write").ShouldBe(2);
+        operations.Count(o => o == "Read").ShouldBe(1);
+        operations.Count(o => o == "Write").ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ManyRangesOfOneCopyYieldOneReadAndOneWriteWithTheSummedLengths()
+    {
+        const int rangeCount = 50;
+        const long rangeLength = 4096;
+        const long targetBase = 1 * Mib;
+        Extent[] ranges = Enumerable.Range(0, rangeCount).Select(i => new Extent(i * 8192L, rangeLength)).ToArray();
+        var log = new RecordingExecutionLog();
+
+        await NewPipeline(log: log).CopyAsync(new MemoryBlockSource(Pattern(512 * 1024), Allocation(ranges)), Allocation(ranges), new MemoryTargetDisk(2 * Mib), targetBase, new RecordingProgress(), CancellationToken.None);
+
+        var reads = DiskOperationEvents(log, "Read");
+        var writes = DiskOperationEvents(log, "Write");
+        reads.Count.ShouldBe(1);
+        writes.Count.ShouldBe(1);
+        ((long)reads[0]["Offset"]!).ShouldBe(0L);
+        ((long)reads[0]["Length"]!).ShouldBe(rangeCount * rangeLength);
+        ((long)writes[0]["Offset"]!).ShouldBe(targetBase);
+        ((long)writes[0]["Length"]!).ShouldBe(rangeCount * rangeLength);
     }
 
     [Fact]
@@ -229,6 +250,12 @@ public sealed class CopyPipelineTests
 
     private static List<string> Operations(RecordingExecutionLog log) =>
         log.Events.Where(e => e.Event == "DiskOperation").Select(e => (string)e.Properties["Operation"]!).ToList();
+
+    private static List<IReadOnlyDictionary<string, object?>> DiskOperationEvents(RecordingExecutionLog log, string operation) =>
+        log.Events
+            .Where(e => e.Event == "DiskOperation" && (string)e.Properties["Operation"]! == operation)
+            .Select(e => e.Properties)
+            .ToList();
 
     /// <summary>Counts the buffers the pool still has rented. The pool keeps this state in a private array.</summary>
     private static int RentedCount(AlignedBufferPool pool)

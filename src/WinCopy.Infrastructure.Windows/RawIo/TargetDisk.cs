@@ -21,7 +21,9 @@ namespace WinCopy.Infrastructure.Windows.RawIo;
 /// <item><see cref="BringOnlineAsync"/>: set the disk online, ask Windows to read it again, then release the volume locks.</item>
 /// </list>
 /// <para>
-/// <see cref="DeleteLayoutAsync"/> is the compensation: it zeros both ends, so the disk shows as uninitialized.
+/// <see cref="DeleteLayoutAsync"/> is the compensation: it zeros the GPT structures at both ends, so the disk shows as
+/// uninitialized. After a commit it zeros only outside the committed partitions, because Windows refuses raw writes
+/// into a volume of an online disk.
 /// <see cref="DisposeAsync"/> releases the locks and brings the disk online if it is still offline.
 /// Errors from the device are translated to <see cref="PlatformException"/> codes.
 /// </para>
@@ -37,6 +39,9 @@ internal sealed class TargetDisk : ITargetDisk
     private IReadOnlyList<IVolumeLock>? _locks;
     private bool _offline;
     private bool _disposed;
+
+    // First byte of the first committed partition and end of the last one. Null until a layout is committed, or when it has none.
+    private (long Start, long End)? _committedPartitions;
 
     /// <summary>Takes ownership of <paramref name="device"/>. The factory disposes the device when this constructor throws.</summary>
     internal TargetDisk(ITargetDiskDevice device, DiskOperationRecorder recorder, string diskLabel)
@@ -245,6 +250,8 @@ internal sealed class TargetDisk : ITargetDisk
             WriteRaw(protectiveMbrOffset, protectiveMbr);
             WriteRaw(primaryHeaderOffset, primaryHeader);
         });
+
+        _committedPartitions = PartitionSpan(layout);
     }
 
     private void BringOnline(CancellationToken ct)
@@ -278,8 +285,13 @@ internal sealed class TargetDisk : ITargetDisk
         Recorded("DeleteLayout", null, null, () =>
         {
             long length = _device.Length;
-            WriteZeros(0, BoundaryBytes);
-            WriteZeros(length - BoundaryBytes, BoundaryBytes);
+            (long frontLength, long tailStart) = ErasedRanges(length);
+
+            // The tail goes first. It holds the backup GPT. If the front were erased first and the tail write then failed,
+            // the disk would keep a backup GPT that Windows can use to restore the primary. With the tail gone first, a
+            // failure in the front leaves a valid primary GPT and no backup to restore it from.
+            WriteZeros(tailStart, length - tailStart);
+            WriteZeros(0, frontLength);
 
             if (!_offline)
             {
@@ -293,6 +305,50 @@ internal sealed class TargetDisk : ITargetDisk
                 }
             }
         });
+    }
+
+    /// <summary>
+    /// The two regions DeleteLayout zeros, as the length of the front and the start of the tail. Without a committed
+    /// layout they are the first and the last MiB. With one, they stop at the partitions: the front ends at the first
+    /// partition and the tail starts at the end of the last one, and both still hold the GPT structures.
+    /// </summary>
+    private (long FrontLength, long TailStart) ErasedRanges(long length)
+    {
+        long frontLength = BoundaryBytes;
+        long tailStart = length - BoundaryBytes;
+
+        if (_committedPartitions is { } partitions)
+        {
+            frontLength = Math.Min(BoundaryBytes, partitions.Start);
+            tailStart = Math.Max(length - BoundaryBytes, partitions.End);
+        }
+
+        // Fail closed: a region that is not whole sectors, or that is empty or overlaps the other, is not erased.
+        int sector = _device.LogicalSectorSize;
+        bool valid = frontLength > 0
+            && tailStart > frontLength
+            && tailStart < length
+            && frontLength % sector == 0
+            && tailStart % sector == 0
+            && (length - tailStart) % sector == 0;
+
+        if (!valid)
+        {
+            throw new InvalidOperationException(
+                $"The regions to erase are not whole sectors outside the partitions (front {frontLength}, tail from {tailStart}).");
+        }
+
+        return (frontLength, tailStart);
+    }
+
+    private static (long Start, long End)? PartitionSpan(TargetLayout layout)
+    {
+        if (layout.Entries.Count == 0)
+        {
+            return null;
+        }
+
+        return (layout.Entries.Min(entry => entry.Extent.Offset), layout.Entries.Max(entry => entry.Extent.End));
     }
 
     private IReadOnlyList<IVolumeLock> LockVolumes()

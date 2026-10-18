@@ -24,7 +24,8 @@ namespace WinCopy.Infrastructure.Windows.RawIo;
 /// Buffers are always returned, and the pool is disposed when the copy ends.
 /// </para>
 /// <para>
-/// There is one <c>Read</c> and one <c>Write</c> <c>DiskOperation</c> per range, never per chunk (log-events.md).
+/// There is one <c>Read</c> and one <c>Write</c> <c>DiskOperation</c> per copy, never per range or chunk (log-events.md).
+/// Their lengths are the bytes that actually moved, also when the copy fails.
 /// </para>
 /// </remarks>
 internal sealed class CopyPipeline : IVolumeCopier
@@ -46,7 +47,7 @@ internal sealed class CopyPipeline : IVolumeCopier
     private readonly string _diskLabel;
 
     /// <param name="poolFactory">Creates the buffer pool for one copy. The pipeline disposes it when the copy ends.</param>
-    /// <param name="recorder">Records the <c>DiskOperation</c> events for each range.</param>
+    /// <param name="recorder">Records the <c>DiskOperation</c> events for each copy.</param>
     /// <param name="diskLabel">Disk identifier shown in the log.</param>
     public CopyPipeline(Func<AlignedBufferPool> poolFactory, DiskOperationRecorder recorder, string diskLabel)
     {
@@ -86,34 +87,53 @@ internal sealed class CopyPipeline : IVolumeCopier
 
         long total = allocation.TotalUsed.Bytes;
 
-        using AlignedBufferPool pool = _poolFactory();
+        // One Read and one Write for the whole copy. They start with the first chunk and end with the copy.
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var channel = Channel.CreateBounded<ChunkWork>(new BoundedChannelOptions(ChannelCapacity)
-        {
-            SingleReader = true,
-            SingleWriter = true,
-            FullMode = BoundedChannelFullMode.Wait,
-        });
-
         var state = new PipelineState(cts);
+        using DiskOperationScope readScope = _recorder.Begin(_diskLabel, "Read", plans[0].SourceOffset);
+        using DiskOperationScope writeScope = _recorder.Begin(_diskLabel, "Write", plans[0].TargetOffset);
 
-        Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, state, cts.Token), cts.Token);
-        Task writer = Task.Run(
-            () => WriteChunksAsync(target, plans.Count, total, channel.Reader, pool, bytesWritten, state, cts.Token),
-            cts.Token);
-
-        await Task.WhenAll(reader, writer).ConfigureAwait(false);
-
-        // Both tasks have stopped. Return any chunk that was read but never written.
-        while (channel.Reader.TryRead(out ChunkWork? undelivered))
+        try
         {
-            pool.Return(undelivered.Buffer);
-        }
+            using AlignedBufferPool pool = _poolFactory();
+            var channel = Channel.CreateBounded<ChunkWork>(new BoundedChannelOptions(ChannelCapacity)
+            {
+                SingleReader = true,
+                SingleWriter = true,
+                FullMode = BoundedChannelFullMode.Wait,
+            });
 
-        state.Rethrow(ct);
+            Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, state, cts.Token), cts.Token);
+            Task writer = Task.Run(
+                () => WriteChunksAsync(target, plans.Count, total, channel.Reader, pool, bytesWritten, state, cts.Token),
+                cts.Token);
+
+            await Task.WhenAll(reader, writer).ConfigureAwait(false);
+
+            // Both tasks have stopped. Return any chunk that was read but never written.
+            while (channel.Reader.TryRead(out ChunkWork? undelivered))
+            {
+                pool.Return(undelivered.Buffer);
+            }
+
+            state.Rethrow(ct);
+            readScope.Succeed();
+            writeScope.Succeed();
+        }
+        catch (Exception ex)
+        {
+            readScope.Fail(ex);
+            writeScope.Fail(ex);
+            throw;
+        }
+        finally
+        {
+            readScope.SetLength(state.BytesRead);
+            writeScope.SetLength(state.BytesWritten);
+        }
     }
 
-    private async Task ReadChunksAsync(
+    private static async Task ReadChunksAsync(
         IBlockSource source,
         IReadOnlyList<ChunkPlan> plans,
         AlignedBufferPool pool,
@@ -121,23 +141,18 @@ internal sealed class CopyPipeline : IVolumeCopier
         PipelineState state,
         CancellationToken token)
     {
-        DiskOperationScope? scope = null;
         try
         {
             foreach (ChunkPlan plan in plans)
             {
                 token.ThrowIfCancellationRequested();
 
-                if (plan.IsFirstOfRange)
-                {
-                    scope = _recorder.Begin(_diskLabel, "Read", plan.RangeSourceOffset, plan.RangeLength);
-                }
-
                 AlignedBuffer buffer = await pool.RentAsync(token).ConfigureAwait(false);
                 bool handedOff = false;
                 try
                 {
                     await ReadChunkAsync(source, plan, buffer, token).ConfigureAwait(false);
+                    state.AddRead(plan.Length);
                     await output.WriteAsync(new ChunkWork(plan, buffer), token).ConfigureAwait(false);
                     handedOff = true;
                 }
@@ -148,29 +163,17 @@ internal sealed class CopyPipeline : IVolumeCopier
                         pool.Return(buffer);
                     }
                 }
-
-                if (plan.IsLastOfRange)
-                {
-                    scope?.Succeed();
-                    scope?.Dispose();
-                    scope = null;
-                }
             }
 
             output.Complete();
         }
         catch (Exception ex)
         {
-            scope?.Fail(ex);
             state.Fail(ex);
-        }
-        finally
-        {
-            scope?.Dispose();
         }
     }
 
-    private async Task WriteChunksAsync(
+    private static async Task WriteChunksAsync(
         ITargetDisk target,
         int expectedChunks,
         long total,
@@ -180,8 +183,6 @@ internal sealed class CopyPipeline : IVolumeCopier
         PipelineState state,
         CancellationToken token)
     {
-        DiskOperationScope? scope = null;
-        long written = 0;
         int chunks = 0;
         try
         {
@@ -190,12 +191,6 @@ internal sealed class CopyPipeline : IVolumeCopier
                 try
                 {
                     token.ThrowIfCancellationRequested();
-
-                    if (work.Plan.IsFirstOfRange)
-                    {
-                        scope = _recorder.Begin(_diskLabel, "Write", work.Plan.RangeTargetOffset, work.Plan.RangeLength);
-                    }
-
                     await WriteChunkAsync(target, work, token).ConfigureAwait(false);
                 }
                 finally
@@ -203,28 +198,16 @@ internal sealed class CopyPipeline : IVolumeCopier
                     pool.Return(work.Buffer);
                 }
 
-                written += work.Plan.Length;
+                state.AddWritten(work.Plan.Length);
                 chunks++;
-                progress.Report(written);
-
-                if (work.Plan.IsLastOfRange)
-                {
-                    scope?.Succeed();
-                    scope?.Dispose();
-                    scope = null;
-                }
+                progress.Report(state.BytesWritten);
             }
 
-            state.MarkCompleted(chunks == expectedChunks && written == total);
+            state.MarkCompleted(chunks == expectedChunks && state.BytesWritten == total);
         }
         catch (Exception ex)
         {
-            scope?.Fail(ex);
             state.Fail(ex);
-        }
-        finally
-        {
-            scope?.Dispose();
         }
     }
 
@@ -284,17 +267,11 @@ internal sealed class CopyPipeline : IVolumeCopier
             while (position < range.Length)
             {
                 int length = (int)Math.Min(ChunkBytes, range.Length - position);
-                bool isLast = position + length == range.Length;
 
                 plans.Add(new ChunkPlan(
                     SourceOffset: range.Offset + position,
                     TargetOffset: rangeTargetOffset + position,
-                    Length: length,
-                    RangeSourceOffset: range.Offset,
-                    RangeTargetOffset: rangeTargetOffset,
-                    RangeLength: range.Length,
-                    IsFirstOfRange: position == 0,
-                    IsLastOfRange: isLast));
+                    Length: length));
 
                 position += length;
             }
@@ -303,25 +280,36 @@ internal sealed class CopyPipeline : IVolumeCopier
         return plans;
     }
 
-    /// <summary>One chunk of one range: where it is read, where it is written, and the range it belongs to.</summary>
-    private sealed record ChunkPlan(
-        long SourceOffset,
-        long TargetOffset,
-        int Length,
-        long RangeSourceOffset,
-        long RangeTargetOffset,
-        long RangeLength,
-        bool IsFirstOfRange,
-        bool IsLastOfRange);
+    /// <summary>One chunk: where it is read, where it is written, and how long it is.</summary>
+    private sealed record ChunkPlan(long SourceOffset, long TargetOffset, int Length);
 
     /// <summary>A chunk that has been read into a buffer, waiting to be written.</summary>
     private sealed record ChunkWork(ChunkPlan Plan, AlignedBuffer Buffer);
 
-    /// <summary>Shared state of one copy. The first non-cancellation failure is kept, and every failure cancels the copy.</summary>
+    /// <summary>
+    /// Shared state of one copy. The first non-cancellation failure is kept, and every failure cancels the copy. Each byte
+    /// counter has one writer task, and both are read after the tasks have stopped.
+    /// </summary>
     private sealed class PipelineState(CancellationTokenSource cts)
     {
         private Exception? _first;
         private bool _completed;
+
+        /// <summary>Bytes read from the source. Only the reader task adds to it.</summary>
+        public long BytesRead { get; private set; }
+
+        /// <summary>Bytes written to the target. Only the writer task adds to it.</summary>
+        public long BytesWritten { get; private set; }
+
+        public void AddRead(long bytes)
+        {
+            BytesRead += bytes;
+        }
+
+        public void AddWritten(long bytes)
+        {
+            BytesWritten += bytes;
+        }
 
         public void Fail(Exception ex)
         {

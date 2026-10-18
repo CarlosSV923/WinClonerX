@@ -27,7 +27,7 @@ diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-
 | `PlanInvalidated` (Warning) | `PlanId`, `Reason` (p. ej. `DisksChanged`) | Cuando la huella del inventario cambió entre el plan y la confirmación o la ejecución (FR-011) |
 | `ExecutionStarted` | `PlanId` | |
 | `PhaseStarted` / `PhaseCompleted` | `Phase`, `DurationMs` (al completar) | En cada fase |
-| `DiskOperation` | `Disk`, `Operation` (Read/Write/Lock/Offline/Online/CommitLayout/DeleteLayout/Shrink/Restore/Extend), `Offset?`, `Length?`, `DurationMs`, `Result` | Operaciones de disco (las lecturas y escrituras se agregan por tramo, no por búfer) |
+| `DiskOperation` | `Disk`, `Operation` (Read/Write/Lock/Offline/Online/CommitLayout/DeleteLayout/Shrink/Restore/Extend), `Offset?`, `Length?`, `DurationMs`, `Result` | Operaciones de disco (las lecturas y escrituras se agregan en un evento por partición copiada, no por tramo ni por búfer) |
 | `ProgressReported` | `BytesDone`, `BytesTotal`, `ThroughputBps`, `EtaSeconds?` | Como máximo 1 cada 5 s |
 | `ExternalToolRun` | `Tool` (bcdboot/reagentc), `Arguments`, `ExitCode`, `StdOut`, `StdErr` | Herramientas del sistema |
 | `CompensationCompleted` | `Compensation`, `Result` (`Succeeded`/`Failed`) | En cancelación o fallo |

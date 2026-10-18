@@ -292,20 +292,39 @@ public sealed class TargetDiskTests
         await fx.Disk.DeleteLayoutAsync(CancellationToken.None);
 
         fx.Device.Writes.Select(w => (w.Offset, w.Data.Length)).ToArray()
-            .ShouldBe(new[] { (0L, (int)Mib), (DiskLength - Mib, (int)Mib) });
+            .ShouldBe(new[] { (DiskLength - Mib, (int)Mib), (0L, (int)Mib) });
         fx.Device.Writes.All(w => w.Data.All(b => b == 0)).ShouldBeTrue();
         fx.Device.Calls.ShouldNotContain("UpdateProperties");
     }
 
     [Fact]
-    public async Task DeleteLayoutWhileOnlineZerosBothEndsAndRefreshesTheDisk()
+    public async Task DeleteLayoutWhileOnlineZerosBothEndsTailFirstAndRefreshesTheDisk()
     {
         await using var fx = new Fixture();
 
         await fx.Disk.DeleteLayoutAsync(CancellationToken.None);
 
-        fx.Device.Calls.ShouldBe([$"Write(0,{Mib})", $"Write({DiskLength - Mib},{Mib})", "UpdateProperties"]);
+        fx.Device.Calls.ShouldBe([$"Write({DiskLength - Mib},{Mib})", $"Write(0,{Mib})", "UpdateProperties"]);
         fx.OperationNames.ShouldBe(["DeleteLayout"]);
+    }
+
+    [Fact]
+    public async Task DeleteLayoutAfterACommitWhileOnlineZerosOnlyOutsideThePartitions()
+    {
+        await using var fx = new Fixture();
+        const long tailGap = 344 * 1024; // The last partition ends 344 KiB before the end of the disk, so the last MiB is not free.
+        await fx.GoOfflineAsync();
+        await fx.Disk.CommitLayoutAsync(Layout(partitionEnd: DiskLength - tailGap), CancellationToken.None);
+        await fx.Disk.BringOnlineAsync(CancellationToken.None);
+        fx.Device.Calls.Clear();
+        fx.Device.Writes.Clear();
+
+        await fx.Disk.DeleteLayoutAsync(CancellationToken.None);
+
+        fx.Device.Writes.Select(w => (w.Offset, w.Data.Length)).ToArray()
+            .ShouldBe(new[] { (DiskLength - tailGap, (int)tailGap), (0L, (int)Mib) });
+        fx.Device.Writes.All(w => w.Data.All(b => b == 0)).ShouldBeTrue();
+        fx.Device.Calls.ShouldBe([$"Write({DiskLength - tailGap},{tailGap})", $"Write(0,{Mib})", "UpdateProperties"]);
     }
 
     [Fact]
@@ -353,14 +372,15 @@ public sealed class TargetDiskTests
             await fx.Disk.WriteAsync(Mib, new byte[512], CancellationToken.None));
     }
 
-    private static TargetLayout Layout(int sector = 512) => new(
+    /// <summary>One partition from the first MiB to <paramref name="partitionEnd"/>. The default end is 65 MiB.</summary>
+    private static TargetLayout Layout(int sector = 512, long? partitionEnd = null) => new(
         DiskGuid,
         ByteSize.FromMiB(256),
         new SectorSize(sector),
         [new TargetLayoutEntry(
             new GptPartitionType(new Guid("EBD0A0A2-B9E5-4433-87C0-68B6B72699C7")),
             new PartitionGuid(PartitionGuid),
-            new Extent(Mib, 64 * Mib),
+            new Extent(Mib, (partitionEnd ?? Mib + 64 * Mib) - Mib),
             0UL,
             "Data")]);
 
