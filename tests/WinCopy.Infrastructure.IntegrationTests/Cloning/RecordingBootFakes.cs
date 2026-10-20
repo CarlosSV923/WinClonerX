@@ -25,13 +25,13 @@ internal sealed class RecordingOfflineRegistryEditor : IOfflineRegistryEditor
 /// <summary>Records <see cref="RebuildAsync"/> calls. Runs no bcdboot.</summary>
 internal sealed class RecordingBootConfigurator : IBootConfigurator
 {
-    private readonly List<(string WindowsRoot, string EspRoot)> _calls = [];
+    private readonly List<(string WindowsRoot, string EspRoot, string? RecoveryRoot)> _calls = [];
 
-    public IReadOnlyList<(string WindowsRoot, string EspRoot)> Calls => _calls;
+    public IReadOnlyList<(string WindowsRoot, string EspRoot, string? RecoveryRoot)> Calls => _calls;
 
-    public Task RebuildAsync(string windowsRoot, string espRoot, CancellationToken ct)
+    public Task RebuildAsync(string windowsRoot, string espRoot, string? recoveryRoot, CancellationToken ct)
     {
-        _calls.Add((windowsRoot, espRoot));
+        _calls.Add((windowsRoot, espRoot, recoveryRoot));
         return Task.CompletedTask;
     }
 }

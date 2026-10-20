@@ -45,6 +45,9 @@ internal sealed class BootTargetSafety
     private const string VolumeGuidPrefix = @"\\?\Volume{";
     private const string VolumeGuidSuffix = @"}\";
 
+    /// <summary>BCD store path relative to an EFI partition root.</summary>
+    internal const string ClonedBcdRelativePath = @"EFI\Microsoft\Boot\BCD";
+
     private readonly IBootTargetEnvironment _environment;
     private readonly IVolumeExtentsReader _extents;
 
@@ -102,6 +105,26 @@ internal sealed class BootTargetSafety
 
         return char.ToUpperInvariant(root[0]);
     }
+
+    /// <summary>
+    /// BCD store of the EFI partition mounted at <paramref name="espRoot"/>, for example <c>S:\EFI\Microsoft\Boot\BCD</c>.
+    /// Throws unless <paramref name="espRoot"/> is a drive root. The caller runs <see cref="AssertCloneRoots"/> first, so the
+    /// store is on a checked clone partition.
+    /// </summary>
+    internal static string BcdStorePathOf(string espRoot, PlatformErrorCode failureCode)
+    {
+        DriveLetterOf(espRoot, failureCode);
+
+        return espRoot + ClonedBcdRelativePath;
+    }
+
+    /// <summary>True only for a path of the form <c>X:\EFI\Microsoft\Boot\BCD</c>. Any other shape is refused.</summary>
+    internal static bool IsClonedBcdStorePath(string path) =>
+        path.Length == 3 + ClonedBcdRelativePath.Length
+        && char.IsAsciiLetter(path[0])
+        && path[1] == ':'
+        && path[2] == '\\'
+        && string.Equals(path[3..], ClonedBcdRelativePath, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Disks of the running Windows volume and of the boot partition. Empty answers are refused.</summary>
     private HashSet<uint> RunningSystemDisks(PlatformErrorCode failureCode)

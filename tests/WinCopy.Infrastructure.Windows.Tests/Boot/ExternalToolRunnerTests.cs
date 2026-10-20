@@ -185,6 +185,60 @@ public sealed class ExternalToolRunnerTests
         launcher.Calls.ShouldBeEmpty();
     }
 
+    private const string ClonedStore = @"S:\EFI\Microsoft\Boot\BCD";
+
+    [Fact]
+    public async Task RunsBcdeditWhenTheClonedStoreComesFirst()
+    {
+        var launcher = new FakeToolLauncher();
+        var log = new RecordingExecutionLog();
+        var runner = new ExternalToolRunner(launcher, log, SystemDirectory);
+
+        await runner.RunAsync("bcdedit.exe", ["/store", ClonedStore, "/enum", "{bootmgr}", "/v"], CancellationToken.None);
+
+        launcher.Calls.Single().Path.ShouldBe(Path.Combine(SystemDirectory, "bcdedit.exe"));
+        log.Events.Single().Properties["Tool"].ShouldBe("bcdedit");
+    }
+
+    // Any bcdedit call without the clone store first would change the boot configuration of the running system.
+    [Theory]
+    [MemberData(nameof(BcdeditCallsWithoutTheClonedStore))]
+    public async Task RefusesBcdeditUnlessTheClonedStoreComesFirstAndIsNotRepeated(string[] arguments)
+    {
+        var launcher = new FakeToolLauncher();
+        var runner = new ExternalToolRunner(launcher, new RecordingExecutionLog(), SystemDirectory);
+
+        await Should.ThrowAsync<ArgumentException>(() => runner.RunAsync("bcdedit.exe", arguments, CancellationToken.None));
+
+        launcher.Calls.ShouldBeEmpty();
+    }
+
+    private static readonly string[][] BcdeditCallsWithoutTheClonedStoreCases =
+    [
+        [],
+        ["/store"],
+        ["/enum", "{bootmgr}", "/v"],
+        ["/enum", "{bootmgr}", "/store", ClonedStore],
+        ["/STORE", ClonedStore, "/enum", "{bootmgr}"],
+        ["/store", @"S:\Windows\System32\config\SYSTEM", "/enum", "{bootmgr}"],
+        ["/store", @"S:\EFI\Microsoft\Boot\BCD\..\BCDX", "/enum", "{bootmgr}"],
+        ["/store", @"S:EFI\Microsoft\Boot\BCD", "/enum", "{bootmgr}"],
+        ["/store", @"\\?\Volume{11111111-1111-1111-1111-111111111111}\EFI\Microsoft\Boot\BCD", "/enum", "{bootmgr}"],
+        ["/store", @"C:\EFI\Microsoft\Boot\BCD", "/enum", "{bootmgr}"],
+        ["/store", ClonedStore, "/enum", "{bootmgr}", "/store", @"T:\EFI\Microsoft\Boot\BCD"],
+    ];
+
+    public static TheoryData<string[]> BcdeditCallsWithoutTheClonedStore()
+    {
+        var data = new TheoryData<string[]>();
+        foreach (string[] arguments in BcdeditCallsWithoutTheClonedStoreCases)
+        {
+            data.Add(arguments);
+        }
+
+        return data;
+    }
+
     private sealed class FakeToolLauncher : IToolProcessLauncher
     {
         public List<(string Path, IReadOnlyList<string> Arguments)> Calls { get; } = [];

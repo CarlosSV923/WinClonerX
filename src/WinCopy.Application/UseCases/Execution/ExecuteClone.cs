@@ -344,7 +344,7 @@ public sealed class ExecuteClone(
             : null;
 
         await registry.RewriteMountedDevicesAsync(windows.Root, spec.MountedDevices, ct);
-        await bootConfigurator.RebuildAsync(windows.Root, esp.Root, ct);
+        await bootConfigurator.RebuildAsync(windows.Root, esp.Root, recovery?.Root, ct);
 
         if (recovery is null)
         {

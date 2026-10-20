@@ -6,6 +6,7 @@ using WinCopy.Infrastructure.Windows.Tests.Fakes;
 namespace WinCopy.Infrastructure.Windows.Tests.Boot;
 
 // Records every process start and returns a canned result or throws a canned failure. Nothing runs.
+// When Respond is set, it answers each run instead, so a test can give bcdedit its own output.
 internal sealed class RecordingToolLauncher : IToolProcessLauncher
 {
     public List<(string Path, IReadOnlyList<string> Arguments)> Calls { get; } = [];
@@ -14,13 +15,18 @@ internal sealed class RecordingToolLauncher : IToolProcessLauncher
 
     public Exception? Failure { get; set; }
 
+    public Func<string, IReadOnlyList<string>, ToolResult>? Respond { get; set; }
+
     public Task<ToolResult> RunAsync(string absolutePath, IReadOnlyList<string> arguments, CancellationToken ct)
     {
         Calls.Add((absolutePath, arguments));
 
-        return Failure is null
-            ? Task.FromResult(Result)
-            : Task.FromException<ToolResult>(Failure);
+        if (Failure is not null)
+        {
+            return Task.FromException<ToolResult>(Failure);
+        }
+
+        return Task.FromResult(Respond is null ? Result : Respond(absolutePath, arguments));
     }
 }
 

@@ -16,12 +16,15 @@ internal interface IToolProcessLauncher
 }
 
 /// <summary>
-/// Runs the two Windows boot tools that the clone needs (bcdboot and reagentc), and nothing else (R7, T069).
+/// Runs the three Windows boot tools that the clone needs (bcdboot, bcdedit and reagentc), and nothing else (R7, T069).
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>Only files named exactly <c>bcdboot.exe</c> or <c>reagentc.exe</c> run, and only from the System32 folder,
-/// by absolute path. Names with a path separator, a colon or <c>..</c> are rejected.</item>
+/// <item>Only files named exactly <c>bcdboot.exe</c>, <c>bcdedit.exe</c> or <c>reagentc.exe</c> run, and only from the
+/// System32 folder, by absolute path. Names with a path separator, a colon or <c>..</c> are rejected.</item>
+/// <item>Every <c>bcdedit.exe</c> call must start with <c>/store &lt;X:&gt;\EFI\Microsoft\Boot\BCD</c>, the store of a
+/// clone EFI partition. Without it bcdedit would change the boot configuration of the running system, so any other
+/// shape is refused before a process starts. <see cref="BcdStoreEditor"/> builds these calls.</item>
 /// <item>Arguments are passed as an argument list, never as a joined string, with no shell.</item>
 /// <item>Each run is recorded as an <c>ExternalToolRun</c> event (log-events.md). A non-zero exit code is logged as a
 /// warning and returned to the caller, which decides whether it is a failure.</item>
@@ -30,11 +33,13 @@ internal interface IToolProcessLauncher
 internal sealed class ExternalToolRunner
 {
     private const string EventName = "ExternalToolRun";
+    private const string StoreFlag = "/store";
 
     private static readonly Dictionary<string, ToolSpec> Allowlist = new(StringComparer.Ordinal)
     {
-        ["bcdboot.exe"] = new ToolSpec("bcdboot", PlatformErrorCode.BootConfigFailed),
-        ["reagentc.exe"] = new ToolSpec("reagentc", PlatformErrorCode.RecoveryConfigFailed),
+        ["bcdboot.exe"] = new ToolSpec("bcdboot", PlatformErrorCode.BootConfigFailed, RequiresClonedStore: false),
+        ["bcdedit.exe"] = new ToolSpec("bcdedit", PlatformErrorCode.BootConfigFailed, RequiresClonedStore: true),
+        ["reagentc.exe"] = new ToolSpec("reagentc", PlatformErrorCode.RecoveryConfigFailed, RequiresClonedStore: false),
     };
 
     private readonly IToolProcessLauncher _launcher;
@@ -69,6 +74,11 @@ internal sealed class ExternalToolRunner
         string absolutePath = Path.Combine(_systemDirectory, toolFileName);
         string[] argumentCopy = [.. arguments];
 
+        if (tool.RequiresClonedStore)
+        {
+            AssertClonedStoreFirst(argumentCopy);
+        }
+
         ct.ThrowIfCancellationRequested();
 
         ToolResult result;
@@ -91,6 +101,32 @@ internal sealed class ExternalToolRunner
         Record(tool, argumentCopy, result.ExitCode, result.StdOut, result.StdErr, level);
 
         return result;
+    }
+
+    /// <summary>
+    /// Refuses a bcdedit call unless its first two arguments are <c>/store</c> and a clone BCD store path, and no later
+    /// argument is another <c>/store</c> (bcdedit could take the last one). The store may not be on the drive of the running
+    /// Windows either. Fails closed: nothing starts.
+    /// </summary>
+    private void AssertClonedStoreFirst(string[] arguments)
+    {
+        bool storeFirst = arguments.Length >= 2
+            && arguments[0] == StoreFlag
+            && BootTargetSafety.IsClonedBcdStorePath(arguments[1]);
+
+        bool storeRepeated = arguments.Skip(2).Any(argument => argument.StartsWith(StoreFlag, StringComparison.OrdinalIgnoreCase));
+
+        // An unknown running drive refuses too: the check fails closed.
+        string runningRoot = Path.GetPathRoot(_systemDirectory) ?? string.Empty;
+        bool onRunningDrive = runningRoot.Length == 0
+            || (storeFirst && char.ToUpperInvariant(arguments[1][0]) == char.ToUpperInvariant(runningRoot[0]));
+
+        if (!storeFirst || storeRepeated || onRunningDrive)
+        {
+            throw new ArgumentException(
+                "bcdedit may only run as '/store <X:>\\EFI\\Microsoft\\Boot\\BCD' on a drive other than the running Windows, followed by its arguments.",
+                nameof(arguments));
+        }
     }
 
     private static ToolSpec Resolve(string toolFileName)
@@ -131,5 +167,5 @@ internal sealed class ExternalToolRunner
         _log.Record(new LogEvent(EventName, properties, level));
     }
 
-    private sealed record ToolSpec(string Name, PlatformErrorCode FailureCode);
+    private sealed record ToolSpec(string Name, PlatformErrorCode FailureCode, bool RequiresClonedStore);
 }

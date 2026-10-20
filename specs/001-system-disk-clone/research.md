@@ -184,6 +184,20 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   `reagentc /info` dentro del clon muestra WinRE habilitado. **Alternativa**: si WinRE no queda
   configurado, la app lo informa como aviso en el resultado e indica cómo ejecutar `reagentc /enable` en
   el clon. No bloquea, porque Windows arranca igualmente.
+- **Nota 2026-10-21 (hallazgo en hardware real)**: en un Windows 11 en español el clon arranca, pero el menú
+  muestra dos entradas "Windows 11". La partición EFI se copia en bruto, así que su BCD ya trae la entrada del
+  origen. `bcdboot` añade otra y deja la antigua con `device`/`osdevice` "unknown" en el clon. La nueva pierde
+  además `hypervisorlaunchtype Auto` (Hyper-V, WSL2, VBS), `locale es-MX` (bcdboot usa en-US) y
+  `recoverysequence`. Por eso `reagentc /info` muestra WinRE "Disabled" con el id de la entrada antigua, y el
+  `reagentc /setreimage` fuera de línea no basta.
+  - **Decisión**: si la partición EFI del clon trae un almacén BCD con cargador por defecto, se **reapunta en su
+    sitio** con `bcdedit /store <S>:\EFI\Microsoft\Boot\BCD /set ...`. Se reapuntan el gestor de arranque, el cargador
+    por defecto (`device` y `osdevice` a `<W>:`), su objeto de reanudación, `{memdiag}` si existe, y el cargador de
+    WinRE (`ramdisk=[<R>:]...`). Así se conservan todas las entradas y sus ajustes, y no se duplican. Al final,
+    `bcdedit /enum {default} /v` debe mostrar `partition=<W>:`. `bcdboot` solo se ejecuta si no hay almacén o no hay
+    cargador por defecto. El id de WinRE no cambia, así que el `ReAgent.xml` sigue siendo válido.
+  - Todas las llamadas a `bcdedit` llevan `/store <S>:\EFI\Microsoft\Boot\BCD` como primeros argumentos, y el ejecutor
+    lo exige antes de arrancar el proceso.
 
 ## R8. Inventario de discos y comprobaciones previas
 
