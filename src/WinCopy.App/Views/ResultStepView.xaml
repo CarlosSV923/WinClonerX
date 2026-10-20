@@ -4,11 +4,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:loc="clr-namespace:WinCopy.App.Localization"
+             xmlns:themes="clr-namespace:WinCopy.App.Themes"
              mc:Ignorable="d"
              d:DesignHeight="560" d:DesignWidth="760">
     <UserControl.Resources>
         <Style x:Key="ResultStep.Heading" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
             <Setter Property="Margin" Value="0,20,0,8" />
+        </Style>
+        <!-- Looks like Text.Caption, but it is a read-only box, so the text can be selected. -->
+        <Style x:Key="ResultStep.Technical" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="FontFamily" Value="{x:Static themes:WinCopyFonts.Text}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
         </Style>
     </UserControl.Resources>
 
@@ -67,6 +79,18 @@
                         Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Reason}" />
                 </Border>
+
+                <!-- Failed or cancelled: the code and phase for support, and the log file. Read-only boxes, so the text can be selected and copied. -->
+                <StackPanel Margin="0,8,0,0"
+                            Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
+                    <TextBox Style="{StaticResource ResultStep.Technical}"
+                             Text="{Binding FailureDetail, Mode=OneWay}"
+                             Visibility="{Binding HasFailureDetail, Converter={StaticResource BoolToVisibility}}" />
+                    <TextBox Style="{StaticResource ResultStep.Technical}"
+                             Margin="0,4,0,0"
+                             Text="{Binding LogFileText, Mode=OneWay}"
+                             Visibility="{Binding HasLogFile, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
 
                 <!-- Shrunk source (only when the plan shrank it): restored, or a prominent warning with the manual fix. -->
                 <Border Style="{StaticResource Card}"

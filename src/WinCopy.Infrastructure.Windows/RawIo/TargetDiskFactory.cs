@@ -97,6 +97,7 @@ internal sealed class TargetDiskFactory : ITargetDiskFactory
         }
     }
 
-    private static string DiskLabel(DiskId target) =>
-        target.DiskGuid == Guid.Empty ? $"disk {target.Number}" : target.DiskGuid.ToString("D");
+    /// <summary>The name of a disk in the log: its GUID, or its number when the GUID is not known.</summary>
+    internal static string DiskLabel(DiskId disk) =>
+        disk.DiskGuid == Guid.Empty ? $"disk {disk.Number}" : disk.DiskGuid.ToString("D");
 }

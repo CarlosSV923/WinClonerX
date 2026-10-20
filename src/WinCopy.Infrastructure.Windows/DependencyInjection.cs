@@ -115,7 +115,8 @@ public static class DependencyInjection
             sp.GetRequiredService<DiskOperationRecorder>(),
             warnings));
 
-        // El copiador es un singleton y su contrato no recibe el disco de destino, así que su etiqueta de registro es fija.
+        // El copiador es un singleton: la etiqueta de su registro solo se usa si el origen o el destino no tienen la suya propia
+        // (IDiskOperationLabel). El origen (instantánea o tramo en bruto) y el destino real siempre la tienen.
         services.AddSingleton<IVolumeCopier>(sp => new CopyPipeline(
             CopyPipeline.CreateDefaultPool,
             sp.GetRequiredService<DiskOperationRecorder>(),

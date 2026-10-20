@@ -146,21 +146,6 @@ public sealed class ProgressStepViewModelTests
     }
 
     [Fact]
-    public async Task AFailureCodeIsKeptForTheResultStep()
-    {
-        using var _ = new EnglishCulture();
-        var (vm, execute, _) = Create();
-        var run = vm.StartAsync(Plan, TestContext.Current.CancellationToken);
-
-        execute.Publish(new ExecutionFailed(Run, Now, new ExecutionFailure("TargetWriteError", ExecutionPhase.CopyData, "detail")));
-
-        vm.FailureCode.ShouldBe("TargetWriteError");
-
-        execute.Completion.SetResult(Report(CloneOutcome.Failed));
-        await run;
-    }
-
-    [Fact]
     public async Task EventsAreMarshalledToTheUiThread()
     {
         using var _ = new EnglishCulture();

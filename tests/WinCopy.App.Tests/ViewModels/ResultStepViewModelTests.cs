@@ -137,9 +137,38 @@ public sealed class ResultStepViewModelTests
         using var _ = new EnglishCulture();
         var vm = new ResultStepViewModel();
 
-        vm.Show(Failed(CloneOutcome.Failed), "TargetWriteError");
+        vm.Show(Failed(CloneOutcome.Failed, Failure("TargetWriteError", ExecutionPhase.CopyData)));
 
         vm.Reason.ShouldBe(Loc.Get("Error_TargetWriteError"));
+    }
+
+    [Fact]
+    public void MountFailedInRepairBootShowsItsMessageAndTheCodeAndPhaseLine()
+    {
+        using var _ = new EnglishCulture();
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Failed(CloneOutcome.Failed, Failure("MountFailed", ExecutionPhase.RepairBoot)));
+
+        vm.Reason.ShouldBe(Loc.Get("Error_MountFailed"));
+        vm.HasFailureDetail.ShouldBeTrue();
+        vm.FailureDetail.ShouldBe("Code: MountFailed · Phase: " + Loc.Get("Phase_RepairBoot"));
+    }
+
+    [Theory]
+    [InlineData("Unexpected", "Error_Unexpected")]
+    [InlineData("DisksChanged", "Error_DisksChanged")]
+    [InlineData("ShrinkInsufficient", "Error_ShrinkInsufficient")]
+    [InlineData("ShrinkFailed", "Error_ShrinkFailed")]
+    public void UseCaseCodesHaveTheirOwnMessage(string code, string key)
+    {
+        using var _ = new EnglishCulture();
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Failed(CloneOutcome.Failed, Failure(code, ExecutionPhase.Snapshot)));
+
+        vm.Reason.ShouldBe(Loc.Get(key));
+        vm.Reason.ShouldNotBe(Loc.Get("Result_Failed_Generic"));
     }
 
     [Fact]
@@ -148,9 +177,58 @@ public sealed class ResultStepViewModelTests
         using var _ = new EnglishCulture();
         var vm = new ResultStepViewModel();
 
-        vm.Show(Failed(CloneOutcome.Failed), "DisksChanged");
+        vm.Show(Failed(CloneOutcome.Failed, Failure("SomethingNew", ExecutionPhase.Cleanup)));
 
         vm.Reason.ShouldBe(Loc.Get("Result_Failed_Generic"));
+        vm.FailureDetail.ShouldBe("Code: SomethingNew · Phase: " + Loc.Get("Phase_Cleanup"));
+    }
+
+    [Fact]
+    public void FailedWithoutAFailureHasNoCodeLineButStillShowsTheGenericReason()
+    {
+        using var _ = new EnglishCulture();
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Failed(CloneOutcome.Failed));
+
+        vm.Reason.ShouldBe(Loc.Get("Result_Failed_Generic"));
+        vm.HasFailureDetail.ShouldBeFalse();
+        vm.FailureDetail.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FailedShowsTheLogFileOfTheRun()
+    {
+        using var _ = new EnglishCulture();
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Failed(CloneOutcome.Failed, Failure("MountFailed", ExecutionPhase.RepairBoot)));
+
+        vm.HasLogFile.ShouldBeTrue();
+        vm.LogFileText.ShouldBe(Loc.Format("Result_LogFile", "log.clef"));
+    }
+
+    [Fact]
+    public void CancelledHasNoCodeLineAndKeepsTheLogFile()
+    {
+        using var _ = new EnglishCulture();
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Failed(CloneOutcome.Cancelled));
+
+        vm.HasFailureDetail.ShouldBeFalse();
+        vm.HasLogFile.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void SuccessHasNoFailureLines()
+    {
+        var vm = new ResultStepViewModel();
+
+        vm.Show(Success(RecoveryEnvironmentState.Configured));
+
+        vm.HasFailureDetail.ShouldBeFalse();
+        vm.HasLogFile.ShouldBeFalse();
     }
 
     [Fact]
@@ -205,7 +283,7 @@ public sealed class ResultStepViewModelTests
         "log.clef",
         nextSteps ?? [NextStepCode.ShutDownAndReplaceDisk]);
 
-    private static CloneResultReport Failed(CloneOutcome outcome) => new(
+    private static CloneResultReport Failed(CloneOutcome outcome, ExecutionFailure? failure = null) => new(
         outcome,
         null,
         null,
@@ -213,5 +291,8 @@ public sealed class ResultStepViewModelTests
         null,
         TimeSpan.FromMinutes(3),
         "log.clef",
-        [NextStepCode.KeepOriginalDiskUntilVerified]);
+        [NextStepCode.KeepOriginalDiskUntilVerified],
+        failure);
+
+    private static ExecutionFailure Failure(string code, ExecutionPhase phase) => new(code, phase, "technical detail");
 }

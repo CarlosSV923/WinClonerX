@@ -17,6 +17,7 @@ public sealed class CopyPipelineTests
 {
     private const long Mib = Sizes.Mib;
     private const int ChunkMib4 = 4 * 1024 * 1024;
+    private const string SnapshotLabel = "snapshot of {4a1f9c2e-1d7b-4e3a-9b8f-0c2d5e6f7a8b}";
 
     [Fact]
     public async Task CopiesEveryRangeToItsTargetOffsetByteExactAndLeavesTheRestZero()
@@ -171,6 +172,44 @@ public sealed class CopyPipelineTests
     }
 
     [Fact]
+    public async Task TheReadNamesTheSourceAndTheWriteNamesTheTarget()
+    {
+        Extent[] ranges = [new(0, 4 * Mib)];
+        var log = new RecordingExecutionLog();
+        var source = new LabeledBlockSource(new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges)), SnapshotLabel);
+
+        await NewPipeline(log: log).CopyAsync(source, Allocation(ranges), new MemoryTargetDisk(16 * Mib), 0, new RecordingProgress(), CancellationToken.None);
+
+        ((string)DiskOperationEvents(log, "Read").Single()["Disk"]!).ShouldBe(SnapshotLabel);
+        ((string)DiskOperationEvents(log, "Write").Single()["Disk"]!).ShouldBe(MemoryTargetDisk.Label);
+    }
+
+    [Fact]
+    public async Task AReadFromASourceWithoutALabelUsesThePipelineLabel()
+    {
+        Extent[] ranges = [new(0, 4 * Mib)];
+        var log = new RecordingExecutionLog();
+
+        await NewPipeline(log: log).CopyAsync(new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges)), Allocation(ranges), new MemoryTargetDisk(16 * Mib), 0, new RecordingProgress(), CancellationToken.None);
+
+        ((string)DiskOperationEvents(log, "Read").Single()["Disk"]!).ShouldBe("disk-under-test");
+    }
+
+    [Fact]
+    public async Task TheReadOffsetIsInsideTheSourceVolumeAndTheWriteOffsetIsOnTheTargetDisk()
+    {
+        // The first used range starts 1 MiB into the source volume and lands 2 MiB into the target disk.
+        Extent[] ranges = [new(1 * Mib, 4096)];
+        var log = new RecordingExecutionLog();
+        var source = new LabeledBlockSource(new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges)), SnapshotLabel);
+
+        await NewPipeline(log: log).CopyAsync(source, Allocation(ranges), new MemoryTargetDisk(16 * Mib), 2 * Mib, new RecordingProgress(), CancellationToken.None);
+
+        ((long)DiskOperationEvents(log, "Read").Single()["Offset"]!).ShouldBe(1 * Mib);
+        ((long)DiskOperationEvents(log, "Write").Single()["Offset"]!).ShouldBe(3 * Mib);
+    }
+
+    [Fact]
     public async Task EveryBufferIsReturnedToThePoolAfterASuccessfulCopy()
     {
         Extent[] ranges = [new(0, 12 * Mib)];
@@ -300,9 +339,13 @@ public sealed class CopyPipelineTests
     }
 
     /// <summary>Records every write attempt and stores the bytes of the writes that succeed.</summary>
-    private sealed class MemoryTargetDisk(long length, int? failOnWrite = null, Action<int>? onWrite = null) : ITargetDisk
+    private sealed class MemoryTargetDisk(long length, int? failOnWrite = null, Action<int>? onWrite = null) : ITargetDisk, IDiskOperationLabel
     {
+        public const string Label = "target-under-test";
+
         public byte[] Image { get; } = new byte[length];
+
+        public string DiskOperationLabel => Label;
 
         public List<(long Offset, int Length)> Attempts { get; } = [];
 

@@ -485,7 +485,8 @@ public sealed class ExecuteClone(
             run.Recovery,
             run.Elapsed,
             log.CurrentFile,
-            [NextStepCode.KeepOriginalDiskUntilVerified]);
+            [NextStepCode.KeepOriginalDiskUntilVerified],
+            Failure: failure is null ? null : execution.Failure);
 
         execution.Finish(clock.UtcNow, report);
         Flush(run);

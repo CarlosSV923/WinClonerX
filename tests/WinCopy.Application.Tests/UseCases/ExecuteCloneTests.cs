@@ -298,6 +298,56 @@ public sealed class ExecuteCloneTests
         h.Events.OfType<ExecutionFailed>().Single().Failure.Code.ShouldBe("TargetWriteError");
     }
 
+    [Theory]
+    [InlineData(FaultPoint.Revalidate, "DisksChanged", ExecutionPhase.Revalidate)]
+    [InlineData(FaultPoint.Snapshot, "SnapshotFailed", ExecutionPhase.Snapshot)]
+    [InlineData(FaultPoint.CopyData, "SourceReadError", ExecutionPhase.CopyData)]
+    public async Task AFailedRunCarriesTheFailureCodeAndPhaseInItsReport(FaultPoint fault, string expectedCode, ExecutionPhase expectedPhase)
+    {
+        var h = new Harness();
+        h.Inject(fault);
+
+        var report = await h.RunAsync(Ct);
+
+        report.Outcome.ShouldBe(CloneOutcome.Failed);
+        report.Failure.ShouldNotBeNull();
+        report.Failure.Code.ShouldBe(expectedCode);
+        report.Failure.Phase.ShouldBe(expectedPhase);
+        report.Failure.ShouldBe(h.Events.OfType<ExecutionFailed>().Single().Failure);
+    }
+
+    [Fact]
+    public async Task AnUnexpectedExceptionIsReportedAsUnexpectedWithThePhaseItHappenedIn()
+    {
+        var h = new Harness();
+        h.Copier.FailOn[nameof(IVolumeCopier.CopyAsync)] = new InvalidOperationException("boom");
+
+        var report = await h.RunAsync(Ct);
+
+        report.Outcome.ShouldBe(CloneOutcome.Failed);
+        report.Failure.ShouldNotBeNull();
+        report.Failure.Code.ShouldBe("Unexpected");
+        report.Failure.Phase.ShouldBe(ExecutionPhase.CopyData);
+        report.Failure.TechnicalDetail.ShouldContain("boom");
+    }
+
+    [Fact]
+    public async Task CompletedAndCancelledRunsHaveNoFailureInTheirReport()
+    {
+        var completed = new Harness();
+        using var cts = new CancellationTokenSource();
+        var cancelled = new Harness();
+        cancelled.Copier.OnChunk = () => cts.Cancel();
+
+        var completedReport = await completed.RunAsync(Ct);
+        var cancelledReport = await cancelled.RunAsync(cts.Token);
+
+        completedReport.Outcome.ShouldBe(CloneOutcome.Completed);
+        completedReport.Failure.ShouldBeNull();
+        cancelledReport.Outcome.ShouldBe(CloneOutcome.Cancelled);
+        cancelledReport.Failure.ShouldBeNull();
+    }
+
     [Fact]
     public async Task CancellationDuringCopyDataEndsCancelledAfterCompensations()
     {

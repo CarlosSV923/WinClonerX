@@ -241,11 +241,11 @@ public sealed partial class WizardViewModel : ObservableObject
         {
             report = await _progress.StartAsync(planId);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // The use case throws for plan preconditions (an unknown or unconfirmed plan): nothing was touched, so the result says
             // it failed. Any other unexpected exception must also end on the result page, so the wizard never stays stuck on the
-            // progress page while the run is over.
+            // progress page while the run is over. The phase in which it happened is not known here, so the first phase stands in.
             report = new CloneResultReport(
                 CloneOutcome.Failed,
                 null,
@@ -254,10 +254,11 @@ public sealed partial class WizardViewModel : ObservableObject
                 null,
                 TimeSpan.Zero,
                 string.Empty,
-                [NextStepCode.KeepOriginalDiskUntilVerified]);
+                [NextStepCode.KeepOriginalDiskUntilVerified],
+                new ExecutionFailure("Unexpected", ExecutionPhase.Revalidate, ex.ToString()));
         }
 
-        _result.Show(report, _progress.FailureCode);
+        _result.Show(report);
         CurrentIndex = ResultIndex;
     }
 

@@ -529,6 +529,12 @@
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Export log</value>
   </data>
+  <data name="Result_Failure_Detail" xml:space="preserve">
+    <value>Code: {0} · Phase: {1}</value>
+  </data>
+  <data name="Result_LogFile" xml:space="preserve">
+    <value>Log file: {0}</value>
+  </data>
   <data name="Error_Unknown" xml:space="preserve">
     <value>An unexpected error happened. Try again. If it happens again, export the log when it is available.</value>
   </data>
@@ -579,5 +585,14 @@
   </data>
   <data name="Error_Cancelled" xml:space="preserve">
     <value>The process was cancelled before it finished.</value>
+  </data>
+  <data name="Error_Unexpected" xml:space="preserve">
+    <value>An unexpected error stopped the process. Try again. If it happens again, keep the log file: it shows where the process stopped.</value>
+  </data>
+  <data name="Error_DisksChanged" xml:space="preserve">
+    <value>The disks changed after the plan was made. Plan the clone again.</value>
+  </data>
+  <data name="Error_ShrinkInsufficient" xml:space="preserve">
+    <value>Windows cannot be shrunk enough to fit on the target disk. Free up space on the system disk or choose a larger disk.</value>
   </data>
 </root>

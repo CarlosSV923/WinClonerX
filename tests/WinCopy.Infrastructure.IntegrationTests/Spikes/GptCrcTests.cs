@@ -4,6 +4,7 @@ using Xunit;
 namespace WinCopy.Infrastructure.IntegrationTests.Spikes;
 
 // Pure unit test for spike S1. It touches no disk and needs no elevation. It is not an integration test.
+[Trait("Category", "Integration")]
 [Trait("Spike", "S1")]
 public sealed class GptCrcTests
 {

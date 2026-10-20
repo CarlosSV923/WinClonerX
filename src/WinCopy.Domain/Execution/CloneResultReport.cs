@@ -39,7 +39,11 @@ public enum NextStepCode
     KeepOriginalDiskUntilVerified,
 }
 
-/// <summary>Informe final de una ejecución: desenlace, verificaciones, estado del origen y pasos siguientes.</summary>
+/// <summary>
+/// Informe final de una ejecución: desenlace, verificaciones, estado del origen y pasos siguientes. <paramref name="Failure"/>
+/// es el motivo del fallo: solo tiene valor cuando el desenlace es <see cref="CloneOutcome.Failed"/>; en un éxito o una
+/// cancelación es nulo.
+/// </summary>
 public sealed record CloneResultReport(
     CloneOutcome Outcome,
     VerificationResult? Structural,
@@ -48,4 +52,5 @@ public sealed record CloneResultReport(
     RecoveryEnvironmentState? RecoveryEnvironment,
     TimeSpan Duration,
     string LogFile,
-    IReadOnlyList<NextStepCode> NextSteps);
+    IReadOnlyList<NextStepCode> NextSteps,
+    ExecutionFailure? Failure = null);

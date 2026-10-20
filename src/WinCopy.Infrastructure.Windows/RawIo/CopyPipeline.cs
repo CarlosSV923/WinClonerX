@@ -48,7 +48,10 @@ internal sealed class CopyPipeline : IVolumeCopier
 
     /// <param name="poolFactory">Creates the buffer pool for one copy. The pipeline disposes it when the copy ends.</param>
     /// <param name="recorder">Records the <c>DiskOperation</c> events for each copy.</param>
-    /// <param name="diskLabel">Disk identifier shown in the log.</param>
+    /// <param name="diskLabel">
+    /// Disk identifier shown in the log when the source or the target does not name itself (<see cref="IDiskOperationLabel"/>).
+    /// The real source and target always do.
+    /// </param>
     public CopyPipeline(Func<AlignedBufferPool> poolFactory, DiskOperationRecorder recorder, string diskLabel)
     {
         ArgumentNullException.ThrowIfNull(poolFactory);
@@ -87,11 +90,12 @@ internal sealed class CopyPipeline : IVolumeCopier
 
         long total = allocation.TotalUsed.Bytes;
 
-        // One Read and one Write for the whole copy. They start with the first chunk and end with the copy.
+        // One Read and one Write for the whole copy. They start with the first chunk and end with the copy. The Read names the
+        // source (its offsets are inside the source volume) and the Write names the target (its offsets are on the target disk).
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var state = new PipelineState(cts);
-        using DiskOperationScope readScope = _recorder.Begin(_diskLabel, "Read", plans[0].SourceOffset);
-        using DiskOperationScope writeScope = _recorder.Begin(_diskLabel, "Write", plans[0].TargetOffset);
+        using DiskOperationScope readScope = _recorder.Begin(LabelOf(source), "Read", plans[0].SourceOffset);
+        using DiskOperationScope writeScope = _recorder.Begin(LabelOf(target), "Write", plans[0].TargetOffset);
 
         try
         {
@@ -248,6 +252,10 @@ internal sealed class CopyPipeline : IVolumeCopier
                 ex);
         }
     }
+
+    /// <summary>The name of a source or a target in the log: its own label when it has one, otherwise the label of the pipeline.</summary>
+    private string LabelOf(object participant) =>
+        participant is IDiskOperationLabel named ? named.DiskOperationLabel : _diskLabel;
 
     private static List<ChunkPlan> PlanChunks(VolumeAllocation allocation, long targetOffset)
     {

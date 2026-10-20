@@ -4,6 +4,7 @@ using Xunit;
 namespace WinCopy.Infrastructure.IntegrationTests.Spikes;
 
 // Pure unit test for spike S3. It touches no disk and needs no elevation. It is not an integration test.
+[Trait("Category", "Integration")]
 [Trait("Spike", "S3")]
 public sealed class NtfsTailPlanTests
 {

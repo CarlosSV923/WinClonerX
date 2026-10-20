@@ -8,6 +8,7 @@ namespace WinCopy.Infrastructure.IntegrationTests.Spikes;
 
 // Pure tests of the safety gate in VirtualDiskStorageOps. No disk is touched and no process is started: the runner and the
 // volume reader are fakes, and the runner's Scripts list proves whether a command would have reached PowerShell.
+[Trait("Category", "Integration")]
 [Trait("Spike", "S3")]
 public sealed class VirtualDiskStorageOpsGuardTests
 {

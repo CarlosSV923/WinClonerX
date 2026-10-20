@@ -112,7 +112,10 @@ internal sealed class RawPartitionReader : IRawPartitionReader
             throw new PlatformException(MapOpenError(ex.NativeErrorCode), $"Could not open {path} for reading.", ex);
         }
 
-        return new RawPartitionSource(device, extent);
+        // The Read of the log names the extent it reads: its offsets are relative to the start of the extent.
+        return new LabeledBlockSource(
+            new RawPartitionSource(device, extent),
+            $"{TargetDiskFactory.DiskLabel(source)}, extent at {extent.Offset}");
     }
 
     private static PlatformErrorCode MapOpenError(int nativeError) => nativeError switch

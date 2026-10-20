@@ -14,6 +14,9 @@ namespace WinCopy.App.ViewModels;
 /// </summary>
 public sealed partial class ResultStepViewModel : ObservableObject
 {
+    /// <summary>Codes the use case produces that are not <see cref="PlatformErrorCode"/> values. Each has its own message.</summary>
+    private static readonly HashSet<string> UseCaseFailureCodes = ["Unexpected", "DisksChanged", "ShrinkInsufficient"];
+
     /// <summary>Outcome of the run. Null until <see cref="Show"/> is called.</summary>
     [ObservableProperty]
     private CloneOutcome? _outcome;
@@ -60,6 +63,25 @@ public sealed partial class ResultStepViewModel : ObservableObject
     [ObservableProperty]
     private string _reason = string.Empty;
 
+    /// <summary>True when the report carries the failure of the run. <see cref="FailureDetail"/> then carries its code and phase.</summary>
+    [ObservableProperty]
+    private bool _hasFailureDetail;
+
+    /// <summary>
+    /// Localized technical line for support, for example "Code: MountFailed · Phase: Adjusting the clone so it starts". Shown small and
+    /// selectable so it can be copied into a support request. Empty when there is no failure.
+    /// </summary>
+    [ObservableProperty]
+    private string _failureDetail = string.Empty;
+
+    /// <summary>True when the report names the log file of the run.</summary>
+    [ObservableProperty]
+    private bool _hasLogFile;
+
+    /// <summary>Localized line with the path of the log file of the run. Empty when the report has none.</summary>
+    [ObservableProperty]
+    private string _logFileText = string.Empty;
+
     /// <summary>True when the source was shrunk and went back to its original size (FR-021a). Shown as a confirmation.</summary>
     [ObservableProperty]
     private bool _isSourceRestored;
@@ -89,10 +111,10 @@ public sealed partial class ResultStepViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Shows the report of a run. <paramref name="failureCode"/> is the code of the failure, when there was one; it selects the
-    /// message for the reason of a failed run. Replaces anything shown before.
+    /// Shows the report of a run. The failure comes with the report, so the message does not depend on any event that may
+    /// still be on its way to the UI. Replaces anything shown before.
     /// </summary>
-    public void Show(CloneResultReport report, string? failureCode = null)
+    public void Show(CloneResultReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
 
@@ -106,7 +128,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
         }
         else
         {
-            ShowFailure(report.Outcome, failureCode);
+            ShowFailure(report);
         }
 
         ShowSourceRestore(report.SourceRestored);
@@ -158,23 +180,50 @@ public sealed partial class ResultStepViewModel : ObservableObject
         }
     }
 
-    private void ShowFailure(CloneOutcome outcome, string? failureCode)
+    private void ShowFailure(CloneResultReport report)
     {
+        var outcome = report.Outcome;
         Title = Loc.Get(outcome == CloneOutcome.Cancelled ? "Result_Cancelled_Title" : "Result_Failed_Title");
         Body = Loc.Get("Result_Failed_Body");
         Reason = outcome == CloneOutcome.Cancelled
             ? Loc.Get("Error_" + PlatformErrorCode.Cancelled)
-            : ReasonFor(failureCode);
+            : ReasonFor(report.Failure?.Code);
+
+        if (report.Failure is { } failure)
+        {
+            HasFailureDetail = true;
+            FailureDetail = Loc.Format("Result_Failure_Detail", failure.Code, Loc.Get("Phase_" + failure.Phase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(report.LogFile))
+        {
+            HasLogFile = true;
+            LogFileText = Loc.Format("Result_LogFile", report.LogFile);
+        }
 
         NextSteps.Add(Loc.Get("Result_Failed_KeepOriginal"));
     }
 
-    /// <summary>The message of the platform error with this code, or the generic message for unknown codes.</summary>
-    private static string ReasonFor(string? failureCode) =>
-        failureCode is not null && Enum.TryParse<PlatformErrorCode>(failureCode, ignoreCase: false, out var code)
-            && Enum.IsDefined(code)
+    /// <summary>
+    /// The message for this failure code: the platform error or the use case message with that code, or the generic message
+    /// for codes this step does not know.
+    /// </summary>
+    private static string ReasonFor(string? failureCode)
+    {
+        if (failureCode is null)
+        {
+            return Loc.Get("Result_Failed_Generic");
+        }
+
+        if (UseCaseFailureCodes.Contains(failureCode))
+        {
+            return Loc.Get("Error_" + failureCode);
+        }
+
+        return Enum.TryParse<PlatformErrorCode>(failureCode, ignoreCase: false, out var code) && Enum.IsDefined(code)
             ? Loc.Get("Error_" + code)
             : Loc.Get("Result_Failed_Generic");
+    }
 
     private void Clear()
     {
@@ -190,6 +239,10 @@ public sealed partial class ResultStepViewModel : ObservableObject
         RecoveryText = string.Empty;
         NextSteps.Clear();
         Reason = string.Empty;
+        HasFailureDetail = false;
+        FailureDetail = string.Empty;
+        HasLogFile = false;
+        LogFileText = string.Empty;
         IsSourceRestored = false;
         IsSourceRestoreWarning = false;
         SourceRestoreText = string.Empty;

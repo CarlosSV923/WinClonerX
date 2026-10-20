@@ -529,6 +529,12 @@
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Exportar registro</value>
   </data>
+  <data name="Result_Failure_Detail" xml:space="preserve">
+    <value>Código: {0} · Fase: {1}</value>
+  </data>
+  <data name="Result_LogFile" xml:space="preserve">
+    <value>Archivo de registro: {0}</value>
+  </data>
   <data name="Error_Unknown" xml:space="preserve">
     <value>Ocurrió un error inesperado. Inténtalo de nuevo. Si vuelve a pasar, exporta el registro cuando esté disponible.</value>
   </data>
@@ -579,5 +585,14 @@
   </data>
   <data name="Error_Cancelled" xml:space="preserve">
     <value>El proceso se canceló antes de terminar.</value>
+  </data>
+  <data name="Error_Unexpected" xml:space="preserve">
+    <value>Un error inesperado detuvo el proceso. Inténtalo de nuevo. Si vuelve a pasar, guarda el archivo de registro: indica dónde se detuvo el proceso.</value>
+  </data>
+  <data name="Error_DisksChanged" xml:space="preserve">
+    <value>Los discos cambiaron después de planificar el clonado. Vuelve a planificarlo.</value>
+  </data>
+  <data name="Error_ShrinkInsufficient" xml:space="preserve">
+    <value>Windows no se puede reducir lo suficiente para caber en el disco de destino. Libera espacio en el disco del sistema o elige un disco más grande.</value>
   </data>
 </root>

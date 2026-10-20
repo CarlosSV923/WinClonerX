@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using WinCopy.Application.Errors;
 using WinCopy.Application.Ports;
 using WinCopy.Domain.Shared;
@@ -69,7 +70,10 @@ internal sealed class VssSnapshotSet : ISnapshotSet
             throw new PlatformException(code, $"Could not open the snapshot device {devicePath}.", ex);
         }
 
-        return new SnapshotVolumeSource(device);
+        // The Read of the log names the snapshot of the partition: its offsets are relative to the start of the volume.
+        return new LabeledBlockSource(
+            new SnapshotVolumeSource(device),
+            "snapshot of " + partition.Value.ToString("B", CultureInfo.InvariantCulture));
     }
 
     /// <inheritdoc />

@@ -35,6 +35,11 @@ diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-
 | `SourceRestoreFailed` (Warning) | `Partition`, `OriginalLength`, `TechnicalDetail` | La restauración del tamaño original del origen falló después de un clon verificado. El clon sigue siendo válido: el resultado es `Completed` con `SourceRestored = false`, y la partición del origen queda reducida |
 | `ExecutionCompleted` / `ExecutionCancelled` / `ExecutionFailed` | `Outcome`, `FailureCode?`, `Phase?`, `TechnicalDetail?`, `DurationMs` | Al terminar |
 
+En `DiskOperation` de la copia de datos, `Disk` identifica a quién se lee o escribe:
+
+- `Read`: el origen. Con instantánea, `snapshot of {GUID de la partición}`; con tramo en bruto, `{disco}, extent at {desplazamiento del tramo}`. `Offset` es un desplazamiento **dentro del volumen de origen** (o del tramo), no del disco; es el del primer tramo ocupado, que casi siempre es 0 (el sector 0 siempre se copia).
+- `Write`: el disco de destino, con la misma etiqueta que sus eventos `Lock`, `Offline`, `Online` y `CommitLayout`. `Offset` es absoluto en el disco de destino.
+
 ## Exportación
 
 La exportación produce un `.zip` con el archivo `.clef` de la ejecución y, si se pide, `inventory.json`.

@@ -5,6 +5,7 @@ using Xunit;
 namespace WinCopy.Infrastructure.IntegrationTests.Fixtures;
 
 // Pure arithmetic of the reference layout. No disk is touched, no process is started and no elevation is needed.
+[Trait("Category", "Integration")]
 public sealed class ReferenceSystemDiskLayoutTests
 {
     private const long Mib = 1L << 20;

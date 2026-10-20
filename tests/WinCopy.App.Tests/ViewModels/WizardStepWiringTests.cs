@@ -210,6 +210,7 @@ public sealed class WizardStepWiringTests
     [Fact]
     public async Task AnUnexpectedExceptionFromTheRunStillEndsOnAFailedResultPage()
     {
+        using var _ = new EnglishCulture();
         var h = await CreateAtReview(TestContext.Current.CancellationToken);
         await h.Wizard.NextCommand.ExecuteAsync(null);
         h.Confirm.TypedSuffix = "0002";
@@ -222,12 +223,33 @@ public sealed class WizardStepWiringTests
         h.Wizard.CurrentPage.ShouldBeSameAs(h.Result);
         h.Result.IsFailure.ShouldBeTrue();
         h.Result.IsSuccess.ShouldBeFalse();
+        h.Result.Reason.ShouldBe(Loc.Get("Error_Unexpected"));
+        h.Result.FailureDetail.ShouldBe("Code: Unexpected · Phase: " + Loc.Get("Phase_Revalidate"));
+    }
+
+    [Fact]
+    public async Task TheResultShowsTheFailureFromTheReportEvenWhenTheEventsNeverReachTheUi()
+    {
+        using var _ = new EnglishCulture();
+        // The dispatcher keeps the posted work and never runs it: the progress events never reach the UI before the run ends.
+        var h = await CreateAtReview(TestContext.Current.CancellationToken, deferredEvents: true);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+        var failure = new ExecutionFailure("MountFailed", ExecutionPhase.RepairBoot, "mount");
+
+        h.Execute.Publish(new ExecutionFailed(Run, Now, failure));
+        h.Execute.Completion.SetResult(Report(CloneOutcome.Failed, failure));
+        await h.Wizard.ExecutionCompletion;
+
+        h.Result.Reason.ShouldBe(Loc.Get("Error_MountFailed"));
+        h.Result.FailureDetail.ShouldBe("Code: MountFailed · Phase: " + Loc.Get("Phase_RepairBoot"));
     }
 
     private static readonly ExecutionId Run = new(Guid.Parse("00000000-0000-0000-0000-0000000000e1"));
     private static readonly DateTimeOffset Now = new(2026, 10, 14, 10, 0, 0, TimeSpan.Zero);
 
-    private static CloneResultReport Report(CloneOutcome outcome = CloneOutcome.Completed) => new(
+    private static CloneResultReport Report(CloneOutcome outcome = CloneOutcome.Completed, ExecutionFailure? failure = null) => new(
         outcome,
         new VerificationResult(true, []),
         null,
@@ -235,7 +257,8 @@ public sealed class WizardStepWiringTests
         RecoveryEnvironmentState.Configured,
         TimeSpan.FromMinutes(30),
         "log.clef",
-        [NextStepCode.ShutDownAndReplaceDisk]);
+        [NextStepCode.ShutDownAndReplaceDisk],
+        failure);
 
     private sealed record Harness(
         WizardViewModel Wizard,
@@ -248,8 +271,11 @@ public sealed class WizardStepWiringTests
         FakeConfirmClonePlan ConfirmPlan,
         FakeGetInventoryAndEligibility Inventory);
 
-    /// <summary>Full five-step wizard on a fresh system disk and a blank USB target, with the disks already selected and loaded.</summary>
-    private static async Task<Harness> CreateAtReview(CancellationToken ct)
+    /// <summary>
+    /// Full five-step wizard on a fresh system disk and a blank USB target, with the disks already selected and loaded.
+    /// With <paramref name="deferredEvents"/> the progress page never gets to run the events it is given.
+    /// </summary>
+    private static async Task<Harness> CreateAtReview(CancellationToken ct, bool deferredEvents = false)
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var inventoryFake = new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory));
@@ -259,7 +285,7 @@ public sealed class WizardStepWiringTests
         var confirmPlan = new FakeConfirmClonePlan(plan);
         var confirm = new ConfirmStepViewModel(confirmPlan);
         var execute = new FakeExecuteClone();
-        var progress = new ProgressStepViewModel(execute, new TestUiDispatcher());
+        var progress = new ProgressStepViewModel(execute, new TestUiDispatcher(deferredEvents));
         var result = new ResultStepViewModel();
         var wizard = new WizardViewModel(disks, review, confirm, progress, result);
 

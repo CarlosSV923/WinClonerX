@@ -28,8 +28,11 @@ namespace WinCopy.Infrastructure.Windows.RawIo;
 /// Errors from the device are translated to <see cref="PlatformException"/> codes.
 /// </para>
 /// </remarks>
-internal sealed class TargetDisk : ITargetDisk
+internal sealed class TargetDisk : ITargetDisk, IDiskOperationLabel
 {
+    /// <summary>Same label as the Lock, Offline, Online and CommitLayout events of this disk, so the Write events match them.</summary>
+    public string DiskOperationLabel => _diskLabel;
+
     /// <summary>Size of each wiped boundary: the first and the last MiB (R4, step 3).</summary>
     internal const long BoundaryBytes = 1024 * 1024;
 

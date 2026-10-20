@@ -62,13 +62,6 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     private bool _isRunning;
 
     /// <summary>
-    /// Stable code of the failure, when the run failed. It is the name of a <c>PlatformErrorCode</c> when the failure came from
-    /// a known platform error. The result step uses it to show the matching message.
-    /// </summary>
-    [ObservableProperty]
-    private string? _failureCode;
-
-    /// <summary>
     /// Cancel is shown disabled until US3 adds the cancellation flow (FR-019 cancel, FR-024).
     /// TODO(US3): enable the Cancel button with its confirmation.
     /// </summary>
@@ -105,7 +98,6 @@ public sealed partial class ProgressStepViewModel : ObservableObject
         ThroughputText = string.Empty;
         EtaText = string.Empty;
         CurrentPhaseText = string.Empty;
-        FailureCode = null;
     }
 
     private void Apply(ExecutionEvent value)
@@ -124,10 +116,6 @@ public sealed partial class ProgressStepViewModel : ObservableObject
 
             case ProgressReported reported:
                 ApplyProgress(reported.Progress);
-                break;
-
-            case ExecutionFailed failed:
-                FailureCode = failed.Failure.Code;
                 break;
         }
     }
