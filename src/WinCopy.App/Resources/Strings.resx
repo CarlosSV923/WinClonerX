@@ -550,6 +550,24 @@
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Export log</value>
   </data>
+  <data name="Result_Export_IncludeInventory" xml:space="preserve">
+    <value>Include the disk inventory (model, serial number and size)</value>
+  </data>
+  <data name="Result_OpenLogFolder" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="Result_Export_Done" xml:space="preserve">
+    <value>Log exported to: {0}</value>
+  </data>
+  <data name="Result_Export_Failed" xml:space="preserve">
+    <value>The log could not be exported: {0}</value>
+  </data>
+  <data name="Result_Export_FileFilter" xml:space="preserve">
+    <value>ZIP archive|*.zip</value>
+  </data>
+  <data name="Result_OpenFolder_Failed" xml:space="preserve">
+    <value>The log folder could not be opened: {0}</value>
+  </data>
   <data name="Result_Failure_Detail" xml:space="preserve">
     <value>Code: {0} · Phase: {1}</value>
   </data>

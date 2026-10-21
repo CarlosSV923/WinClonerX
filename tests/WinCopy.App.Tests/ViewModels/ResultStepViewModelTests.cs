@@ -14,7 +14,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessWithWinRecoveryConfiguredShowsTheConfiguredState()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(RecoveryEnvironmentState.Configured));
 
@@ -30,7 +30,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessWithWinRecoveryWarningExplainsTheHintAndThatWindowsStillBoots()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(RecoveryEnvironmentState.Warning));
 
@@ -43,7 +43,7 @@ public sealed class ResultStepViewModelTests
     [Fact]
     public void SuccessWithoutRecoveryInformationHidesTheRecoveryLine()
     {
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(recovery: null));
 
@@ -54,7 +54,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessShowsAPassedVerificationWithoutIssues()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(RecoveryEnvironmentState.Configured));
 
@@ -67,7 +67,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessListsTheVerificationIssuesWhenThereAreSome()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
         var structural = new VerificationResult(false, ["The BCD file is missing"]);
 
         vm.Show(Success(RecoveryEnvironmentState.Configured, structural));
@@ -80,7 +80,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessShowsTheNextStepsInOrderWithTheirInstructions()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(
             RecoveryEnvironmentState.Configured,
@@ -106,7 +106,7 @@ public sealed class ResultStepViewModelTests
     public void SuccessShowsTheDuration()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(RecoveryEnvironmentState.Configured, duration: TimeSpan.FromMinutes(45)));
 
@@ -117,7 +117,7 @@ public sealed class ResultStepViewModelTests
     public void FailedMinimalVariantShowsTheGenericReasonAndKeepOriginalStep()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed));
 
@@ -135,7 +135,7 @@ public sealed class ResultStepViewModelTests
     public void FailedWithAKnownErrorCodeShowsItsMessage()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed, Failure("TargetWriteError", ExecutionPhase.CopyData)));
 
@@ -146,7 +146,7 @@ public sealed class ResultStepViewModelTests
     public void MountFailedInRepairBootShowsItsMessageAndTheCodeAndPhaseLine()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed, Failure("MountFailed", ExecutionPhase.RepairBoot)));
 
@@ -163,7 +163,7 @@ public sealed class ResultStepViewModelTests
     public void UseCaseCodesHaveTheirOwnMessage(string code, string key)
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed, Failure(code, ExecutionPhase.Snapshot)));
 
@@ -175,7 +175,7 @@ public sealed class ResultStepViewModelTests
     public void FailedWithAnUnknownCodeFallsBackToTheGenericReason()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed, Failure("SomethingNew", ExecutionPhase.Cleanup)));
 
@@ -187,7 +187,7 @@ public sealed class ResultStepViewModelTests
     public void FailedWithoutAFailureHasNoCodeLineButStillShowsTheGenericReason()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed));
 
@@ -200,7 +200,7 @@ public sealed class ResultStepViewModelTests
     public void FailedShowsTheLogFileOfTheRun()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Failed, Failure("MountFailed", ExecutionPhase.RepairBoot)));
 
@@ -212,7 +212,7 @@ public sealed class ResultStepViewModelTests
     public void CancelledHasNoCodeLineAndKeepsTheLogFile()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Cancelled));
 
@@ -223,7 +223,7 @@ public sealed class ResultStepViewModelTests
     [Fact]
     public void SuccessHasNoFailureLines()
     {
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Success(RecoveryEnvironmentState.Configured));
 
@@ -235,7 +235,7 @@ public sealed class ResultStepViewModelTests
     public void CancelledUsesTheCancelledTitleAndReason()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Failed(CloneOutcome.Cancelled));
 
@@ -245,20 +245,10 @@ public sealed class ResultStepViewModelTests
     }
 
     [Fact]
-    public void ExportLogIsNotAvailableYet()
-    {
-        var vm = new ResultStepViewModel();
-
-        vm.Show(Success(RecoveryEnvironmentState.Configured));
-
-        vm.IsExportLogAvailable.ShouldBeFalse();
-    }
-
-    [Fact]
     public void ShowReplacesThePreviousReport()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
         vm.Show(Success(RecoveryEnvironmentState.Warning, new VerificationResult(false, ["Problem"])));
 
         vm.Show(Failed(CloneOutcome.Failed));

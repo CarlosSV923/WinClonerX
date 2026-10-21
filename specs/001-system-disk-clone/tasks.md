@@ -235,7 +235,7 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 
 - [x] T095 [P] [US3] Tests de cancelación en `tests/WinCopy.Domain.Tests/Execution/CloneExecutionCancelTests.cs`: `Running → Cancelling → Cancelled` con compensaciones; durante `CommitLayout` la cancelación queda pendiente hasta terminar la fase
 - [ ] T096 [P] [US3] Tests del caso de uso `CancelExecution` y de la desconexión de disco en `tests/WinCopy.Application.Tests/UseCases/CancelAndDeviceLossTests.cs`: un `DeviceChange` de origen o destino aborta con `FailureCode` específico; un error de lectura del origen aborta con el código "disco de origen con posibles problemas físicos" (US3 escenario 3)
-- [ ] T097 [P] [US3] Tests de exportación en `tests/WinCopy.Application.Tests/UseCases/ExportLogTests.cs`: el `.zip` contiene el `.clef` de la ejecución y `inventory.json` solo si se pide
+- [X] T097 [P] [US3] Tests de exportación en `tests/WinCopy.Application.Tests/UseCases/ExportLogTests.cs`: el `.zip` contiene el `.clef` de la ejecución y `inventory.json` solo si se pide
 - [ ] T098 [US3] Test de integración en `tests/WinCopy.Infrastructure.IntegrationTests/Cloning/CancelMidCopyTests.cs`: cancelar al 50 % de CopyData deja el VHDX de destino sin tabla de particiones y el origen sin cambios (hash)
 - [x] T099 [P] [US3] Tests de ViewModels en `tests/WinCopy.App.Tests/ViewModels/CancelFlowTests.cs`: Cancelar pide confirmación; cerrar la ventana equivale a cancelar; texto "Terminando paso seguro…" en fase no cancelable; variantes de resultado Cancelado y Fallido
 
@@ -244,9 +244,9 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 - [x] T100 [US3] Implementar el estado `Cancelling` y las fases no cancelables en `CloneExecution` (`src/WinCopy.Domain/Execution/CloneExecution.cs`), y el caso de uso `CancelExecution` en `src/WinCopy.Application/UseCases/Execution/CancelExecution.cs` (implementado como `IExecuteClone.RequestCancel()`: el orquestador ya posee la ejecución y sus eventos)
 - [ ] T101 [P] [US3] Implementar `DeviceChangeMonitor` (`WM_DEVICECHANGE` en ventana de mensajes oculta o `CM_Register_Notification`) en `src/WinCopy.Infrastructure.Windows/Platform/DeviceChangeMonitor.cs`, y conectarlo al orquestador
 - [ ] T102 [P] [US3] Implementar la clasificación de errores de E/S (lectura de origen, escritura de destino, dispositivo no disponible) en `PlatformErrorCode` dentro de `src/WinCopy.Infrastructure.Windows/RawIo/IoErrorClassifier.cs`
-- [ ] T103 [US3] Implementar el caso de uso `ExportLog` en `src/WinCopy.Application/UseCases/ExportLog.cs` y `ExportAsync` (zip con `.clef` e `inventory.json` opcional) en `src/WinCopy.Infrastructure.Windows/Logging/SerilogExecutionLog.cs`
-- [ ] T104 [US3] Actualizar la interfaz: botón Cancelar con confirmación y cierre de ventana interceptado en `src/WinCopy.App/Views/ProgressStepView.xaml` y `src/WinCopy.App/MainWindow.xaml.cs`; variantes Cancelado y Fallido con estado del origen y del destino y botón "Exportar registro" (diálogo para guardar) en `src/WinCopy.App/Views/ResultStepView.xaml` (cancelación hecha; exportación pendiente)
-- [ ] T105 [US3] Añadir los textos de cancelación, fallos por `PlatformErrorCode` y exportación a `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx` (cancelación hecha; exportación pendiente)
+- [X] T103 [US3] Implementar el caso de uso `ExportLog` en `src/WinCopy.Application/UseCases/ExportLog.cs` y `ExportAsync` (zip con `.clef` e `inventory.json` opcional) en `src/WinCopy.Infrastructure.Windows/Logging/SerilogExecutionLog.cs`
+- [X] T104 [US3] Actualizar la interfaz: botón Cancelar con confirmación y cierre de ventana interceptado en `src/WinCopy.App/Views/ProgressStepView.xaml` y `src/WinCopy.App/MainWindow.xaml.cs`; variantes Cancelado y Fallido con estado del origen y del destino y botón "Exportar registro" (diálogo para guardar) en `src/WinCopy.App/Views/ResultStepView.xaml`
+- [X] T105 [US3] Añadir los textos de cancelación, fallos por `PlatformErrorCode` y exportación a `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx`
 - [X] T121 Diario de restauración del origen: si el proceso muere con el origen reducido, WinCopy lo restaura al iniciarse
 
 **Checkpoint**: las tres historias funcionan de forma independiente.

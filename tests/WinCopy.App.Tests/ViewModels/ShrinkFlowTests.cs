@@ -179,7 +179,7 @@ public sealed class ShrinkFlowTests
     public void AShrunkSourceThatWasRestoredSaysSo()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Report(sourceRestored: true));
 
@@ -193,7 +193,7 @@ public sealed class ShrinkFlowTests
     public void AShrunkSourceThatWasNotRestoredShowsAWarningWithTheManualFix()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Report(sourceRestored: false));
 
@@ -209,7 +209,7 @@ public sealed class ShrinkFlowTests
     public void WithoutAShrinkThereIsNoRestoreStateAtAll()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
         vm.Show(Report(sourceRestored: false));
 
         vm.Show(Report(sourceRestored: null));

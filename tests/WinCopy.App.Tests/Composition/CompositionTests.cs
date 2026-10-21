@@ -3,6 +3,7 @@ using Shouldly;
 using System.IO;
 using WinCopy.Application;
 using WinCopy.Application.Ports;
+using WinCopy.Application.UseCases;
 using WinCopy.Application.UseCases.Execution;
 using WinCopy.Application.UseCases.Planning;
 using WinCopy.Application.UseCases.Recovery;
@@ -91,6 +92,7 @@ public sealed class CompositionTests : IDisposable
         provider.GetRequiredService<IExecuteClone>().ShouldNotBeNull();
         provider.GetRequiredService<IClonePlanStore>().ShouldNotBeNull();
         provider.GetRequiredService<IRecoverPendingSourceRestore>().ShouldNotBeNull();
+        provider.GetRequiredService<IExportLog>().ShouldNotBeNull();
     }
 
     [Fact]

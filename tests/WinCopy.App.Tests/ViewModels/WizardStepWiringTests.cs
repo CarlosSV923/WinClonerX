@@ -286,7 +286,7 @@ public sealed class WizardStepWiringTests
         var confirm = new ConfirmStepViewModel(confirmPlan);
         var execute = new FakeExecuteClone();
         var progress = new ProgressStepViewModel(execute, new TestUiDispatcher(deferredEvents), new FakeConfirmationService());
-        var result = new ResultStepViewModel();
+        var result = ResultStepFactory.Create();
         var wizard = new WizardViewModel(disks, review, confirm, progress, result);
 
         await disks.LoadAsync(ct);

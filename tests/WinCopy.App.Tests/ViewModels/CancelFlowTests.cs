@@ -211,7 +211,7 @@ public sealed class CancelFlowTests
     public void CancelledResultSaysTheTargetIsUninitializedAndTheOriginalWasNotModified()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Report(CloneOutcome.Cancelled, sourceRestored: null));
 
@@ -226,7 +226,7 @@ public sealed class CancelFlowTests
     public void CancelledResultOfAShrunkSourceReportsTheRestoredSize()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Report(CloneOutcome.Cancelled, sourceRestored: true));
 
@@ -239,7 +239,7 @@ public sealed class CancelFlowTests
     public void FailedResultKeepsItsOwnBody()
     {
         using var _ = new EnglishCulture();
-        var vm = new ResultStepViewModel();
+        var vm = ResultStepFactory.Create();
 
         vm.Show(Report(CloneOutcome.Failed, sourceRestored: null));
 
@@ -264,7 +264,7 @@ public sealed class CancelFlowTests
         var execute = new FakeExecuteClone();
         var confirmation = new FakeConfirmationService();
         var progress = new ProgressStepViewModel(execute, new TestUiDispatcher(), confirmation);
-        var wizard = new WizardViewModel(disks, review, confirm, progress, new ResultStepViewModel());
+        var wizard = new WizardViewModel(disks, review, confirm, progress, ResultStepFactory.Create());
 
         return (wizard, progress, execute, confirmation);
     }

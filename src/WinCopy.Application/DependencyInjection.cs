@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using WinCopy.Application.Ports;
+using WinCopy.Application.UseCases;
 using WinCopy.Application.UseCases.Execution;
 using WinCopy.Application.UseCases.Planning;
 using WinCopy.Application.UseCases.Recovery;
@@ -29,6 +30,9 @@ public static class DependencyInjection
             sp.GetRequiredService<ISourceResizer>(),
             sp.GetRequiredService<ISourceRestoreJournal>(),
             () => sp.GetRequiredService<IExecutionLog>()));
+
+        // La exportación también pide el registro con una función: solo se resuelve cuando la persona exporta.
+        services.AddSingleton<IExportLog>(sp => new ExportLog(() => sp.GetRequiredService<IExecutionLog>()));
 
         return services;
     }

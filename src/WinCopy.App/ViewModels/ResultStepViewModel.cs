@@ -1,8 +1,14 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WinCopy.App.Localization;
 using WinCopy.App.Presentation;
+using WinCopy.App.Services;
 using WinCopy.Application.Errors;
+using WinCopy.Application.Ports;
+using WinCopy.Application.UseCases;
 using WinCopy.Domain.Execution;
 
 namespace WinCopy.App.ViewModels;
@@ -10,13 +16,26 @@ namespace WinCopy.App.ViewModels;
 /// <summary>
 /// Step 5 "Result" (contracts/ui-wizard.md). A successful clone shows the structural verification, the duration, the state of
 /// WinRE and the next steps (FR-022, FR-023). A cancelled or failed one says that the target disk is unusable, the state of the
-/// original disk (FR-024) and the failure details.
-/// TODO(US3): export the log from the cancelled and failed variants (T104, T105, FR-026).
+/// original disk (FR-024) and the failure details. Every outcome can export the log and open its folder (FR-026, FR-027).
 /// </summary>
 public sealed partial class ResultStepViewModel : ObservableObject
 {
     /// <summary>Codes the use case produces that are not <see cref="PlatformErrorCode"/> values. Each has its own message.</summary>
     private static readonly HashSet<string> UseCaseFailureCodes = ["Unexpected", "DisksChanged", "ShrinkInsufficient", "ShrinkJournalFailed"];
+
+    private readonly IExportLog _exportLog;
+    private readonly IFileDialogService _fileDialog;
+    private readonly IFolderOpener _folderOpener;
+    private readonly IClock _clock;
+
+    /// <summary>Creates the step with the services it needs to export the log and to open its folder.</summary>
+    public ResultStepViewModel(IExportLog exportLog, IFileDialogService fileDialog, IFolderOpener folderOpener, IClock clock)
+    {
+        _exportLog = exportLog ?? throw new ArgumentNullException(nameof(exportLog));
+        _fileDialog = fileDialog ?? throw new ArgumentNullException(nameof(fileDialog));
+        _folderOpener = folderOpener ?? throw new ArgumentNullException(nameof(folderOpener));
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+    }
 
     /// <summary>Outcome of the run. Null until <see cref="Show"/> is called.</summary>
     [ObservableProperty]
@@ -83,6 +102,11 @@ public sealed partial class ResultStepViewModel : ObservableObject
     [ObservableProperty]
     private string _logFileText = string.Empty;
 
+    /// <summary>Path of the log file of the run, for every outcome. Empty when the report has none.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenLogFolderCommand))]
+    private string _logFile = string.Empty;
+
     /// <summary>True when the source was shrunk and went back to its original size (FR-021a). Shown as a confirmation.</summary>
     [ObservableProperty]
     private bool _isSourceRestored;
@@ -95,20 +119,81 @@ public sealed partial class ResultStepViewModel : ObservableObject
     [ObservableProperty]
     private string _sourceRestoreText = string.Empty;
 
+    /// <summary>
+    /// Whether the disk inventory goes into the exported archive. Off by default: it holds serial numbers, and nothing about the disks
+    /// is exported without the person's choice (FR-027).
+    /// </summary>
+    [ObservableProperty]
+    private bool _includeInventory;
+
+    /// <summary>Localized outcome of the last export or of opening the folder. Empty until one of them happens.</summary>
+    [ObservableProperty]
+    private string _exportStatusText = string.Empty;
+
+    /// <summary>True when <see cref="ExportStatusText"/> reports a failure. The view shows it in the danger colour.</summary>
+    [ObservableProperty]
+    private bool _isExportStatusError;
+
     public bool IsSuccess => Outcome == CloneOutcome.Completed;
 
     public bool IsFailure => Outcome is CloneOutcome.Failed or CloneOutcome.Cancelled;
 
-    /// <summary>
-    /// Log export is shown disabled until US3 adds the save dialog (FR-026).
-    /// TODO(US3): enable "Export log".
-    /// </summary>
-    public bool IsExportLogAvailable { get; }
+    /// <summary>True when there is an export or folder message to show.</summary>
+    public bool HasExportStatus => ExportStatusText.Length > 0;
+
+    /// <summary>Exports the log of the run to a .zip the person picks (FR-026). Available for every outcome.</summary>
+    [RelayCommand]
+    private async Task ExportLogAsync()
+    {
+        string? destination = _fileDialog.PickExportFile(SuggestedExportFileName());
+        if (destination is null)
+        {
+            // The person cancelled the dialog: nothing is exported and nothing is said.
+            return;
+        }
+
+        try
+        {
+            await _exportLog.ExecuteAsync(destination, IncludeInventory, CancellationToken.None);
+            ShowExportStatus(Loc.Format("Result_Export_Done", destination), isError: false);
+        }
+        catch (Exception ex)
+        {
+            ShowExportStatus(Loc.Format("Result_Export_Failed", ex.Message), isError: true);
+        }
+    }
+
+    /// <summary>Opens the folder of the log in Explorer. The logs live in the hidden ProgramData folder.</summary>
+    [RelayCommand(CanExecute = nameof(CanOpenLogFolder))]
+    private void OpenLogFolder()
+    {
+        string? folder = Path.GetDirectoryName(LogFile);
+        if (string.IsNullOrEmpty(folder))
+        {
+            return;
+        }
+
+        try
+        {
+            _folderOpener.Open(folder);
+        }
+        catch (Exception ex)
+        {
+            ShowExportStatus(Loc.Format("Result_OpenFolder_Failed", ex.Message), isError: true);
+        }
+    }
+
+    private bool CanOpenLogFolder => !string.IsNullOrEmpty(Path.GetDirectoryName(LogFile));
 
     partial void OnOutcomeChanged(CloneOutcome? value)
     {
         OnPropertyChanged(nameof(IsSuccess));
         OnPropertyChanged(nameof(IsFailure));
+    }
+
+    partial void OnExportStatusTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasExportStatus));
     }
 
     /// <summary>
@@ -121,6 +206,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
 
         Clear();
         Outcome = report.Outcome;
+        LogFile = report.LogFile;
         DurationLine = Loc.Format("Result_Duration", DurationText.Format(report.Duration));
 
         if (report.Outcome == CloneOutcome.Completed)
@@ -234,6 +320,16 @@ public sealed partial class ResultStepViewModel : ObservableObject
             : Loc.Get("Result_Failed_Generic");
     }
 
+    /// <summary>Default name of the exported archive, from the local time: WinCopy-registro-yyyyMMdd-HHmmss.zip.</summary>
+    private string SuggestedExportFileName() =>
+        "WinCopy-registro-" + _clock.UtcNow.ToLocalTime().ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture) + ".zip";
+
+    private void ShowExportStatus(string text, bool isError)
+    {
+        ExportStatusText = text;
+        IsExportStatusError = isError;
+    }
+
     private void Clear()
     {
         Outcome = null;
@@ -252,8 +348,11 @@ public sealed partial class ResultStepViewModel : ObservableObject
         FailureDetail = string.Empty;
         HasLogFile = false;
         LogFileText = string.Empty;
+        LogFile = string.Empty;
         IsSourceRestored = false;
         IsSourceRestoreWarning = false;
         SourceRestoreText = string.Empty;
+        ExportStatusText = string.Empty;
+        IsExportStatusError = false;
     }
 }

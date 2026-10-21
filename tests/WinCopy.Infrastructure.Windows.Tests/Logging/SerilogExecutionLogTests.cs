@@ -180,6 +180,22 @@ public sealed class SerilogExecutionLogTests : IDisposable
     }
 
     [Fact]
+    public async Task CancelledExportLeavesNoArchiveBehind()
+    {
+        using SerilogExecutionLog log = CreateLog();
+        log.Record(new LogEvent("PhaseStarted", new Dictionary<string, object?> { ["Phase"] = "CopyData" }));
+        Directory.CreateDirectory(ExportDirectory);
+        string archivePath = Path.Combine(ExportDirectory, "cancelled.zip");
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => log.ExportAsync(archivePath, includeInventory: true, cancellation.Token));
+
+        File.Exists(archivePath).ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task ExportOverwritesAnExistingArchive()
     {
         using SerilogExecutionLog log = CreateLog();

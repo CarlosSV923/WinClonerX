@@ -550,6 +550,24 @@
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Exportar registro</value>
   </data>
+  <data name="Result_Export_IncludeInventory" xml:space="preserve">
+    <value>Incluir el inventario de discos (modelo, número de serie y tamaño)</value>
+  </data>
+  <data name="Result_OpenLogFolder" xml:space="preserve">
+    <value>Abrir carpeta de registros</value>
+  </data>
+  <data name="Result_Export_Done" xml:space="preserve">
+    <value>Registro exportado a: {0}</value>
+  </data>
+  <data name="Result_Export_Failed" xml:space="preserve">
+    <value>No se pudo exportar el registro: {0}</value>
+  </data>
+  <data name="Result_Export_FileFilter" xml:space="preserve">
+    <value>Archivo ZIP|*.zip</value>
+  </data>
+  <data name="Result_OpenFolder_Failed" xml:space="preserve">
+    <value>No se pudo abrir la carpeta de registros: {0}</value>
+  </data>
   <data name="Result_Failure_Detail" xml:space="preserve">
     <value>Código: {0} · Fase: {1}</value>
   </data>
