@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using WinCopy.Application.Ports;
 using WinCopy.Application.UseCases.Execution;
 using WinCopy.Application.UseCases.Planning;
+using WinCopy.Application.UseCases.Recovery;
 
 namespace WinCopy.Application;
 
@@ -20,6 +22,13 @@ public static class DependencyInjection
         services.AddSingleton<IBuildClonePlan, BuildClonePlan>();
         services.AddSingleton<IConfirmClonePlan, ConfirmClonePlan>();
         services.AddSingleton<IExecuteClone, ExecuteClone>();
+
+        // El registro se pide con una función: solo se crea cuando la recuperación encuentra algo que registrar.
+        services.AddSingleton<IRecoverPendingSourceRestore>(sp => new RecoverPendingSourceRestore(
+            sp.GetRequiredService<IDiskInventoryReader>(),
+            sp.GetRequiredService<ISourceResizer>(),
+            sp.GetRequiredService<ISourceRestoreJournal>(),
+            () => sp.GetRequiredService<IExecutionLog>()));
 
         return services;
     }

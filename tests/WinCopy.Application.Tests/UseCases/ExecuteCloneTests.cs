@@ -654,9 +654,10 @@ public sealed class ExecuteCloneTests
             Raw.Data = new byte[4 * ChunkSize];
 
             MountFaults = new ReleaseFaultMounter(Mounter);
+            Journal = new FakeSourceRestoreJournal(Resizer);
             Orchestrator = new ExecuteClone(
                 Store, Inventory, Snapshots, Raw, Targets, Copier, Expander, MountFaults, Registry, Boot, Recovery,
-                Verifier, Resizer, Power, Log, Clock);
+                Verifier, Resizer, Journal, Power, Log, Clock);
             Orchestrator.Events.Subscribe(new EventCollector(Events, e => OnEvent(e)));
         }
 
@@ -689,6 +690,8 @@ public sealed class ExecuteCloneTests
         public FakeStructuralVerifier Verifier { get; } = new();
 
         public FakeSourceResizer Resizer { get; } = new();
+
+        public FakeSourceRestoreJournal Journal { get; }
 
         public FakePowerManager Power { get; } = new();
 

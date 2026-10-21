@@ -66,6 +66,15 @@ internal sealed class StorageSourceResizer : ISourceResizer
     }
 
     /// <inheritdoc />
+    public Task<ByteSize> GetMaximumSizeAsync(PartitionGuid partition, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        // The token is only checked above: the WMI work is not cancellable once started.
+        return Task.Run(() => MaximumSize(partition), CancellationToken.None);
+    }
+
+    /// <inheritdoc />
     public Task ShrinkAsync(PartitionGuid partition, ByteSize newLength, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -93,6 +102,18 @@ internal sealed class StorageSourceResizer : ISourceResizer
             () => _api.GetSupportedSize(info.DiskNumber, info.PartitionNumber));
 
         return new ByteSize(sizeMin);
+    }
+
+    private ByteSize MaximumSize(PartitionGuid partition)
+    {
+        PartitionResizeInfo info = RequireRunningWindowsPartition(partition, PlatformErrorCode.RestoreFailed);
+
+        (_, long sizeMax) = Guard(
+            PlatformErrorCode.RestoreFailed,
+            "query the supported size",
+            () => _api.GetSupportedSize(info.DiskNumber, info.PartitionNumber));
+
+        return new ByteSize(sizeMax);
     }
 
     private void Shrink(PartitionGuid partition, ByteSize newLength)

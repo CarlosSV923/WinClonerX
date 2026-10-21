@@ -616,4 +616,13 @@
   <data name="Error_ShrinkInsufficient" xml:space="preserve">
     <value>Windows cannot be shrunk enough to fit on the target disk. Free up space on the system disk or choose a larger disk.</value>
   </data>
+  <data name="Error_ShrinkJournalFailed" xml:space="preserve">
+    <value>WinCopy could not save the record needed to restore the Windows disk, so it did not shrink it. The original disk was not changed. Restart WinCopy and try again. If it happens again, keep the log file.</value>
+  </data>
+  <data name="Startup_SourceRestored" xml:space="preserve">
+    <value>The last clone was interrupted and your Windows disk had been shrunk. WinCopy has restored it to its original size.</value>
+  </data>
+  <data name="Startup_SourceRestoreNeedsAttention" xml:space="preserve">
+    <value>The last clone was interrupted and your Windows disk had been shrunk. WinCopy could not restore it automatically. To fix it, open Disk Management, right-click C: and choose Extend Volume.</value>
+  </data>
 </root>

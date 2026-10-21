@@ -5,6 +5,7 @@ using WinCopy.Application;
 using WinCopy.Application.Ports;
 using WinCopy.Application.UseCases.Execution;
 using WinCopy.Application.UseCases.Planning;
+using WinCopy.Application.UseCases.Recovery;
 using WinCopy.Infrastructure.Windows;
 using Xunit;
 
@@ -89,6 +90,7 @@ public sealed class CompositionTests : IDisposable
         provider.GetRequiredService<IConfirmClonePlan>().ShouldNotBeNull();
         provider.GetRequiredService<IExecuteClone>().ShouldNotBeNull();
         provider.GetRequiredService<IClonePlanStore>().ShouldNotBeNull();
+        provider.GetRequiredService<IRecoverPendingSourceRestore>().ShouldNotBeNull();
     }
 
     [Fact]
@@ -125,7 +127,11 @@ public sealed class CompositionTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddWinCopyApplication();
-        services.AddWinCopyInfrastructure(options => options.LogDirectory = _logDirectory);
+        services.AddWinCopyInfrastructure(options =>
+        {
+            options.LogDirectory = _logDirectory;
+            options.JournalDirectory = _logDirectory;
+        });
 
         return services.BuildServiceProvider(new ServiceProviderOptions
         {

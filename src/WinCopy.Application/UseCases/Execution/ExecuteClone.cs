@@ -31,6 +31,7 @@ public sealed class ExecuteClone(
     IRecoveryConfigurator recoveryConfigurator,
     IStructuralVerifier verifier,
     ISourceResizer resizer,
+    ISourceRestoreJournal journal,
     IPowerManager power,
     IExecutionLog log,
     IClock clock) : IExecuteClone
@@ -38,6 +39,7 @@ public sealed class ExecuteClone(
     private const string DisksChangedReason = "DisksChanged";
     private const string ShrinkInsufficientCode = "ShrinkInsufficient";
     private const string ShrinkFailedCode = "ShrinkFailed";
+    private const string ShrinkJournalFailedCode = "ShrinkJournalFailed";
     private static readonly TimeSpan ProgressReportInterval = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan ProgressLogInterval = TimeSpan.FromSeconds(5);
 
@@ -249,6 +251,10 @@ public sealed class ExecuteClone(
                 $"El mínimo que admite Windows ({minimum.Bytes} bytes) supera la longitud reducida planificada ({shrink.ShrunkLength.Bytes} bytes).");
         }
 
+        // El diario va antes de la reducción: si el proceso muere con el origen reducido, la siguiente ejecución lo restaura.
+        // Sin diario no se reduce nunca (FR-021a).
+        RecordJournal(run, shrink);
+
         // A partir de aquí la compensación RestoreSource debe restaurar: una reducción fallida puede haber cambiado el origen.
         run.ShrinkAttempted = true;
         try
@@ -281,6 +287,64 @@ public sealed class ExecuteClone(
             run.Execution.RecordRestoreFailure(detail);
             run.SourceRestored = false;
             Record(ExecutionLogEvents.SourceRestoreFailed(shrink.Partition, shrink.OriginalLength, detail));
+            return;
+        }
+
+        ClearJournal(shrink);
+    }
+
+    /// <summary>
+    /// Escribe la entrada del diario antes de reducir. Si ya hay una entrada pendiente, o el diario no se puede leer, no se reduce:
+    /// una entrada nueva sustituiría la que falta por restaurar. Cualquier fallo de escritura aborta la ejecución antes de tocar
+    /// el origen.
+    /// </summary>
+    private void RecordJournal(ExecutionRun run, SourceShrinkStep shrink)
+    {
+        PendingSourceRestoreRead pending;
+        try
+        {
+            pending = journal.Read();
+        }
+        catch (Exception ex)
+        {
+            throw new ExecutionAbortException(ShrinkJournalFailedCode, ex.ToString());
+        }
+
+        if (pending.State != PendingSourceRestoreState.Absent)
+        {
+            throw new ExecutionAbortException(
+                ShrinkJournalFailedCode,
+                "Hay una restauración del origen pendiente de una ejecución anterior. Reinicia WinCopy para resolverla antes de reducir. "
+                + (pending.Detail ?? string.Empty));
+        }
+
+        var entry = new PendingSourceRestore(shrink.Partition, shrink.OriginalLength, run.Plan.Id, clock.UtcNow);
+        try
+        {
+            journal.Record(entry);
+        }
+        catch (Exception ex)
+        {
+            throw new ExecutionAbortException(ShrinkJournalFailedCode, ex.ToString());
+        }
+
+        Record(ExecutionLogEvents.SourceRestoreJournalWritten(entry));
+    }
+
+    /// <summary>
+    /// Borra la entrada del diario una vez el origen tiene su longitud original. Un fallo es un aviso y nunca cambia el
+    /// desenlace: el origen ya está bien, y la siguiente ejecución comprobará la entrada y la borrará.
+    /// </summary>
+    private void ClearJournal(SourceShrinkStep shrink)
+    {
+        try
+        {
+            journal.Clear();
+            Record(ExecutionLogEvents.SourceRestoreJournalCleared(shrink.Partition));
+        }
+        catch (Exception ex)
+        {
+            Record(ExecutionLogEvents.SourceRestoreJournalClearFailed(shrink.Partition, ex.ToString()));
         }
     }
 
@@ -589,6 +653,9 @@ public sealed class ExecuteClone(
 
                     var shrink = RequireShrink(run);
                     await resizer.RestoreAsync(shrink.Partition, shrink.OriginalLength, CancellationToken.None);
+
+                    // Si la restauración falla, la excepción sale aquí y la entrada del diario se conserva para el siguiente inicio.
+                    ClearJournal(shrink);
                     return (true, null);
 
                 case CompensationKind.AllowSleep:

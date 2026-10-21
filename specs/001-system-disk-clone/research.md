@@ -162,6 +162,19 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 - **Margen de capacidad**: 10 % de los datos ocupados, con un mínimo de 10 GiB (supuesto de la
   especificación). El tamaño reducido propuesto es el mayor entre el mínimo que admite Windows y lo que
   ocupan los datos más el margen.
+- **Hallazgo en hardware real (2026-10-21)**: en una prueba en un equipo real, la aplicación se cerró mientras
+  preparaba el destino (fase `PrepareTarget`) con el origen ya reducido. Las compensaciones solo se ejecutan dentro
+  del proceso, así que nada restauró la partición de Windows y hubo que ejecutar `Resize-Partition` a mano. Un corte
+  de energía o un proceso matado darían el mismo resultado.
+- **Decisión (diario de restauración, FR-021a)**: el archivo `%ProgramData%\WinCopy\pending-source-restore.json`
+  guarda la partición, su longitud original, el plan y el instante UTC. Se escribe de forma duradera (archivo
+  temporal con `FileOptions.WriteThrough` y `Flush(true)`, luego reemplazo) justo antes de `ShrinkAsync`: si la
+  escritura falla, la ejecución aborta con `ShrinkJournalFailed` y no se reduce nada. Se borra solo cuando el origen
+  tiene su longitud original, en el camino feliz o en la compensación `RestoreSource`. Si la restauración falla, el
+  diario se conserva. Al iniciarse, `RecoverPendingSourceRestore` lee el diario y lo valida **fail-closed** contra el
+  inventario actual (la partición debe ser la de Windows del disco del sistema, la longitud original debe ser mayor
+  que la actual y no superar `SizeMax`); solo entonces restaura. Ver la tarea T121 y
+  [contracts/log-events.md](contracts/log-events.md).
 
 ## R7. Arranque y entorno de recuperación del clon
 

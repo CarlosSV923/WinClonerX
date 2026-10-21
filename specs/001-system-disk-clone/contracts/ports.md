@@ -42,8 +42,16 @@ interface IDeviceChangeMonitor   // FR-011, US3 escenario 2
 interface ISourceResizer   // R6. Solo para la partición de Windows del origen
 {
     Task<ByteSize> GetMinimumSizeAsync(PartitionGuid partition, CancellationToken ct);
+    Task<ByteSize> GetMaximumSizeAsync(PartitionGuid partition, CancellationToken ct);   // SizeMax: recuperación al iniciarse
     Task ShrinkAsync(PartitionGuid partition, ByteSize newLength, CancellationToken ct);
     Task RestoreAsync(PartitionGuid partition, ByteSize originalLength, CancellationToken ct);
+}
+
+interface ISourceRestoreJournal   // FR-021a. Diario de la reducción: se escribe antes de reducir y se borra al restaurar
+{
+    void Record(PendingSourceRestore entry);   // Escritura duradera; si lanza, no hay reducción
+    PendingSourceRestoreRead Read();           // Un archivo dañado no lanza: devuelve Invalid
+    void Clear();
 }
 
 interface ISnapshotService   // R1
@@ -154,3 +162,4 @@ interface IClock { DateTimeOffset UtcNow { get; } }
 | `ExecuteClone` | `PlanId` (Confirmed) → flujo de `ExecutionEvent` + `CloneResultReport` | FR-011, 015…024 |
 | `CancelExecution` | `ExecutionId` → aceptado o en espera (fase no cancelable) | US3 |
 | `ExportLog` | ruta e inventario sí/no → archivo | FR-026 |
+| `RecoverPendingSourceRestore` | — → `Nothing`, `Restored`, `AlreadyRestored` o `NeedsAttention` (con su motivo) | FR-021a. Al iniciarse, antes del inventario; valida la entrada del diario contra el disco y nunca reduce ni restaura nada inesperado |

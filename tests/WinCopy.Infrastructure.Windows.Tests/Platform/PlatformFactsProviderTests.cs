@@ -411,6 +411,9 @@ public sealed class PlatformFactsProviderTests
             return Task.FromResult(MinimumSize);
         }
 
+        public Task<ByteSize> GetMaximumSizeAsync(PartitionGuid partition, CancellationToken ct) =>
+            throw new NotSupportedException("The facts never ask for the maximum size.");
+
         public Task ShrinkAsync(PartitionGuid partition, ByteSize newLength, CancellationToken ct) =>
             throw new NotSupportedException("The facts never shrink.");
 

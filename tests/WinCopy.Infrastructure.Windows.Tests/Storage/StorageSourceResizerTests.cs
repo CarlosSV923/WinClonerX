@@ -151,6 +151,31 @@ public sealed class StorageSourceResizerTests
 
     // ---- shrink ----
 
+    // ---- maximum size ----
+
+    [Fact]
+    public async Task GetMaximumSizeReturnsTheSupportedMaximumOfTheWindowsPartitionWithoutResizing()
+    {
+        _api.SizeMax = 200 * Gib;
+
+        ByteSize maximum = await _resizer.GetMaximumSizeAsync(Partition, CancellationToken.None);
+
+        maximum.ShouldBe(new ByteSize(200 * Gib));
+        _api.ResizeCalls.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMaximumSizeRefusesThePartitionThatIsNotTheWindowsVolume()
+    {
+        _api.Info = RecoveryPartition();
+
+        PlatformException ex = await Should.ThrowAsync<PlatformException>(() =>
+            _resizer.GetMaximumSizeAsync(Partition, CancellationToken.None));
+
+        ex.TechnicalDetail.ShouldBe(RefusalMessage);
+        _api.ResizeCalls.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task ShrinkBelowTheSupportedMinimumIsRefusedWithoutResizing()
     {

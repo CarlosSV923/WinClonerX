@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using WinCopy.App.Localization;
 using WinCopy.App.Presentation;
 using WinCopy.Application.UseCases.Planning;
+using WinCopy.Application.UseCases.Recovery;
 using WinCopy.Domain.Inventory;
 using WinCopy.Domain.Planning;
 using WinCopy.Domain.Shared;
@@ -22,12 +23,25 @@ public sealed partial class DisksStepViewModel : ObservableObject
     private const long BackupGptBytes = 16L * 1024;
 
     private readonly IGetInventoryAndEligibility _inventory;
+    private readonly IRecoverPendingSourceRestore? _recovery;
     private TargetDiskItemViewModel? _selectedTarget;
+    private bool _recoveryChecked;
 
-    public DisksStepViewModel(IGetInventoryAndEligibility inventory)
+    /// <param name="inventory">Reads the disks and evaluates the destinations.</param>
+    /// <param name="recovery">
+    /// Startup recovery of a source left shrunk by an interrupted clone. Null skips the check; the composition root always passes it.
+    /// </param>
+    public DisksStepViewModel(IGetInventoryAndEligibility inventory, IRecoverPendingSourceRestore? recovery = null)
     {
         _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
+        _recovery = recovery;
     }
+
+    /// <summary>
+    /// Raised once per application start when the startup recovery found a pending source restore that was restored or still
+    /// needs attention. Not raised when there was nothing to recover.
+    /// </summary>
+    public event EventHandler<PendingSourceRestoreReportedEventArgs>? PendingSourceRestoreReported;
 
     /// <summary>The system disk, shown as the source card. Null when the system is not supported.</summary>
     [ObservableProperty]
@@ -95,8 +109,11 @@ public sealed partial class DisksStepViewModel : ObservableObject
         }
     }
 
-    /// <summary>Whether the step is complete: a destination has been selected.</summary>
-    public bool IsValid => SelectedTarget is not null;
+    /// <summary>
+    /// Whether the step is complete: a destination has been selected and no read is in progress. While the disks are being
+    /// read (including the startup recovery) the person cannot go on.
+    /// </summary>
+    public bool IsValid => !IsLoading && SelectedTarget is not null;
 
     /// <summary>Show the global block panel instead of the list.</summary>
     public bool IsGlobalPanelVisible => IsLoaded && GlobalBlocked;
@@ -116,6 +133,9 @@ public sealed partial class DisksStepViewModel : ObservableObject
         IsLoading = true;
         try
         {
+            // The recovery goes first: the inventory must show the restored partition, not the shrunk one.
+            await RecoverPendingSourceRestoreOnceAsync();
+
             var overview = await _inventory.ExecuteAsync(cancellationToken);
             Apply(overview);
             IsLoaded = true;
@@ -123,6 +143,35 @@ public sealed partial class DisksStepViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Runs the startup recovery once per application start, before the first inventory read. It never throws: an unexpected
+    /// failure is reported as needing attention, and the wizard still starts.
+    /// </summary>
+    private async Task RecoverPendingSourceRestoreOnceAsync()
+    {
+        if (_recovery is null || _recoveryChecked)
+        {
+            return;
+        }
+
+        _recoveryChecked = true;
+
+        PendingSourceRestoreRecovery recovery;
+        try
+        {
+            recovery = await _recovery.RecoverAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            recovery = PendingSourceRestoreRecovery.NeedsAttention(PendingSourceRestoreIssue.UnexpectedError, ex.ToString());
+        }
+
+        if (recovery.Outcome != PendingSourceRestoreOutcome.Nothing)
+        {
+            PendingSourceRestoreReported?.Invoke(this, new PendingSourceRestoreReportedEventArgs(recovery));
         }
     }
 
@@ -137,6 +186,8 @@ public sealed partial class DisksStepViewModel : ObservableObject
     }
 
     private static bool CanSelect(TargetDiskItemViewModel? target) => target is { IsSelectable: true };
+
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(IsValid));
 
     partial void OnIsLoadedChanged(bool value) => NotifyLayout();
 
@@ -208,4 +259,11 @@ public sealed partial class DisksStepViewModel : ObservableObject
 
         return new ByteSize(total);
     }
+}
+
+/// <summary>Arguments of <see cref="DisksStepViewModel.PendingSourceRestoreReported"/>: the result of the startup recovery.</summary>
+public sealed class PendingSourceRestoreReportedEventArgs(PendingSourceRestoreRecovery recovery) : EventArgs
+{
+    /// <summary>The recovery result. Its outcome is never Nothing when the event is raised.</summary>
+    public PendingSourceRestoreRecovery Recovery { get; } = recovery;
 }

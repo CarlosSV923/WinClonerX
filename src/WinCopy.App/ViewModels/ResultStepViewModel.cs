@@ -16,7 +16,7 @@ namespace WinCopy.App.ViewModels;
 public sealed partial class ResultStepViewModel : ObservableObject
 {
     /// <summary>Codes the use case produces that are not <see cref="PlatformErrorCode"/> values. Each has its own message.</summary>
-    private static readonly HashSet<string> UseCaseFailureCodes = ["Unexpected", "DisksChanged", "ShrinkInsufficient"];
+    private static readonly HashSet<string> UseCaseFailureCodes = ["Unexpected", "DisksChanged", "ShrinkInsufficient", "ShrinkJournalFailed"];
 
     /// <summary>Outcome of the run. Null until <see cref="Show"/> is called.</summary>
     [ObservableProperty]

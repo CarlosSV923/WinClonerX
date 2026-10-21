@@ -247,6 +247,7 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 - [ ] T103 [US3] Implementar el caso de uso `ExportLog` en `src/WinCopy.Application/UseCases/ExportLog.cs` y `ExportAsync` (zip con `.clef` e `inventory.json` opcional) en `src/WinCopy.Infrastructure.Windows/Logging/SerilogExecutionLog.cs`
 - [ ] T104 [US3] Actualizar la interfaz: botón Cancelar con confirmación y cierre de ventana interceptado en `src/WinCopy.App/Views/ProgressStepView.xaml` y `src/WinCopy.App/MainWindow.xaml.cs`; variantes Cancelado y Fallido con estado del origen y del destino y botón "Exportar registro" (diálogo para guardar) en `src/WinCopy.App/Views/ResultStepView.xaml` (cancelación hecha; exportación pendiente)
 - [ ] T105 [US3] Añadir los textos de cancelación, fallos por `PlatformErrorCode` y exportación a `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx` (cancelación hecha; exportación pendiente)
+- [X] T121 Diario de restauración del origen: si el proceso muere con el origen reducido, WinCopy lo restaura al iniciarse
 
 **Checkpoint**: las tres historias funcionan de forma independiente.
 

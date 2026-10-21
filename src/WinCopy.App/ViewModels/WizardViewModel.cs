@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using WinCopy.App.Localization;
+using WinCopy.Application.UseCases.Recovery;
 using WinCopy.Domain.Execution;
 using WinCopy.Domain.Planning;
 
@@ -53,6 +55,7 @@ public sealed partial class WizardViewModel : ObservableObject
         DisksStep = disksStep;
         ReviewStep = reviewStep;
         disksStep.PropertyChanged += OnStepPagePropertyChanged;
+        disksStep.PendingSourceRestoreReported += OnPendingSourceRestoreReported;
         reviewStep.PropertyChanged += OnStepPagePropertyChanged;
         RefreshStepValidity();
     }
@@ -106,6 +109,10 @@ public sealed partial class WizardViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string? _notice;
+
+    /// <summary>True when the notice reports something that went well, so it is shown as a success instead of a warning.</summary>
+    [ObservableProperty]
+    private bool _isNoticeSuccess;
 
     /// <summary>Completes when the run has finished and the result page is shown. Lets callers and tests wait for it.</summary>
     public Task ExecutionCompletion { get; private set; } = Task.CompletedTask;
@@ -291,7 +298,30 @@ public sealed partial class WizardViewModel : ObservableObject
         DisksStep?.RefreshCommand.Execute(null);
     }
 
-    partial void OnNoticeChanged(string? value) => OnPropertyChanged(nameof(HasNotice));
+    /// <summary>
+    /// The startup recovery restored a shrunk source, or it needs a manual fix. Only those two outcomes show a notice; a source that
+    /// was already at its original size has nothing to say.
+    /// </summary>
+    private void OnPendingSourceRestoreReported(object? sender, PendingSourceRestoreReportedEventArgs e)
+    {
+        switch (e.Recovery.Outcome)
+        {
+            case PendingSourceRestoreOutcome.Restored:
+                Notice = Loc.Get("Startup_SourceRestored");
+                IsNoticeSuccess = true;
+                break;
+            case PendingSourceRestoreOutcome.NeedsAttention:
+                Notice = Loc.Get("Startup_SourceRestoreNeedsAttention");
+                break;
+        }
+    }
+
+    partial void OnNoticeChanged(string? value)
+    {
+        // Every notice is a warning unless the code that sets it says otherwise right after.
+        IsNoticeSuccess = false;
+        OnPropertyChanged(nameof(HasNotice));
+    }
 
     private void OnStepPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {

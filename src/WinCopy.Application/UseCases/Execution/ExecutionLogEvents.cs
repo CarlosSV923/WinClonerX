@@ -95,6 +95,63 @@ internal static class ExecutionLogEvents
         ("OriginalLength", originalLength.Bytes),
         ("TechnicalDetail", technicalDetail));
 
+    /// <summary>Se ha escrito la entrada del diario antes de reducir el origen; sin ella no se reduce (FR-021a).</summary>
+    public static LogEvent SourceRestoreJournalWritten(PendingSourceRestore entry) => Create(
+        "SourceRestoreJournalWritten",
+        LogLevelKind.Information,
+        ("Partition", Text(entry.Partition.Value)),
+        ("OriginalLength", entry.OriginalLength.Bytes),
+        ("PlanId", Text(entry.Plan.Value)));
+
+    /// <summary>La entrada del diario se ha borrado porque el origen ya tiene su longitud original.</summary>
+    public static LogEvent SourceRestoreJournalCleared(PartitionGuid partition) => Create(
+        "SourceRestoreJournalCleared",
+        LogLevelKind.Information,
+        ("Partition", Text(partition.Value)));
+
+    /// <summary>
+    /// No se ha podido borrar la entrada del diario. Es un aviso y no cambia el desenlace: el origen ya tiene su longitud
+    /// original, y la siguiente ejecución encontrará la entrada, la comprobará y la borrará.
+    /// </summary>
+    public static LogEvent SourceRestoreJournalClearFailed(PartitionGuid partition, string technicalDetail) => Create(
+        "SourceRestoreJournalClearFailed",
+        LogLevelKind.Warning,
+        ("Partition", Text(partition.Value)),
+        ("TechnicalDetail", technicalDetail));
+
+    /// <summary>
+    /// Al iniciarse hay una restauración pendiente del origen. Si el diario no se puede leer, <paramref name="entry"/> es nulo y
+    /// <paramref name="technicalDetail"/> explica por qué.
+    /// </summary>
+    public static LogEvent PendingSourceRestoreFound(PendingSourceRestore? entry, string? technicalDetail) => Create(
+        "PendingSourceRestoreFound",
+        LogLevelKind.Warning,
+        ("Partition", entry is null ? null : Text(entry.Partition.Value)),
+        ("OriginalLength", entry?.OriginalLength.Bytes),
+        ("PlanId", entry is null ? null : Text(entry.Plan.Value)),
+        ("RecordedAt", entry?.RecordedAt),
+        ("TechnicalDetail", technicalDetail));
+
+    /// <summary>La restauración pendiente se ha resuelto: <paramref name="result"/> es Restored o AlreadyRestored.</summary>
+    public static LogEvent PendingSourceRestoreCompleted(PendingSourceRestore entry, string result) => Create(
+        "PendingSourceRestoreCompleted",
+        LogLevelKind.Information,
+        ("Partition", Text(entry.Partition.Value)),
+        ("OriginalLength", entry.OriginalLength.Bytes),
+        ("Result", result));
+
+    /// <summary>
+    /// La restauración pendiente no se ha podido resolver al iniciarse y necesita atención. <paramref name="reason"/> es el código
+    /// de la comprobación que falló. El diario se conserva para el siguiente inicio.
+    /// </summary>
+    public static LogEvent PendingSourceRestoreFailed(PendingSourceRestore? entry, string reason, string? technicalDetail) => Create(
+        "PendingSourceRestoreFailed",
+        LogLevelKind.Warning,
+        ("Partition", entry is null ? null : Text(entry.Partition.Value)),
+        ("OriginalLength", entry?.OriginalLength.Bytes),
+        ("Reason", reason),
+        ("TechnicalDetail", technicalDetail));
+
     private static LogEvent Create(string name, LogLevelKind level, params (string Key, object? Value)[] entries)
     {
         var properties = new Dictionary<string, object?>(StringComparer.Ordinal);

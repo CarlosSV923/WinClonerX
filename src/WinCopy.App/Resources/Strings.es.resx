@@ -616,4 +616,13 @@
   <data name="Error_ShrinkInsufficient" xml:space="preserve">
     <value>Windows no se puede reducir lo suficiente para caber en el disco de destino. Libera espacio en el disco del sistema o elige un disco más grande.</value>
   </data>
+  <data name="Error_ShrinkJournalFailed" xml:space="preserve">
+    <value>WinCopy no ha podido guardar el registro necesario para restaurar el disco de Windows, así que no lo ha reducido. El disco original no se ha modificado. Reinicia WinCopy e inténtalo de nuevo. Si vuelve a pasar, guarda el registro.</value>
+  </data>
+  <data name="Startup_SourceRestored" xml:space="preserve">
+    <value>La última clonación se interrumpió y tu disco de Windows había quedado reducido. WinCopy lo ha restaurado a su tamaño original.</value>
+  </data>
+  <data name="Startup_SourceRestoreNeedsAttention" xml:space="preserve">
+    <value>La última clonación se interrumpió y tu disco de Windows había quedado reducido. WinCopy no ha podido restaurarlo automáticamente. Para arreglarlo, abre Administración de discos, haz clic derecho en C: y elige «Extender volumen».</value>
+  </data>
 </root>

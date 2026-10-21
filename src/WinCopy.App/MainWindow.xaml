@@ -66,10 +66,19 @@
         <!-- Content area: an optional notice above the page of the current step (or its placeholder). -->
         <DockPanel Grid.Row="0" Grid.Column="1" Margin="24,24,24,12">
             <Border DockPanel.Dock="Top"
-                    Style="{StaticResource Card}"
                     Margin="0,0,0,12"
-                    BorderBrush="{StaticResource Brush.Danger}"
                     Visibility="{Binding HasNotice, Converter={StaticResource BoolToVisibility}}">
+                <!-- A warning by default; green when the notice reports a success, such as a restored source. -->
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.Danger}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsNoticeSuccess}" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource Brush.Success}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Notice}" />
             </Border>
             <ContentControl Content="{Binding CurrentPage}" />

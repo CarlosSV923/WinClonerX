@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using WinCopy.Application.Ports;
 using WinCopy.Infrastructure.Windows.Boot;
+using WinCopy.Infrastructure.Windows.Journal;
 using WinCopy.Infrastructure.Windows.Logging;
 using WinCopy.Infrastructure.Windows.Platform;
 using WinCopy.Infrastructure.Windows.RawIo;
@@ -19,6 +20,12 @@ public sealed class WinCopyInfrastructureOptions
     /// solo cuando se resuelve <see cref="IExecutionLog"/> por primera vez, no al construir el contenedor.
     /// </summary>
     public string? LogDirectory { get; set; }
+
+    /// <summary>
+    /// Folder of the source restore journal (<c>pending-source-restore.json</c>). When null, the journal goes to
+    /// <c>%ProgramData%\WinCopy</c>, the same base folder as the logs.
+    /// </summary>
+    public string? JournalDirectory { get; set; }
 
     /// <summary>Versión de la aplicación, que se escribe en cada línea del registro.</summary>
     public string AppVersion { get; set; } =
@@ -55,7 +62,13 @@ public static class DependencyInjection
 
         ArgumentException.ThrowIfNullOrWhiteSpace(options.AppVersion);
 
+        if (options.JournalDirectory is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.JournalDirectory);
+        }
+
         string? logDirectory = options.LogDirectory;
+        string? journalDirectory = options.JournalDirectory;
         string appVersion = options.AppVersion;
         Action<string>? warnings = options.Warnings;
 
@@ -88,6 +101,11 @@ public static class DependencyInjection
             warnings));
 
         services.AddSingleton<IPowerManager>(static _ => new PowerManager());
+
+        // The journal is a plain file, so it is created right away; it writes only when a shrink is about to start.
+        services.AddSingleton<ISourceRestoreJournal>(_ => journalDirectory is null
+            ? FileSourceRestoreJournal.CreateDefault()
+            : new FileSourceRestoreJournal(journalDirectory));
 
         services.AddSingleton<ISourceResizer>(sp => new StorageSourceResizer(
             new WmiPartitionResizeApi(),
