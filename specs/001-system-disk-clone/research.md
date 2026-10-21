@@ -365,3 +365,30 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   - La duración inicial del plan se calcula con un rendimiento conservador por tipo de bus (para mostrar
     algo antes de empezar).
 - **Motivo**: cumple FR-019 y SC-006 (±20 % desde el 10 %).
+
+## R18. Verificación completa de los datos (FR-022a)
+
+- **Decisión (2026-10-21)**: la comparación byte a byte es la fase `FullVerification`, después de `CopyData` y **antes de
+  `CommitLayout`**, con el destino todavía fuera de línea y bloqueado. La tarea pedía tras `CommitLayout`; se cambia por lo
+  que sigue.
+- **Por qué antes de `CommitLayout`**: `CommitLayout` también pone el disco en línea (`BringOnline`) y libera los bloqueos.
+  Con los volúmenes montados, NTFS puede escribir en ellos al montarlos (por ejemplo, el estado de `$Volume` y el registro
+  de NTFS), y esas escrituras aparecerían como diferencias que no son del clonado. Mientras el disco está fuera de línea,
+  ninguna escritura de Windows llega al destino. Además, si la comparación falla no hay diseño escrito que borrar.
+- **Por qué antes de la ampliación y del arranque**: `ExpandFileSystem` reescribe el sector de arranque (`NumberSectors`), el
+  mapa de bits de NTFS y el sector de arranque de respaldo al final del volumen. `RepairBoot` cambia `MountedDevices`, el BCD
+  de la ESP y `ReAgent.xml`. Si la comparación fuera después, esos cambios aparecerían como diferencias esperables. Antes, el
+  destino es exactamente lo que escribió la copia.
+- **Qué se compara**: los mismos tramos ocupados que copió la copia (`CopiedRange`), leídos de nuevo de la misma instantánea
+  (sigue abierta hasta `Cleanup`) y del destino con `ITargetDisk.ReadAsync` en su desplazamiento. Las particiones copiadas en
+  bruto (EFI, MSR) se comparan completas, porque su asignación es el tramo entero.
+- **Lectura y memoria**: `VolumeComparer` usa dos búferes alineados de 4 MiB por comparación, en fragmentos. Los errores se
+  clasifican como la copia: origen con `SourceReadError` o la desconexión; destino con `IoErrorClassifier.ForTargetIo`.
+- **Resultado**: `VerificationResult` con los bytes distintos totales y los primeros 10 desplazamientos del disco de destino.
+  El detalle por partición (número de bytes y desplazamientos) va en `Issues`. Un byte distinto falla la ejecución con
+  `VerificationFailed` y las compensaciones habituales; el informe lleva el resultado completo en `Full`.
+- **Registro**: un `DiskOperation` `Read` por partición sobre el destino, y `FullVerificationCompleted` al terminar.
+- **Estimación**: con la verificación completa, la duración estimada es la de la copia más una segunda pasada igual (aprox.
+  el doble, FR-022a). El rendimiento inicial de la copia usa solo la duración de la copia.
+- **Pendiente de comprobar en hardware real**: que el destino fuera de línea devuelve los mismos bytes que escribió la copia,
+  y que la comparación de un clon real con BitLocker y con el origen en instantánea no da diferencias espurias.

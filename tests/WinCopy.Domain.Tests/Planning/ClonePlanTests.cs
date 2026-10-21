@@ -433,7 +433,7 @@ public sealed class ClonePlanTests
             diskGuid ?? G(9001),
             VerificationMode.Structural,
             warnings ?? Array.Empty<PreflightCheck>(),
-            new CloneEstimate(new ByteSize(1), TimeSpan.Zero),
+            new CloneEstimate(new ByteSize(1), TimeSpan.Zero, TimeSpan.Zero),
             policy ?? CapacityPolicy.Default);
 
     private static ClonePlan BuildWithWarnings(params PreflightCheck[] warnings)

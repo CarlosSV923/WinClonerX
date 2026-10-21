@@ -331,9 +331,6 @@
   <data name="Review_VerifyAll" xml:space="preserve">
     <value>Verificar todos los datos (aprox. duplica la duración)</value>
   </data>
-  <data name="Review_VerifyAll_ComingSoon" xml:space="preserve">
-    <value>Disponible próximamente</value>
-  </data>
   <data name="Common_ComingSoon" xml:space="preserve">
     <value>Disponible próximamente</value>
   </data>
@@ -504,6 +501,15 @@
   </data>
   <data name="Result_Verification_Failed" xml:space="preserve">
     <value>La comprobación de la estructura encontró problemas:</value>
+  </data>
+  <data name="Result_FullVerification_Heading" xml:space="preserve">
+    <value>Verificación completa de los datos</value>
+  </data>
+  <data name="Result_FullVerification_Passed" xml:space="preserve">
+    <value>Todos los datos coinciden con el original.</value>
+  </data>
+  <data name="Result_FullVerification_Failed" xml:space="preserve">
+    <value>Se encontraron {0} bytes distintos del original. Primeros desplazamientos distintos en el disco nuevo: {1}.</value>
   </data>
   <data name="Result_Duration" xml:space="preserve">
     <value>Duración: {0}</value>

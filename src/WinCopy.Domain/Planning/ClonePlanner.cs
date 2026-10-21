@@ -80,7 +80,7 @@ public static class ClonePlanner
             newDiskGuid,
             mode,
             warnings,
-            CloneEstimate.Calculate(mappings, source.Bus, targetDisk.Bus),
+            CloneEstimate.Calculate(mappings, source.Bus, targetDisk.Bus, mode),
             policy,
             shrink);
 

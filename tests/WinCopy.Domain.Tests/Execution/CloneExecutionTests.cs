@@ -84,13 +84,44 @@ public sealed class CloneExecutionTests
             ExecutionPhase.Snapshot,
             ExecutionPhase.PrepareTarget,
             ExecutionPhase.CopyData,
+            ExecutionPhase.FullVerification,
             ExecutionPhase.CommitLayout,
             ExecutionPhase.RepairBoot,
             ExecutionPhase.StructuralVerification,
-            ExecutionPhase.FullVerification,
             ExecutionPhase.Cleanup,
         });
         structural.PlannedPhases.ShouldNotContain(ExecutionPhase.FullVerification);
+    }
+
+    [Fact]
+    public void FullVerificationComesAfterCopyDataAndBeforeTheLayoutAndExpansionWhenBothApply()
+    {
+        var execution = Start(Confirmed(targetSize: 512 * Gib, mode: VerificationMode.StructuralAndFull));
+
+        var phases = execution.PlannedPhases.ToList();
+        phases.IndexOf(ExecutionPhase.FullVerification).ShouldBe(phases.IndexOf(ExecutionPhase.CopyData) + 1);
+        phases.IndexOf(ExecutionPhase.FullVerification).ShouldBeLessThan(phases.IndexOf(ExecutionPhase.CommitLayout));
+        phases.IndexOf(ExecutionPhase.FullVerification).ShouldBeLessThan(phases.IndexOf(ExecutionPhase.ExpandFileSystem));
+    }
+
+    [Fact]
+    public void FullVerificationIsInterruptibleSoACancellationDuringItTakesEffectAtOnce()
+    {
+        var execution = Start(Confirmed(mode: VerificationMode.StructuralAndFull));
+        execution.BeginPhase(ExecutionPhase.Revalidate, T0);
+        execution.CompletePhase(ExecutionPhase.Revalidate, T0);
+        execution.BeginPhase(ExecutionPhase.Snapshot, T0);
+        execution.CompletePhase(ExecutionPhase.Snapshot, T0);
+        execution.BeginPhase(ExecutionPhase.PrepareTarget, T0);
+        execution.CompletePhase(ExecutionPhase.PrepareTarget, T0);
+        execution.BeginPhase(ExecutionPhase.CopyData, T0);
+        execution.CompletePhase(ExecutionPhase.CopyData, T0);
+        execution.BeginPhase(ExecutionPhase.FullVerification, T0);
+
+        CloneExecution.IsInterruptible(ExecutionPhase.FullVerification).ShouldBeTrue();
+        execution.RequestCancel();
+
+        execution.State.ShouldBe(ExecutionState.Cancelling);
     }
 
     [Fact]

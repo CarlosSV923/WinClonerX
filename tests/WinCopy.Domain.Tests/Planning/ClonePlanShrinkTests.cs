@@ -259,7 +259,7 @@ public sealed class ClonePlanShrinkTests
             G(9001),
             VerificationMode.Structural,
             Array.Empty<PreflightCheck>(),
-            new CloneEstimate(new ByteSize(1), TimeSpan.Zero),
+            new CloneEstimate(new ByteSize(1), TimeSpan.Zero, TimeSpan.Zero),
             CapacityPolicy.Default,
             shrink);
 

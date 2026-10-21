@@ -1,8 +1,8 @@
 namespace WinCopy.Domain.Execution;
 
 /// <summary>
-/// Fase de una ejecución de clonado, en el orden en que se ejecutan. <see cref="ShrinkSource"/>, <see cref="ExpandFileSystem"/>,
-/// <see cref="FullVerification"/> y <see cref="RestoreSource"/> son condicionales. <see cref="Done"/> marca el final de una
+/// Fase de una ejecución de clonado, en el orden en que se ejecutan. <see cref="ShrinkSource"/>, <see cref="FullVerification"/>,
+/// <see cref="ExpandFileSystem"/> y <see cref="RestoreSource"/> son condicionales. <see cref="Done"/> marca el final de una
 /// ejecución completada.
 /// </summary>
 public enum ExecutionPhase
@@ -22,6 +22,12 @@ public enum ExecutionPhase
     /// <summary>Copiar los datos de cada partición a su posición en el destino.</summary>
     CopyData,
 
+    /// <summary>
+    /// Comparar byte a byte los tramos copiados con los del origen. Opcional. Se hace con el destino todavía fuera de línea y sin
+    /// volúmenes montados, antes de escribir el diseño y antes de cualquier cambio posterior (ampliación, arranque).
+    /// </summary>
+    FullVerification,
+
     /// <summary>Escribir la tabla de particiones del destino: es el último paso que hace visible el diseño.</summary>
     CommitLayout,
 
@@ -33,9 +39,6 @@ public enum ExecutionPhase
 
     /// <summary>Comprobar la estructura del clon.</summary>
     StructuralVerification,
-
-    /// <summary>Comparar byte a byte los datos copiados con el origen. Opcional.</summary>
-    FullVerification,
 
     /// <summary>Borrar la instantánea y retirar los montajes temporales.</summary>
     Cleanup,

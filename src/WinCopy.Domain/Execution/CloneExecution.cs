@@ -416,6 +416,11 @@ public sealed class CloneExecution
     /// <summary>
     /// Fases planificadas. ShrinkSource va justo después de Revalidate, para que la instantánea y la copia vean el origen
     /// reducido. RestoreSource es la última, tras la limpieza. Ambas solo aparecen si el plan reduce el origen.
+    /// <para>
+    /// FullVerification va después de CopyData y antes de CommitLayout (R18). Así compara lo que escribió la copia con el destino
+    /// todavía fuera de línea: sin volúmenes montados, Windows no puede escribir en el destino durante la comparación, y ningún
+    /// cambio posterior (diseño, ampliación, arranque) entra en ella. Sin diseño escrito, un fallo no necesita borrarlo.
+    /// </para>
     /// </summary>
     private static List<ExecutionPhase> PlanPhases(ClonePlan plan)
     {
@@ -430,6 +435,12 @@ public sealed class CloneExecution
         phases.Add(ExecutionPhase.Snapshot);
         phases.Add(ExecutionPhase.PrepareTarget);
         phases.Add(ExecutionPhase.CopyData);
+
+        if (plan.Verification == VerificationMode.StructuralAndFull)
+        {
+            phases.Add(ExecutionPhase.FullVerification);
+        }
+
         phases.Add(ExecutionPhase.CommitLayout);
 
         if (plan.Mappings.Any(mapping => mapping.Resize == ResizeKind.GrowFileSystem))
@@ -439,12 +450,6 @@ public sealed class CloneExecution
 
         phases.Add(ExecutionPhase.RepairBoot);
         phases.Add(ExecutionPhase.StructuralVerification);
-
-        if (plan.Verification == VerificationMode.StructuralAndFull)
-        {
-            phases.Add(ExecutionPhase.FullVerification);
-        }
-
         phases.Add(ExecutionPhase.Cleanup);
 
         if (shrinks)

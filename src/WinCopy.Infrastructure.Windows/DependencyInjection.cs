@@ -143,6 +143,11 @@ public static class DependencyInjection
             sp.GetRequiredService<DiskOperationRecorder>(),
             "target"));
 
+        // La verificación completa compara con el mismo destino. Sin volúmenes montados la lectura es estable (R18).
+        services.AddSingleton<IVolumeComparer>(sp => new VolumeComparer(
+            sp.GetRequiredService<DiskOperationRecorder>(),
+            "target"));
+
         services.AddSingleton<IFileSystemExpander>(sp => new FileSystemExpander(
             sp.GetRequiredService<IVolumePathResolver>(),
             new Win32VolumeAccess(),

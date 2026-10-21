@@ -153,6 +153,18 @@ internal static class ExecutionLogEvents
         ("TechnicalDetail", technicalDetail));
 
     /// <summary>
+    /// La verificación completa ha terminado. Un resultado distinto es un error de la ejecución (VerificationFailed); los
+    /// desplazamientos son los primeros bytes distintos del disco de destino, como mucho diez.
+    /// </summary>
+    public static LogEvent FullVerificationCompleted(VerificationResult result) => Create(
+        "FullVerificationCompleted",
+        result.Passed ? LogLevelKind.Information : LogLevelKind.Error,
+        ("Passed", result.Passed),
+        ("DifferingBytes", result.DifferingBytes ?? 0),
+        ("FirstDifferenceOffsets", (result.FirstDifferenceOffsets ?? Array.Empty<long>()).ToArray()),
+        ("Issues", result.Issues.ToArray()));
+
+    /// <summary>
     /// No se pudo activar la vigilancia de la desconexión de los discos. El clonado sigue: una desconexión se detecta igualmente
     /// por el error de E/S que provoca.
     /// </summary>

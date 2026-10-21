@@ -259,6 +259,51 @@ public sealed class ResultStepViewModelTests
         vm.NextSteps.ShouldBe([Loc.Get("Result_Failed_KeepOriginal")]);
     }
 
+    [Fact]
+    public void APassedFullVerificationShowsTheMatchLineForASuccessfulRun()
+    {
+        using var _ = new EnglishCulture();
+        var vm = ResultStepFactory.Create();
+
+        vm.Show(Success(RecoveryEnvironmentState.Configured) with { Full = new VerificationResult(true, [], 0, []) });
+
+        vm.HasFullVerification.ShouldBeTrue();
+        vm.FullVerificationSummary.ShouldBe(Loc.Get("Result_FullVerification_Passed"));
+        vm.FullVerificationIssues.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AFailedFullVerificationShowsTheCountAndTheFirstOffsetsAndItsIssues()
+    {
+        using var _ = new EnglishCulture();
+        var vm = ResultStepFactory.Create();
+        var full = new VerificationResult(
+            false,
+            ["Partition {1} (Windows): 3 bytes differ; first at target disk offsets 4096"],
+            3,
+            [4096]);
+
+        vm.Show(Failed(CloneOutcome.Failed, Failure("VerificationFailed", ExecutionPhase.FullVerification)) with { Full = full });
+
+        vm.HasFullVerification.ShouldBeTrue();
+        vm.FullVerificationSummary.ShouldBe(Loc.Format("Result_FullVerification_Failed", 3L, "4096"));
+        vm.FullVerificationSummary.ShouldContain("3");
+        vm.FullVerificationSummary.ShouldContain("4096");
+        vm.FullVerificationIssues.ShouldBe(full.Issues);
+        vm.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void WithoutAFullVerificationTheLineIsHidden()
+    {
+        var vm = ResultStepFactory.Create();
+
+        vm.Show(Success(RecoveryEnvironmentState.Configured));
+
+        vm.HasFullVerification.ShouldBeFalse();
+        vm.FullVerificationSummary.ShouldBeEmpty();
+    }
+
     private static CloneResultReport Success(
         RecoveryEnvironmentState? recovery = RecoveryEnvironmentState.Configured,
         VerificationResult? structural = null,

@@ -88,6 +88,19 @@
                     </ItemsControl>
                 </StackPanel>
 
+                <!-- Full data verification (FR-022a), when the option was on: for either outcome. -->
+                <StackPanel Visibility="{Binding HasFullVerification, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_FullVerification_Heading}" />
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding FullVerificationSummary}" />
+                    <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding FullVerificationIssues}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Style="{StaticResource Text.Body}" Margin="0,2,0,0" Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
                 <!-- Success: WinRE. A warning explains what to do; Windows still starts. -->
                 <StackPanel Visibility="{Binding HasRecovery, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_Recovery_Heading}" />

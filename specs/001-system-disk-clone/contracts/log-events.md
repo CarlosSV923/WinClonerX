@@ -40,12 +40,16 @@ diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-
 | `PendingSourceRestoreFound` (Warning) | `Partition?`, `OriginalLength?`, `PlanId?`, `RecordedAt?`, `TechnicalDetail?` | Al iniciarse hay una entrada pendiente del diario. Si el archivo está dañado, los campos de la entrada son nulos y `TechnicalDetail` lo explica |
 | `PendingSourceRestoreCompleted` | `Partition`, `OriginalLength`, `Result` (`Restored`/`AlreadyRestored`) | La recuperación al iniciarse ha resuelto la entrada pendiente |
 | `PendingSourceRestoreFailed` (Warning) | `Partition?`, `OriginalLength?`, `Reason` (código de `PendingSourceRestoreIssue`), `TechnicalDetail?` | La recuperación al iniciarse no ha restaurado el origen y necesita atención. No toca la partición y conserva el diario |
+| `FullVerificationCompleted` (Error si no pasa) | `Passed`, `DifferingBytes`, `FirstDifferenceOffsets[]` (como mucho 10, desplazamientos absolutos en el disco de destino), `Issues[]` (una línea por partición con diferencias) | Al terminar la verificación completa (FR-022a). Solo en los clones con la verificación completa activada |
 | `ExecutionCompleted` / `ExecutionCancelled` / `ExecutionFailed` | `Outcome`, `FailureCode?`, `Phase?`, `TechnicalDetail?`, `DurationMs` | Al terminar |
 
 En `DiskOperation` de la copia de datos, `Disk` identifica a quién se lee o escribe:
 
 - `Read`: el origen. Con instantánea, `snapshot of {GUID de la partición}`; con tramo en bruto, `{disco}, extent at {desplazamiento del tramo}`. `Offset` es un desplazamiento **dentro del volumen de origen** (o del tramo), no del disco; es el del primer tramo ocupado, que casi siempre es 0 (el sector 0 siempre se copia).
 - `Write`: el disco de destino, con la misma etiqueta que sus eventos `Lock`, `Offline`, `Online` y `CommitLayout`. `Offset` es absoluto en el disco de destino.
+- `Read` de la verificación completa: una por partición, sobre el destino (`Disk` es la etiqueta del destino, la misma que
+  la de sus `Write`). `Offset` es absoluto en el disco de destino, del primer tramo ocupado, y `Length` son los bytes leídos
+  del destino. No hay lecturas del origen en este evento; un fallo de lectura del origen aparece en `ExecutionFailed`.
 
 ## Exportación
 

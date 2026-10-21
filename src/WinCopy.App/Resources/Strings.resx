@@ -331,9 +331,6 @@
   <data name="Review_VerifyAll" xml:space="preserve">
     <value>Verify all data (roughly doubles the duration)</value>
   </data>
-  <data name="Review_VerifyAll_ComingSoon" xml:space="preserve">
-    <value>Coming soon</value>
-  </data>
   <data name="Common_ComingSoon" xml:space="preserve">
     <value>Coming soon</value>
   </data>
@@ -504,6 +501,15 @@
   </data>
   <data name="Result_Verification_Failed" xml:space="preserve">
     <value>The structure check found problems:</value>
+  </data>
+  <data name="Result_FullVerification_Heading" xml:space="preserve">
+    <value>Full data verification</value>
+  </data>
+  <data name="Result_FullVerification_Passed" xml:space="preserve">
+    <value>All data matches the original.</value>
+  </data>
+  <data name="Result_FullVerification_Failed" xml:space="preserve">
+    <value>{0} bytes differ from the original. First differing offsets on the new disk: {1}.</value>
   </data>
   <data name="Result_Duration" xml:space="preserve">
     <value>Duration: {0}</value>

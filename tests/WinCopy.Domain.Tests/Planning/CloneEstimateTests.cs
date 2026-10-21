@@ -50,6 +50,20 @@ public sealed class CloneEstimateTests
         estimate.EstimatedDuration.ShouldBe(TimeSpan.Zero);
     }
 
+    [Fact]
+    public void FullVerificationRoughlyDoublesTheDurationAndKeepsTheCopyDurationApart()
+    {
+        var mappings = new[] { Mapping(Partition(1, 1_000_000_000L, GptPartitionType.MicrosoftReserved, null), CopyMethod.RawFull) };
+
+        var structural = CloneEstimate.Calculate(mappings, BusKind.Nvme, BusKind.Nvme, VerificationMode.Structural);
+        var full = CloneEstimate.Calculate(mappings, BusKind.Nvme, BusKind.Nvme, VerificationMode.StructuralAndFull);
+
+        full.BytesToCopy.ShouldBe(structural.BytesToCopy);
+        full.EstimatedCopyDuration.ShouldBe(structural.EstimatedDuration);
+        full.EstimatedDuration.ShouldBe(structural.EstimatedDuration + structural.EstimatedDuration);
+        structural.EstimatedDuration.ShouldBe(structural.EstimatedCopyDuration);
+    }
+
     private static Partition Partition(int number, long length, GptPartitionType type, Volume? volume) =>
         new(number, new Extent(Mib, length), type, new PartitionGuid(G(1000 + number)), 0UL, "Partición", volume);
 

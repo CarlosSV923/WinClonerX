@@ -182,8 +182,8 @@ La interfaz traduce `Code` y `Facts` a textos con recursos (`.resx`). El dominio
 **Fases** (en orden; `ShrinkSource` y `FullVerification` son condicionales):
 
 ```text
-Revalidate → ShrinkSource? → Snapshot → PrepareTarget → CopyData → CommitLayout
-→ ExpandFileSystem? → RepairBoot → StructuralVerification → FullVerification?
+Revalidate → ShrinkSource? → Snapshot → PrepareTarget → CopyData → FullVerification?
+→ CommitLayout → ExpandFileSystem? → RepairBoot → StructuralVerification
 → Cleanup (borrar instantánea, desmontar temporales) → RestoreSource? → Done
 ```
 

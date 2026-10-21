@@ -25,6 +25,7 @@ public sealed class ExecuteClone(
     IRawPartitionReader rawReader,
     ITargetDiskFactory targetFactory,
     IVolumeCopier copier,
+    IVolumeComparer comparer,
     IFileSystemExpander expander,
     ITemporaryMounter mounter,
     IOfflineRegistryEditor registry,
@@ -42,6 +43,10 @@ public sealed class ExecuteClone(
     private const string ShrinkInsufficientCode = "ShrinkInsufficient";
     private const string ShrinkFailedCode = "ShrinkFailed";
     private const string ShrinkJournalFailedCode = "ShrinkJournalFailed";
+
+    /// <summary>Número máximo de desplazamientos distintos que el informe de la verificación completa lleva.</summary>
+    private const int MaxRecordedDifferenceOffsets = 10;
+
     private static readonly TimeSpan ProgressReportInterval = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan ProgressLogInterval = TimeSpan.FromSeconds(5);
 
@@ -82,12 +87,6 @@ public sealed class ExecuteClone(
         if (plan.Status != PlanStatus.Confirmed)
         {
             throw new InvalidOperationException("Solo se puede ejecutar un plan confirmado.");
-        }
-
-        if (plan.Verification == VerificationMode.StructuralAndFull)
-        {
-            // TODO(polish): la verificación completa (comparación byte a byte) queda para después de la US1.
-            throw new NotSupportedException("La verificación completa todavía no está implementada.");
         }
 
         var sleep = new SleepBlock(power.PreventSleep());
@@ -177,6 +176,13 @@ public sealed class ExecuteClone(
         await RunPhaseAsync(run, ExecutionPhase.Snapshot, token => SnapshotAsync(run, token));
         await RunPhaseAsync(run, ExecutionPhase.PrepareTarget, token => PrepareTargetAsync(run, token));
         await RunPhaseAsync(run, ExecutionPhase.CopyData, token => CopyDataAsync(run, token));
+
+        // La comparación va antes del diseño: el destino sigue fuera de línea y sin volúmenes montados (R18).
+        if (run.Plan.Verification == VerificationMode.StructuralAndFull)
+        {
+            await RunPhaseAsync(run, ExecutionPhase.FullVerification, token => FullVerificationAsync(run, token));
+        }
+
         await RunPhaseAsync(run, ExecutionPhase.CommitLayout, _ => CommitLayoutAsync(run));
 
         if (run.Plan.Mappings.Any(mapping => mapping.Resize == ResizeKind.GrowFileSystem))
@@ -419,13 +425,16 @@ public sealed class ExecuteClone(
             var total = items.Sum(item => item.Allocation.TotalUsed.Bytes);
             var estimator = new ProgressEstimator(total, clock, InitialBytesPerSecond(run.Plan));
 
+            // La verificación completa compara exactamente estos tramos, leídos de la misma instantánea.
+            run.Copied = items.Select(item => new CopiedRange(item.Mapping, item.Allocation)).ToArray();
+
             long completed = 0;
             foreach (var item in items)
             {
                 ct.ThrowIfCancellationRequested();
 
                 var before = completed;
-                var progress = new CallbackProgress(bytes => ReportCopyProgress(run, estimator, before + bytes));
+                var progress = new CallbackProgress(bytes => ReportTransferProgress(run, estimator, before + bytes));
 
                 await copier.CopyAsync(item.Source, item.Allocation, target, item.Mapping.TargetExtent.Offset, progress, ct);
 
@@ -450,6 +459,96 @@ public sealed class ExecuteClone(
                 source.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Compara byte a byte cada tramo copiado con el origen: los mismos tramos ocupados que copió <see cref="CopyDataAsync"/>,
+    /// leídos de la misma instantánea, y los bytes del destino en su desplazamiento. Corre con el destino fuera de línea y sin
+    /// volúmenes montados, antes del diseño (R18). Es interrumpible: una cancelación se atiende entre fragmentos.
+    /// <para>
+    /// Un byte distinto no es un error de lectura: la fase falla con <see cref="PlatformErrorCode.VerificationFailed"/> y el
+    /// informe lleva el número de bytes distintos y los primeros desplazamientos del disco de destino (diez como mucho). Los
+    /// desplazamientos de cada partición también van en el detalle, para saber en cuál están.
+    /// </para>
+    /// </summary>
+    private async Task FullVerificationAsync(ExecutionRun run, CancellationToken ct)
+    {
+        var target = RequireTarget(run);
+        var copied = run.Copied ?? throw new InvalidOperationException("No hay tramos copiados que comparar.");
+
+        var total = copied.Sum(item => item.Allocation.TotalUsed.Bytes);
+        var estimator = new ProgressEstimator(total, clock, InitialBytesPerSecond(run.Plan));
+
+        var partitions = new List<PartitionComparison>(copied.Count);
+        long completed = 0;
+        foreach (var item in copied)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var before = completed;
+            var progress = new CallbackProgress(bytes => ReportTransferProgress(run, estimator, before + bytes));
+
+            // Se abre de nuevo el mismo origen: la instantánea sigue viva hasta la limpieza.
+            using IBlockSource source = OpenSource(run, item.Mapping);
+            RangeComparison comparison = await comparer.CompareAsync(
+                source,
+                item.Allocation,
+                target,
+                item.Mapping.TargetExtent.Offset,
+                progress,
+                ct);
+
+            completed += item.Allocation.TotalUsed.Bytes;
+            partitions.Add(new PartitionComparison(item.Mapping, comparison));
+        }
+
+        // Avance final exacto, sin esperar al intervalo, como al terminar la copia.
+        lock (run.Gate)
+        {
+            var now = clock.UtcNow;
+            run.LastProgressReport = now;
+            run.Execution.ReportProgress(estimator.Update(total), now);
+            Flush(run);
+        }
+
+        var result = BuildFullResult(partitions);
+        run.Full = result;
+        Record(ExecutionLogEvents.FullVerificationCompleted(result));
+
+        if (!result.Passed)
+        {
+            throw new PlatformException(PlatformErrorCode.VerificationFailed, string.Join("; ", result.Issues));
+        }
+    }
+
+    /// <summary>
+    /// Une los resultados de las particiones en el de la verificación completa. Los desplazamientos pasan a ser del disco de
+    /// destino, como en el registro, y el total de la lista se limita a <see cref="MaxRecordedDifferenceOffsets"/>.
+    /// </summary>
+    private static VerificationResult BuildFullResult(IReadOnlyList<PartitionComparison> partitions)
+    {
+        var differing = partitions.Sum(partition => partition.Comparison.DifferingBytes);
+        if (differing == 0)
+        {
+            return new VerificationResult(true, [], 0, []);
+        }
+
+        var offsets = partitions
+            .SelectMany(partition => partition.Comparison.FirstDifferenceOffsets
+                .Select(offset => checked(partition.Mapping.TargetExtent.Offset + offset)))
+            .Take(MaxRecordedDifferenceOffsets)
+            .ToArray();
+
+        var issues = partitions
+            .Where(partition => partition.Comparison.DifferingBytes > 0)
+            .Select(partition =>
+                $"Partition {partition.Mapping.NewUniqueId:B} ({partition.Mapping.Source.Role}): {partition.Comparison.DifferingBytes} bytes differ; "
+                + "first at target disk offsets "
+                + string.Join(", ", partition.Comparison.FirstDifferenceOffsets.Select(offset =>
+                    (partition.Mapping.TargetExtent.Offset + offset).ToString(System.Globalization.CultureInfo.InvariantCulture))))
+            .ToArray();
+
+        return new VerificationResult(false, issues, differing, offsets);
     }
 
     /// <summary>
@@ -571,7 +670,7 @@ public sealed class ExecuteClone(
         var report = new CloneResultReport(
             CloneOutcome.Completed,
             run.Structural,
-            Full: null,
+            Full: run.Full,
             SourceRestored: SourceRestoredFor(run),
             run.Recovery,
             run.Elapsed,
@@ -623,7 +722,7 @@ public sealed class ExecuteClone(
         var report = new CloneResultReport(
             failure is null ? CloneOutcome.Cancelled : CloneOutcome.Failed,
             run.Structural,
-            Full: null,
+            Full: run.Full,
             SourceRestored: SourceRestoredFor(run),
             run.Recovery,
             run.Elapsed,
@@ -750,7 +849,7 @@ public sealed class ExecuteClone(
         return mount;
     }
 
-    private void ReportCopyProgress(ExecutionRun run, ProgressEstimator estimator, long bytesDone)
+    private void ReportTransferProgress(ExecutionRun run, ProgressEstimator estimator, long bytesDone)
     {
         lock (run.Gate)
         {
@@ -979,6 +1078,12 @@ public sealed class ExecuteClone(
 
         public VerificationResult? Structural { get; set; }
 
+        /// <summary>Resultado de la verificación completa, o null si no se hizo.</summary>
+        public VerificationResult? Full { get; set; }
+
+        /// <summary>Tramos copiados, con su correspondencia, para compararlos después. Null hasta que empieza la copia.</summary>
+        public IReadOnlyList<CopiedRange>? Copied { get; set; }
+
         public RecoveryEnvironmentState? Recovery { get; set; }
 
         public string? RecoveryDetail { get; set; }
@@ -1007,6 +1112,12 @@ public sealed class ExecuteClone(
 
     /// <summary>Tramo de origen abierto para copiar: la correspondencia, el origen y su asignación de bytes ocupados.</summary>
     private sealed record CopyItem(PartitionMapping Mapping, IBlockSource Source, VolumeAllocation Allocation);
+
+    /// <summary>Correspondencia copiada y sus tramos ocupados: lo que compara la verificación completa.</summary>
+    private sealed record CopiedRange(PartitionMapping Mapping, VolumeAllocation Allocation);
+
+    /// <summary>Resultado de comparar una correspondencia con el destino.</summary>
+    private sealed record PartitionComparison(PartitionMapping Mapping, RangeComparison Comparison);
 
     /// <summary>Recibe los avances de un <see cref="IVolumeCopier"/> de forma síncrona.</summary>
     private sealed class CallbackProgress(Action<long> report) : IProgress<long>

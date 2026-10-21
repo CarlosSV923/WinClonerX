@@ -11,11 +11,15 @@ namespace WinCopy.App.ViewModels;
 
 /// <summary>
 /// Step 2 "Review" (contracts/ui-wizard.md): builds the plan for the selected destination and shows the before and after
-/// partition bars, the summary, the warnings that must be accepted, and the (not yet available) full verification option.
+/// partition bars, the summary, the warnings that must be accepted, and the full verification option (FR-022a). Changing the
+/// option rebuilds the plan with the matching mode, so the summary shows the duration of the chosen verification.
 /// </summary>
 public sealed partial class ReviewStepViewModel : ObservableObject
 {
     private readonly IBuildClonePlan _buildPlan;
+
+    /// <summary>Destination of the plan on screen. Null after <see cref="Clear"/>, so a change of the option builds nothing.</summary>
+    private DiskId? _target;
 
     public ReviewStepViewModel(IBuildClonePlan buildPlan)
     {
@@ -65,16 +69,12 @@ public sealed partial class ReviewStepViewModel : ObservableObject
     /// <summary>Reasons the plan could not be built. Empty unless <see cref="IsFailed"/>.</summary>
     public ObservableCollection<string> BlockingReasons { get; } = [];
 
-    /// <summary>Full data verification (FR-022a). Off by default and always off in this step.</summary>
-    [ObservableProperty]
-    private bool _verifyAllData;
-
     /// <summary>
-    /// Whether the full verification checkbox can be changed. It stays false until T108 connects the option; the checkbox
-    /// is visible but disabled, with a "coming soon" tooltip.
+    /// Full data verification (FR-022a). Off by default. Changing it rebuilds the plan with <see cref="VerificationMode.StructuralAndFull"/>
+    /// or <see cref="VerificationMode.Structural"/>. The choice survives a new visit to this step.
     /// </summary>
     [ObservableProperty]
-    private bool _isVerifyAllDataEnabled;
+    private bool _verifyAllData;
 
     public bool HasPlan => Plan is not null;
 
@@ -84,17 +84,55 @@ public sealed partial class ReviewStepViewModel : ObservableObject
     public IReadOnlySet<PreflightCode> AcceptedWarnings =>
         Warnings.Where(warning => warning.IsAccepted).Select(warning => warning.Code).ToHashSet();
 
-    /// <summary>Builds the plan for <paramref name="target"/> with structural verification. Resets the step first.</summary>
+    /// <summary>
+    /// Builds the plan for <paramref name="target"/> with the verification the person chose. Resets the step first, so the
+    /// warnings start unaccepted.
+    /// </summary>
     public async Task LoadAsync(DiskId target, CancellationToken cancellationToken = default)
     {
-        Clear();
+        _target = target;
+        await BuildAsync(target, keepAcceptedWarnings: false, cancellationToken);
+    }
+
+    /// <summary>Forgets the plan and the warnings, so the step is not valid until a new plan is built. Forgets the target too.</summary>
+    public void Clear()
+    {
+        _target = null;
+        ResetPlan();
+    }
+
+    /// <summary>
+    /// Rebuilds the plan when the full verification option changes (FR-022a). The warnings the person already accepted stay
+    /// accepted: the option does not change what they were told. Nothing happens before a plan has been asked for.
+    /// </summary>
+    partial void OnVerifyAllDataChanged(bool value)
+    {
+        if (_target is { } target)
+        {
+            _ = BuildAsync(target, keepAcceptedWarnings: true, CancellationToken.None);
+        }
+    }
+
+    partial void OnPlanChanged(ClonePlan? value) => OnPropertyChanged(nameof(HasPlan));
+
+    private async Task BuildAsync(DiskId target, bool keepAcceptedWarnings, CancellationToken cancellationToken)
+    {
+        var accepted = keepAcceptedWarnings ? AcceptedWarnings.ToHashSet() : new HashSet<PreflightCode>();
+
+        ResetPlan();
         IsLoading = true;
         try
         {
-            var result = await _buildPlan.ExecuteAsync(target, VerificationMode.Structural, cancellationToken);
+            var mode = VerifyAllData ? VerificationMode.StructuralAndFull : VerificationMode.Structural;
+            var result = await _buildPlan.ExecuteAsync(target, mode, cancellationToken);
             if (result.IsSuccess)
             {
                 ApplyPlan(result.Value);
+
+                foreach (var kept in Warnings.Where(item => accepted.Contains(item.Code)))
+                {
+                    kept.IsAccepted = true;
+                }
             }
             else
             {
@@ -107,8 +145,8 @@ public sealed partial class ReviewStepViewModel : ObservableObject
         }
     }
 
-    /// <summary>Forgets the plan and the warnings, so the step is not valid until a new plan is built.</summary>
-    public void Clear()
+    /// <summary>Clears the plan, the bars, the summary and the warnings, but keeps the target and the verification option.</summary>
+    private void ResetPlan()
     {
         Plan = null;
         IsFailed = false;
@@ -128,8 +166,6 @@ public sealed partial class ReviewStepViewModel : ObservableObject
         BlockingReasons.Clear();
         UpdateValidity();
     }
-
-    partial void OnPlanChanged(ClonePlan? value) => OnPropertyChanged(nameof(HasPlan));
 
     private void ApplyPlan(ClonePlan plan)
     {

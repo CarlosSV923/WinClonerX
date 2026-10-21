@@ -3,14 +3,22 @@ using WinCopy.Domain.Shared;
 
 namespace WinCopy.Domain.Planning;
 
-/// <summary>Bytes que se copiarán y duración prevista del clonado.</summary>
-public sealed record CloneEstimate(ByteSize BytesToCopy, TimeSpan EstimatedDuration)
+/// <summary>
+/// Bytes que se copiarán y duración prevista del clonado. <see cref="EstimatedDuration"/> incluye la verificación completa si
+/// está activada; <see cref="EstimatedCopyDuration"/> es solo la copia, que es la que sirve para el rendimiento inicial.
+/// </summary>
+public sealed record CloneEstimate(ByteSize BytesToCopy, TimeSpan EstimatedDuration, TimeSpan EstimatedCopyDuration)
 {
     /// <summary>
     /// Calcula la estimación: los clústeres ocupados en las particiones NTFS y el tramo completo en el resto.
-    /// La velocidad es la del bus más lento entre origen y destino.
+    /// La velocidad es la del bus más lento entre origen y destino. La verificación completa lee de nuevo ambos lados, así que
+    /// se estima como otra copia completa (aprox. duplica la duración, FR-022a).
     /// </summary>
-    public static CloneEstimate Calculate(IEnumerable<PartitionMapping> mappings, BusKind sourceBus, BusKind targetBus)
+    public static CloneEstimate Calculate(
+        IEnumerable<PartitionMapping> mappings,
+        BusKind sourceBus,
+        BusKind targetBus,
+        VerificationMode mode = VerificationMode.Structural)
     {
         ArgumentNullException.ThrowIfNull(mappings);
 
@@ -23,7 +31,10 @@ public sealed record CloneEstimate(ByteSize BytesToCopy, TimeSpan EstimatedDurat
         }
 
         var megabytesPerSecond = Math.Min(MegabytesPerSecond(sourceBus), MegabytesPerSecond(targetBus));
-        return new CloneEstimate(new ByteSize(bytes), TimeSpan.FromSeconds(bytes / (megabytesPerSecond * 1_000_000.0)));
+        var copy = TimeSpan.FromSeconds(bytes / (megabytesPerSecond * 1_000_000.0));
+        var total = mode == VerificationMode.StructuralAndFull ? copy + copy : copy;
+
+        return new CloneEstimate(new ByteSize(bytes), total, copy);
     }
 
     /// <summary>Rendimiento conservador por tipo de bus, en MB/s (decimales).</summary>

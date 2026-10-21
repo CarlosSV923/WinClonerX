@@ -98,6 +98,10 @@ internal static class AppFixtures
     }
 
     /// <summary>Plans the clone with the real planner and deterministic GUIDs.</summary>
-    public static Result<ClonePlan, PreflightReport> PlanFor(DiskInventory inventory, DiskId target, PlatformFacts? facts = null) =>
-        ClonePlanner.Plan(inventory, target, facts ?? Facts(), VerificationMode.Structural, CapacityPolicy.Default, SequentialGuids());
+    public static Result<ClonePlan, PreflightReport> PlanFor(
+        DiskInventory inventory,
+        DiskId target,
+        PlatformFacts? facts = null,
+        VerificationMode mode = VerificationMode.Structural) =>
+        ClonePlanner.Plan(inventory, target, facts ?? Facts(), mode, CapacityPolicy.Default, SequentialGuids());
 }

@@ -156,16 +156,87 @@ public sealed class ReviewStepViewModelTests
     }
 
     [Fact]
-    public async Task VerifyAllDataIsOffAndDisabled()
+    public async Task VerifyAllDataIsOffByDefaultAndTheDraftPlanIsStructural()
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)));
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
         vm.VerifyAllData.ShouldBeFalse();
-        vm.IsVerifyAllDataEnabled.ShouldBeFalse();
         vm.Plan!.Verification.ShouldBe(VerificationMode.Structural);
+    }
+
+    [Fact]
+    public async Task ChangingVerifyAllDataRebuildsThePlanWithTheFullModeAndItsDuration()
+    {
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
+        var vm = new ReviewStepViewModel(builder);
+        await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
+        var structural = vm.Plan!;
+
+        vm.VerifyAllData = true;
+
+        builder.CallCount.ShouldBe(2);
+        builder.LastMode.ShouldBe(VerificationMode.StructuralAndFull);
+        vm.Plan!.Verification.ShouldBe(VerificationMode.StructuralAndFull);
+        vm.Plan.Estimate.EstimatedDuration.ShouldBe(structural.Estimate.EstimatedDuration + structural.Estimate.EstimatedDuration);
+        vm.Summary!.EstimatedDuration.ShouldBe(Loc.Format("Review_Summary_Duration", DurationText.Format(vm.Plan.Estimate.EstimatedDuration)));
+
+        vm.VerifyAllData = false;
+
+        builder.LastMode.ShouldBe(VerificationMode.Structural);
+        vm.Plan!.Verification.ShouldBe(VerificationMode.Structural);
+        vm.Plan.Estimate.EstimatedDuration.ShouldBe(structural.Estimate.EstimatedDuration);
+    }
+
+    [Fact]
+    public async Task AcceptedWarningsStayAcceptedWhenTheVerificationChanges()
+    {
+        var inventory = AppFixtures.InventoryOf(
+            AppFixtures.SystemDisk(windowsEncryption: EncryptionState.BitLockerOn),
+            AppFixtures.TargetDisk());
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)));
+        await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
+        vm.Warnings.Count.ShouldBeGreaterThan(0);
+        foreach (var warning in vm.Warnings)
+        {
+            warning.IsAccepted = true;
+        }
+
+        vm.VerifyAllData = true;
+
+        vm.Warnings.ShouldAllBe(warning => warning.IsAccepted);
+        vm.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ChangingVerifyAllDataBuildsNothingWhenNoPlanWasAskedFor()
+    {
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
+        var vm = new ReviewStepViewModel(builder);
+
+        vm.VerifyAllData = true;
+
+        builder.CallCount.ShouldBe(0);
+        vm.HasPlan.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ClearForgetsTheTargetSoAChangeOfVerificationBuildsNothing()
+    {
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
+        var vm = new ReviewStepViewModel(builder);
+        await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
+
+        vm.Clear();
+        vm.VerifyAllData = true;
+
+        builder.CallCount.ShouldBe(1);
+        vm.HasPlan.ShouldBeFalse();
     }
 
     [Fact]

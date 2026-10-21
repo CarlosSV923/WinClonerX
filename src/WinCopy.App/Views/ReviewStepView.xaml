@@ -112,13 +112,10 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- Full verification (FR-022a): visible, off, and disabled until T108 connects it. -->
+                    <!-- Full verification (FR-022a): off by default. Changing it rebuilds the plan, so the duration above follows it. -->
                     <CheckBox Margin="0,16,0,0"
                               Content="{loc:Loc Review_VerifyAll}"
-                              IsChecked="{Binding VerifyAllData}"
-                              IsEnabled="{Binding IsVerifyAllDataEnabled}"
-                              ToolTip="{loc:Loc Review_VerifyAll_ComingSoon}"
-                              ToolTipService.ShowOnDisabled="True" />
+                              IsChecked="{Binding VerifyAllData}" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

@@ -408,13 +408,14 @@ public sealed class ExecuteCloneTests
     }
 
     [Fact]
-    public async Task FullVerificationIsNotSupportedYetAndThrowsBeforeAnyPortIsCalled()
+    public async Task AFullVerificationPlanRunsToCompletionInsteadOfBeingRefused()
     {
         var h = new Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
 
-        await Should.ThrowAsync<NotSupportedException>(() => h.RunAsync(Ct));
+        var report = await h.RunAsync(Ct);
 
-        AssertNoPortCalled(h);
+        report.Outcome.ShouldBe(CloneOutcome.Completed);
+        h.Phases().ShouldContain(ExecutionPhase.FullVerification);
     }
 
     [Fact]
@@ -656,7 +657,7 @@ public sealed class ExecuteCloneTests
             MountFaults = new ReleaseFaultMounter(Mounter);
             Journal = new FakeSourceRestoreJournal(Resizer);
             Orchestrator = new ExecuteClone(
-                Store, Inventory, Snapshots, Raw, Targets, Copier, Expander, MountFaults, Registry, Boot, Recovery,
+                Store, Inventory, Snapshots, Raw, Targets, Copier, Comparer, Expander, MountFaults, Registry, Boot, Recovery,
                 Verifier, Resizer, Journal, Power, RemovalMonitor, Log, Clock);
             Orchestrator.Events.Subscribe(new EventCollector(Events, e => OnEvent(e)));
         }
@@ -676,6 +677,8 @@ public sealed class ExecuteCloneTests
         public FakeTargetDiskFactory Targets { get; } = new();
 
         public FakeVolumeCopier Copier { get; } = new();
+
+        public FakeVolumeComparer Comparer { get; } = new();
 
         public FakeFileSystemExpander Expander { get; } = new();
 

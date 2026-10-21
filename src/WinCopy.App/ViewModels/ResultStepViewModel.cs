@@ -64,6 +64,17 @@ public sealed partial class ResultStepViewModel : ObservableObject
     /// <summary>Issues found by the structural verification. Empty when it passed.</summary>
     public ObservableCollection<string> VerificationIssues { get; } = [];
 
+    /// <summary>Whether the run carries a full data verification (FR-022a). Hidden when the option was off.</summary>
+    [ObservableProperty]
+    private bool _hasFullVerification;
+
+    /// <summary>One line with the outcome of the full verification: all data matches, or how many bytes differ.</summary>
+    [ObservableProperty]
+    private string _fullVerificationSummary = string.Empty;
+
+    /// <summary>Issues of the full verification, one per partition with differences. Empty when it passed.</summary>
+    public ObservableCollection<string> FullVerificationIssues { get; } = [];
+
     /// <summary>Whether the state of WinRE is known. Hidden otherwise.</summary>
     [ObservableProperty]
     private bool _hasRecovery;
@@ -218,7 +229,33 @@ public sealed partial class ResultStepViewModel : ObservableObject
             ShowFailure(report);
         }
 
+        ShowFullVerification(report.Full);
         ShowSourceRestore(report.SourceRestored);
+    }
+
+    /// <summary>
+    /// The full data verification, when the run did it: all data matches, or the number of differing bytes and the first disk
+    /// offsets where they differ. Shown for every outcome, because a failed verification is what ends the run.
+    /// </summary>
+    private void ShowFullVerification(VerificationResult? full)
+    {
+        if (full is null)
+        {
+            return;
+        }
+
+        HasFullVerification = true;
+        FullVerificationSummary = full.Passed
+            ? Loc.Get("Result_FullVerification_Passed")
+            : Loc.Format(
+                "Result_FullVerification_Failed",
+                full.DifferingBytes ?? 0,
+                string.Join(", ", (full.FirstDifferenceOffsets ?? Array.Empty<long>()).Select(offset => offset.ToString(CultureInfo.InvariantCulture))));
+
+        foreach (var issue in full.Issues)
+        {
+            FullVerificationIssues.Add(issue);
+        }
     }
 
     /// <summary>
@@ -339,6 +376,9 @@ public sealed partial class ResultStepViewModel : ObservableObject
         HasVerification = false;
         VerificationSummary = string.Empty;
         VerificationIssues.Clear();
+        HasFullVerification = false;
+        FullVerificationSummary = string.Empty;
+        FullVerificationIssues.Clear();
         HasRecovery = false;
         IsRecoveryWarning = false;
         RecoveryText = string.Empty;
