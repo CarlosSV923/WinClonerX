@@ -655,4 +655,16 @@
   <data name="Startup_SourceRestoreNeedsAttention" xml:space="preserve">
     <value>La última clonación se interrumpió y tu disco de Windows había quedado reducido. WinCopy no ha podido restaurarlo automáticamente. Para arreglarlo, abre Administración de discos, haz clic derecho en C: y elige «Extender volumen».</value>
   </data>
+  <data name="PartitionBar_AccessibleName" xml:space="preserve">
+    <value>Distribución de particiones del disco</value>
+  </data>
+  <data name="PartitionBar_Partition" xml:space="preserve">
+    <value>{0}, {1} en total</value>
+  </data>
+  <data name="PartitionBar_PartitionUsed" xml:space="preserve">
+    <value>{0}, {1} usados de {2}</value>
+  </data>
+  <data name="PartitionBar_Free" xml:space="preserve">
+    <value>Espacio sin asignar: {0}</value>
+  </data>
 </root>

@@ -26,7 +26,10 @@
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
-            <TextBlock Style="{StaticResource Text.Title}" Text="{Binding Title}" />
+            <TextBlock Style="{StaticResource Text.Title}"
+                       AutomationProperties.LiveSetting="Polite"
+                       AutomationProperties.Name="{Binding Title}"
+                       Text="{Binding Title}" />
             <TextBlock Style="{StaticResource Text.Body}"
                        Margin="0,6,0,0"
                        Foreground="{StaticResource Brush.TextSecondary}"
@@ -39,9 +42,11 @@
         <!-- Export and support, for every outcome (FR-026, FR-027). The inventory is off by default: it holds serial numbers. -->
         <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
             <CheckBox Content="{loc:Loc Result_Export_IncludeInventory}"
+                      AutomationProperties.Name="{loc:Loc Result_Export_IncludeInventory}"
                       IsChecked="{Binding IncludeInventory}" />
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Button Style="{StaticResource Button.Secondary}"
+                <Button x:Name="ExportLogButton"
+                        Style="{StaticResource Button.Secondary}"
                         MinWidth="120"
                         Content="{loc:Loc Result_ExportLog}"
                         AutomationProperties.Name="{loc:Loc Result_ExportLog}"
@@ -56,6 +61,7 @@
             <TextBlock Margin="0,8,0,0"
                        TextWrapping="Wrap"
                        AutomationProperties.LiveSetting="Polite"
+                       AutomationProperties.Name="{Binding ExportStatusText}"
                        Text="{Binding ExportStatusText}"
                        Visibility="{Binding HasExportStatus, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock.Style>
@@ -64,6 +70,7 @@
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsExportStatusError}" Value="True">
                                 <Setter Property="Foreground" Value="{StaticResource Brush.Danger}" />
+                                <Setter Property="AutomationProperties.LiveSetting" Value="Assertive" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -78,7 +85,9 @@
                 <!-- Success: the structural verification. -->
                 <StackPanel Visibility="{Binding HasVerification, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_Verification_Heading}" />
-                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding VerificationSummary}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.Name="{Binding VerificationSummary}"
+                               Text="{Binding VerificationSummary}" />
                     <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding VerificationIssues}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -91,7 +100,9 @@
                 <!-- Full data verification (FR-022a), when the option was on: for either outcome. -->
                 <StackPanel Visibility="{Binding HasFullVerification, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_FullVerification_Heading}" />
-                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding FullVerificationSummary}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.Name="{Binding FullVerificationSummary}"
+                               Text="{Binding FullVerificationSummary}" />
                     <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding FullVerificationIssues}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -105,7 +116,9 @@
                 <StackPanel Visibility="{Binding HasRecovery, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_Recovery_Heading}" />
                     <Border Style="{StaticResource Card}">
-                        <TextBlock Style="{StaticResource Text.Body}" Text="{Binding RecoveryText}" />
+                        <TextBlock Style="{StaticResource Text.Body}"
+                                   AutomationProperties.Name="{Binding RecoveryText}"
+                                   Text="{Binding RecoveryText}" />
                     </Border>
                 </StackPanel>
 
@@ -113,7 +126,10 @@
                 <Border Style="{StaticResource Card}"
                         Margin="0,16,0,0"
                         Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Reason}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.LiveSetting="Assertive"
+                               AutomationProperties.Name="{Binding Reason}"
+                               Text="{Binding Reason}" />
                 </Border>
 
                 <!-- Failed or cancelled: the code and phase for support, and the log file. Read-only boxes, so the text can be selected and copied. -->
@@ -121,10 +137,12 @@
                             Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
                     <TextBox Style="{StaticResource ResultStep.Technical}"
                              Text="{Binding FailureDetail, Mode=OneWay}"
+                             AutomationProperties.Name="{Binding FailureDetail}"
                              Visibility="{Binding HasFailureDetail, Converter={StaticResource BoolToVisibility}}" />
                     <TextBox Style="{StaticResource ResultStep.Technical}"
                              Margin="0,4,0,0"
                              Text="{Binding LogFileText, Mode=OneWay}"
+                             AutomationProperties.Name="{Binding LogFileText}"
                              Visibility="{Binding HasLogFile, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
 
@@ -138,10 +156,13 @@
                         Margin="0,16,0,0"
                         BorderBrush="{StaticResource Brush.Danger}"
                         BorderThickness="2"
+                        AutomationProperties.Name="{Binding SourceRestoreText}"
                         Visibility="{Binding IsSourceRestoreWarning, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Style="{StaticResource Text.Body}"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource Brush.Danger}"
+                               AutomationProperties.LiveSetting="Assertive"
+                               AutomationProperties.Name="{Binding SourceRestoreText}"
                                Text="{Binding SourceRestoreText}" />
                 </Border>
 

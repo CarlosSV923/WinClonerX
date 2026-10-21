@@ -32,6 +32,7 @@ public partial class DiskCardViewModel : ObservableObject
                 Labels.Role(partition.Role)))
             .ToArray();
         PartitionBar = new PartitionBarData(segments, disk.Size);
+        HelpText = PartitionBar.AccessibleText;
 
         // An empty or all-zero serial (some USB bridges) is not shown as if it were a real number.
         var serialShown = TargetConfirmation.UsesGuidFallback(disk) ? Loc.Get("Disk_Serial_NotReported") : SerialNumber.Trim();

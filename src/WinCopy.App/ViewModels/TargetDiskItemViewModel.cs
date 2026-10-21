@@ -33,7 +33,7 @@ public sealed class TargetDiskItemViewModel : DiskCardViewModel
             ? Loc.Format("Disks_Shortfall", SizeText.Format(missing))
             : null;
 
-        var help = new List<string> { StatusText };
+        var help = new List<string> { StatusText, HelpText };
         help.AddRange(Reasons);
         if (StrategyText is not null)
         {

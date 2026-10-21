@@ -655,4 +655,16 @@
   <data name="Startup_SourceRestoreNeedsAttention" xml:space="preserve">
     <value>The last clone was interrupted and your Windows disk had been shrunk. WinCopy could not restore it automatically. To fix it, open Disk Management, right-click C: and choose Extend Volume.</value>
   </data>
+  <data name="PartitionBar_AccessibleName" xml:space="preserve">
+    <value>Disk partition layout</value>
+  </data>
+  <data name="PartitionBar_Partition" xml:space="preserve">
+    <value>{0}, {1} total</value>
+  </data>
+  <data name="PartitionBar_PartitionUsed" xml:space="preserve">
+    <value>{0}, {1} used of {2}</value>
+  </data>
+  <data name="PartitionBar_Free" xml:space="preserve">
+    <value>Unallocated space: {0}</value>
+  </data>
 </root>

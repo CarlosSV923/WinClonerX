@@ -8,5 +8,6 @@ public partial class ReviewStepView : UserControl
     public ReviewStepView()
     {
         InitializeComponent();
+        Loaded += (_, _) => StepHeading.Focus();
     }
 }

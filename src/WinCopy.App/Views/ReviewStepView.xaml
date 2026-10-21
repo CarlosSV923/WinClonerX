@@ -16,7 +16,11 @@
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
-            <TextBlock Style="{StaticResource Text.Title}" Text="{loc:Loc Review_Title}" />
+            <TextBlock x:Name="StepHeading"
+                       Style="{StaticResource Text.Title}"
+                       Focusable="True"
+                       AutomationProperties.Name="{loc:Loc Review_Title}"
+                       Text="{loc:Loc Review_Title}" />
             <TextBlock Style="{StaticResource Text.Body}"
                        Margin="0,6,0,0"
                        Foreground="{StaticResource Brush.TextSecondary}"
@@ -29,6 +33,8 @@
             <StackPanel>
                 <TextBlock Style="{StaticResource Text.Body}"
                            Margin="0,8,0,0"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{loc:Loc Review_Loading}"
                            Text="{loc:Loc Review_Loading}"
                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
 
@@ -36,9 +42,13 @@
                 <Border Style="{StaticResource Card}"
                         Margin="0,8,0,0"
                         BorderBrush="{StaticResource Brush.Danger}"
+                        AutomationProperties.Name="{loc:Loc Review_Failed_Title}"
                         Visibility="{Binding IsFailed, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource Text.Subtitle}" Text="{loc:Loc Review_Failed_Title}" />
+                        <TextBlock Style="{StaticResource Text.Subtitle}"
+                                   AutomationProperties.LiveSetting="Assertive"
+                                   AutomationProperties.Name="{loc:Loc Review_Failed_Title}"
+                                   Text="{loc:Loc Review_Failed_Title}" />
                         <TextBlock Style="{StaticResource Text.Body}" Margin="0,6,0,0" Text="{loc:Loc Review_Failed_Body}" />
                         <ItemsControl Margin="0,10,0,0"
                                       Focusable="False"
@@ -58,11 +68,13 @@
 
                     <TextBlock Style="{StaticResource Text.Caption}" Text="{loc:Loc Review_Before}" />
                     <controls:PartitionBar Margin="0,4,0,0"
+                                           AutomationProperties.HelpText="{Binding BeforeBar.AccessibleText}"
                                            Partitions="{Binding BeforeBar.Segments}"
                                            DiskSize="{Binding BeforeBar.DiskSize}" />
 
                     <TextBlock Style="{StaticResource Text.Caption}" Margin="0,12,0,0" Text="{loc:Loc Review_After}" />
                     <controls:PartitionBar Margin="0,4,0,0"
+                                           AutomationProperties.HelpText="{Binding AfterBar.AccessibleText}"
                                            Partitions="{Binding AfterBar.Segments}"
                                            DiskSize="{Binding AfterBar.DiskSize}" />
 
@@ -104,6 +116,7 @@
                                         <!-- The checkbox is required before Next is enabled. -->
                                         <CheckBox Margin="0,8,0,0"
                                                   Content="{loc:Loc Review_Warning_Understand}"
+                                                  AutomationProperties.Name="{loc:Loc Review_Warning_Understand}"
                                                   AutomationProperties.HelpText="{Binding Text}"
                                                   IsChecked="{Binding IsAccepted}" />
                                     </StackPanel>
@@ -115,6 +128,7 @@
                     <!-- Full verification (FR-022a): off by default. Changing it rebuilds the plan, so the duration above follows it. -->
                     <CheckBox Margin="0,16,0,0"
                               Content="{loc:Loc Review_VerifyAll}"
+                              AutomationProperties.Name="{loc:Loc Review_VerifyAll}"
                               IsChecked="{Binding VerifyAllData}" />
                 </StackPanel>
             </StackPanel>

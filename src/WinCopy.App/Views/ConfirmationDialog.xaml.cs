@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using WinCopy.App.Services;
 
 namespace WinCopy.App.Views;
@@ -13,8 +14,11 @@ public partial class ConfirmationDialog : Window
         InitializeComponent();
         Title = request.Title;
         MessageText.Text = request.Message;
+        AutomationProperties.SetName(MessageText, request.Message);
         ConfirmButton.Content = request.ConfirmText;
+        AutomationProperties.SetName(ConfirmButton, request.ConfirmText);
         DeclineButton.Content = request.DeclineText;
+        AutomationProperties.SetName(DeclineButton, request.DeclineText);
     }
 
     private void OnConfirmClick(object sender, RoutedEventArgs e) => DialogResult = true;

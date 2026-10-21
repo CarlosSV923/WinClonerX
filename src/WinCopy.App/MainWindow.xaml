@@ -79,7 +79,10 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Notice}" />
+                <TextBlock Style="{StaticResource Text.Body}"
+                           AutomationProperties.LiveSetting="Assertive"
+                           AutomationProperties.Name="{Binding Notice}"
+                           Text="{Binding Notice}" />
             </Border>
             <ContentControl Content="{Binding CurrentPage}" />
         </DockPanel>

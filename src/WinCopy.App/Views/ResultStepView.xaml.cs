@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace WinCopy.App.Views;
 
@@ -8,5 +9,6 @@ public partial class ResultStepView : UserControl
     public ResultStepView()
     {
         InitializeComponent();
+        Loaded += (_, _) => Dispatcher.BeginInvoke(() => ExportLogButton.Focus(), DispatcherPriority.Loaded);
     }
 }

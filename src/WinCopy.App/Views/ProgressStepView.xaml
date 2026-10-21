@@ -23,7 +23,8 @@
         </StackPanel>
 
         <!-- Cancel asks for confirmation (ProgressStepViewModel.TryRequestCancel). It is disabled once requested or after verification. -->
-        <Button DockPanel.Dock="Bottom"
+        <Button x:Name="CancelButton"
+                DockPanel.Dock="Bottom"
                 Style="{StaticResource Button.Secondary}"
                 HorizontalAlignment="Left"
                 Margin="0,12,0,0"
@@ -36,9 +37,14 @@
                       HorizontalScrollBarVisibility="Disabled"
                       Margin="0,8,0,0">
             <StackPanel>
-                <TextBlock Style="{StaticResource Text.Subtitle}" Text="{Binding CurrentPhaseText}" />
+                <TextBlock Style="{StaticResource Text.Subtitle}"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{Binding CurrentPhaseText}"
+                           Text="{Binding CurrentPhaseText}" />
                 <TextBlock Style="{StaticResource Text.Body}"
                            Margin="0,6,0,0"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{Binding CancelStatusText}"
                            Text="{Binding CancelStatusText}"
                            Visibility="{Binding HasCancelStatus, Converter={StaticResource BoolToVisibility}}" />
 
@@ -50,10 +56,24 @@
                              AutomationProperties.Name="{loc:Loc Progress_Bar_Name}"
                              AutomationProperties.HelpText="{Binding PercentText}" />
 
-                <TextBlock Style="{StaticResource Text.Subtitle}" Margin="0,8,0,0" Text="{Binding PercentText}" />
-                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding BytesText}" />
-                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding ThroughputText}" />
-                <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding EtaText}" />
+                <TextBlock Style="{StaticResource Text.Subtitle}"
+                           Margin="0,8,0,0"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{Binding PercentText}"
+                           Text="{Binding PercentText}" />
+                <TextBlock Style="{StaticResource Text.Body}"
+                           Margin="0,4,0,0"
+                           AutomationProperties.Name="{Binding BytesText}"
+                           Text="{Binding BytesText}" />
+                <TextBlock Style="{StaticResource Text.Body}"
+                           Margin="0,4,0,0"
+                           AutomationProperties.Name="{Binding ThroughputText}"
+                           Text="{Binding ThroughputText}" />
+                <TextBlock Style="{StaticResource Text.Body}"
+                           Margin="0,4,0,0"
+                           AutomationProperties.Name="{Binding EtaText}"
+                           AutomationProperties.LiveSetting="Polite"
+                           Text="{Binding EtaText}" />
 
                 <Border Style="{StaticResource Card}" Margin="0,16,0,0">
                     <TextBlock Style="{StaticResource Text.Body}" Text="{loc:Loc Progress_Warning_NoChanges}" />
@@ -68,10 +88,15 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Name}" />
+                                <TextBlock Style="{StaticResource Text.Body}"
+                                           AutomationProperties.LiveSetting="Polite"
+                                           AutomationProperties.Name="{Binding Name}"
+                                           Text="{Binding Name}" />
                                 <TextBlock Grid.Column="1"
                                            Style="{StaticResource Text.Caption}"
                                            Margin="16,0,0,0"
+                                           AutomationProperties.LiveSetting="Polite"
+                                           AutomationProperties.Name="{Binding StateText}"
                                            Text="{Binding StateText}" />
                             </Grid>
                         </DataTemplate>

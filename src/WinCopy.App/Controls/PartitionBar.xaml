@@ -3,10 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WinCopy.App.Localization"
              mc:Ignorable="d"
              Height="26"
              MinWidth="120"
              Focusable="False"
+             AutomationProperties.Name="{loc:Loc PartitionBar_AccessibleName}"
              d:DesignWidth="480">
     <!-- Segments are drawn in code-behind (PartitionBarLayout gives their widths). The track shows free space. -->
     <Border CornerRadius="4"

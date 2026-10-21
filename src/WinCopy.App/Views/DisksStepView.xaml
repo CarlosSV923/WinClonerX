@@ -9,6 +9,17 @@
              mc:Ignorable="d"
              d:DesignHeight="560" d:DesignWidth="760">
     <UserControl.Resources>
+        <Style x:Key="DisksStep.ItemFocus" TargetType="Control">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border BorderBrush="{StaticResource Brush.Focus}"
+                                BorderThickness="2"
+                                CornerRadius="8" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="DisksStep.Heading" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
             <Setter Property="Margin" Value="0,20,0,8" />
         </Style>
@@ -76,6 +87,7 @@
                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
                          ScrollViewer.CanContentScroll="False"
                          AutomationProperties.Name="{loc:Loc Disks_Targets_Heading}"
+                         AutomationProperties.HelpText="{loc:Loc Disks_Select_Hint}"
                          ItemsSource="{Binding Targets}"
                          SelectedItem="{Binding SelectedTarget, Mode=TwoWay}"
                          Visibility="{Binding IsListVisible, Converter={StaticResource BoolToVisibility}}"
@@ -84,6 +96,7 @@
                         <Style TargetType="ListBoxItem">
                             <!-- Only eligible destinations can be focused as selectable items; the others are skipped by arrow keys. -->
                             <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+                            <Setter Property="FocusVisualStyle" Value="{StaticResource DisksStep.ItemFocus}" />
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="Padding" Value="0" />
                             <Setter Property="Margin" Value="0,0,0,10" />
@@ -95,7 +108,8 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:TargetDiskItemViewModel}">
-                            <controls:DiskCard />
+                            <controls:DiskCard AutomationProperties.Name="{Binding AutomationName}"
+                                              AutomationProperties.HelpText="{Binding HelpText}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

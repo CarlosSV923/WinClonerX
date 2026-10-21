@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using WinCopy.App.ViewModels;
 
 namespace WinCopy.App.Views;
@@ -16,14 +17,76 @@ public partial class DisksStepView : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+        IsVisibleChanged += OnIsVisibleChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is DisksStepViewModel { IsLoaded: false, IsLoading: false } viewModel)
+        if (DataContext is not DisksStepViewModel viewModel)
+        {
+            return;
+        }
+
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        if (!viewModel.IsLoaded && !viewModel.IsLoading)
         {
             viewModel.LoadCommand.Execute(null);
         }
+        else
+        {
+            FocusInitialTarget();
+        }
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is DisksStepViewModel viewModel)
+        {
+            viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+    }
+
+    private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true)
+        {
+            Dispatcher.BeginInvoke(FocusInitialTarget, DispatcherPriority.Loaded);
+        }
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DisksStepViewModel.IsLoaded) && DataContext is DisksStepViewModel { IsLoaded: true })
+        {
+            Dispatcher.BeginInvoke(FocusInitialTarget, DispatcherPriority.Loaded);
+        }
+    }
+
+    private void FocusInitialTarget()
+    {
+        if (!IsVisible)
+        {
+            return;
+        }
+
+        TargetList.UpdateLayout();
+        var firstSelectable = TargetList.Items
+            .OfType<TargetDiskItemViewModel>()
+            .FirstOrDefault(target => target.IsSelectable);
+        if (firstSelectable is not null && TargetList.ItemContainerGenerator.ContainerFromItem(firstSelectable) is ListBoxItem item)
+        {
+            item.Focus();
+            return;
+        }
+
+        if (TargetList.IsVisible)
+        {
+            TargetList.Focus();
+            return;
+        }
+
+        FindFocusableButton(this)?.Focus();
     }
 
     private void TargetList_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -49,6 +112,24 @@ public partial class DisksStepView : UserControl
             if (current is T match)
             {
                 return match;
+            }
+        }
+
+        return null;
+    }
+
+    private static Button? FindFocusableButton(DependencyObject root)
+    {
+        if (root is Button { IsVisible: true, IsEnabled: true } button)
+        {
+            return button;
+        }
+
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+        {
+            if (FindFocusableButton(VisualTreeHelper.GetChild(root, index)) is { } child)
+            {
+                return child;
             }
         }
 

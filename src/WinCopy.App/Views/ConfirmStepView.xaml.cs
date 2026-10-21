@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace WinCopy.App.Views;
 
@@ -12,6 +13,6 @@ public partial class ConfirmStepView : UserControl
     public ConfirmStepView()
     {
         InitializeComponent();
-        Loaded += (_, _) => SuffixBox.Focus();
+        Loaded += (_, _) => Dispatcher.BeginInvoke(() => SuffixBox.Focus(), DispatcherPriority.Loaded);
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
 using Shouldly;
 using WinCopy.App.Localization;
 using Xunit;
@@ -60,6 +61,20 @@ public sealed class ResourceParityTests
         AssertNoBlankValues(Spanish);
     }
 
+    [Fact]
+    public void SpanishAndEnglishValuesHaveTheSameFormatPlaceholders()
+    {
+        var english = ReadStrings(CultureInfo.InvariantCulture);
+        var spanish = ReadStrings(Spanish);
+        var mismatches = english.Keys
+            .Where(key => !Placeholders(english[key]).SequenceEqual(Placeholders(spanish[key])))
+            .Select(key => $"{key}: en=[{string.Join(",", Placeholders(english[key]))}], es=[{string.Join(",", Placeholders(spanish[key]))}]")
+            .Order()
+            .ToList();
+
+        mismatches.ShouldBeEmpty(string.Join(Environment.NewLine, mismatches));
+    }
+
     [Theory]
     [InlineData("es-ES", "Wizard_Step_Disks", "Discos")]
     [InlineData("es-ES", "Common_Cancel", "Cancelar")]
@@ -116,4 +131,9 @@ public sealed class ResourceParityTests
 
         return values;
     }
+
+    private static string[] Placeholders(string value) => Regex.Matches(value, @"\{(\d+)(?:,[^}]*)?\}")
+        .Select(match => match.Groups[1].Value)
+        .Order(StringComparer.Ordinal)
+        .ToArray();
 }
