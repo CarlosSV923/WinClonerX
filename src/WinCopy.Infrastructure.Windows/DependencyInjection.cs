@@ -44,7 +44,6 @@ public static class DependencyInjection
 {
     /// <summary>
     /// Registra todos los puertos de salida con su adaptador real, más los componentes internos compartidos.
-    /// No registra <see cref="IDeviceChangeMonitor"/>: todavía no tiene adaptador.
     /// </summary>
     public static IServiceCollection AddWinCopyInfrastructure(
         this IServiceCollection services,

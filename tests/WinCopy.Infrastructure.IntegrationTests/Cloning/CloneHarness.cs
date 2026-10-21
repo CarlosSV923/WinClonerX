@@ -28,9 +28,8 @@ namespace WinCopy.Infrastructure.IntegrationTests.Cloning;
 /// <item><see cref="IOfflineRegistryEditor"/>, <see cref="IBootConfigurator"/> and <see cref="IRecoveryConfigurator"/> are recording fakes.
 /// The reference disk is not a real Windows installation, so there is no SYSTEM hive to edit, nothing for bcdboot to build, and
 /// no WinRE image to point. The real boot repair is validated in the VM checkpoint S2.</item>
-/// <item><see cref="ITargetDiskFactory"/> is replaced only when a test passes <c>tamperCommittedLayout</c>. The factory is then the
-/// real <see cref="TargetDiskFactory"/> wrapped by <see cref="TamperingTargetDiskFactory"/>, which alters the layout before the real
-/// adapter commits it.</item>
+/// <item><see cref="ITargetDiskFactory"/> is decorated only when a test requests layout or copied-data tampering. Layout tampering
+/// wraps the real <see cref="TargetDiskFactory"/> to alter the commit; copied-data tampering flips one byte after a write.</item>
 /// </list>
 /// <para>
 /// The composition uses the same log directory for every run, and <see cref="DisposeAsync"/> disposes the container, which
@@ -46,12 +45,15 @@ internal sealed class CloneHarness : IAsyncDisposable
     public CloneHarness(
         ReferenceDisk source,
         string logDirectory,
-        Func<TargetLayout, TargetLayout>? tamperCommittedLayout = null)
+        Func<TargetLayout, TargetLayout>? tamperCommittedLayout = null,
+        VerificationMode verificationMode = VerificationMode.Structural,
+        bool tamperCopiedData = false)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentException.ThrowIfNullOrWhiteSpace(logDirectory);
 
         LogDirectory = logDirectory;
+        VerificationMode = verificationMode;
         RealReader = CreateRealReader(logDirectory, Warn);
 
         var services = new ServiceCollection();
@@ -77,6 +79,15 @@ internal sealed class CloneHarness : IAsyncDisposable
                 new TargetDiskFactory(DiskWriteGuard.Default, sp.GetRequiredService<DiskOperationRecorder>(), Warn),
                 tamperCommittedLayout));
         }
+        else if (tamperCopiedData)
+        {
+            services.AddSingleton<ITargetDiskFactory>(sp =>
+            {
+                DataTamperingFactory = new DataTamperingTargetDiskFactory(
+                    new TargetDiskFactory(DiskWriteGuard.Default, sp.GetRequiredService<DiskOperationRecorder>(), Warn));
+                return DataTamperingFactory;
+            });
+        }
 
         _provider = services.BuildServiceProvider();
     }
@@ -89,6 +100,12 @@ internal sealed class CloneHarness : IAsyncDisposable
 
     /// <summary>Folder of the execution log of this harness.</summary>
     public string LogDirectory { get; }
+
+    /// <summary>Verification requested for the clone run.</summary>
+    public VerificationMode VerificationMode { get; }
+
+    /// <summary>Data tampering decorator, when enabled by this harness.</summary>
+    public DataTamperingTargetDiskFactory? DataTamperingFactory { get; private set; }
 
     /// <summary>Records the offline registry calls of the boot repair.</summary>
     public RecordingOfflineRegistryEditor Registry { get; } = new();
@@ -136,7 +153,7 @@ internal sealed class CloneHarness : IAsyncDisposable
             ?? throw new InvalidOperationException($"The target disk {target.DiskNumber} is not in the test inventory.");
 
         Result<ClonePlan, PreflightReport> built = await Services.GetRequiredService<IBuildClonePlan>()
-            .ExecuteAsync(targetDisk.Id, VerificationMode.Structural, ct);
+            .ExecuteAsync(targetDisk.Id, VerificationMode, ct);
         if (!built.IsSuccess)
         {
             string codes = string.Join(", ", built.Error.Checks.Select(check => check.Code));

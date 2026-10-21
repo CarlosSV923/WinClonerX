@@ -17,6 +17,7 @@ namespace WinCopy.App.ViewModels;
 public sealed partial class ReviewStepViewModel : ObservableObject
 {
     private readonly IBuildClonePlan _buildPlan;
+    private long _buildVersion;
 
     /// <summary>Destination of the plan on screen. Null after <see cref="Clear"/>, so a change of the option builds nothing.</summary>
     private DiskId? _target;
@@ -98,6 +99,8 @@ public sealed partial class ReviewStepViewModel : ObservableObject
     public void Clear()
     {
         _target = null;
+        _buildVersion++;
+        IsLoading = false;
         ResetPlan();
     }
 
@@ -109,14 +112,20 @@ public sealed partial class ReviewStepViewModel : ObservableObject
     {
         if (_target is { } target)
         {
-            _ = BuildAsync(target, keepAcceptedWarnings: true, CancellationToken.None);
+            RebuildForVerificationChange(target);
         }
+    }
+
+    private async void RebuildForVerificationChange(DiskId target)
+    {
+        await BuildAsync(target, keepAcceptedWarnings: true, CancellationToken.None);
     }
 
     partial void OnPlanChanged(ClonePlan? value) => OnPropertyChanged(nameof(HasPlan));
 
     private async Task BuildAsync(DiskId target, bool keepAcceptedWarnings, CancellationToken cancellationToken)
     {
+        var version = ++_buildVersion;
         var accepted = keepAcceptedWarnings ? AcceptedWarnings.ToHashSet() : new HashSet<PreflightCode>();
 
         ResetPlan();
@@ -125,6 +134,11 @@ public sealed partial class ReviewStepViewModel : ObservableObject
         {
             var mode = VerifyAllData ? VerificationMode.StructuralAndFull : VerificationMode.Structural;
             var result = await _buildPlan.ExecuteAsync(target, mode, cancellationToken);
+            if (version != _buildVersion)
+            {
+                return;
+            }
+
             if (result.IsSuccess)
             {
                 ApplyPlan(result.Value);
@@ -139,9 +153,26 @@ public sealed partial class ReviewStepViewModel : ObservableObject
                 ApplyFailure(result.Error);
             }
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // Builds run on the UI thread, so only the newest one (by version) may change the step.
+            if (version == _buildVersion)
+            {
+                IsFailed = true;
+                BlockingReasons.Add(Loc.Get("Review_Failed_Generic"));
+                UpdateValidity();
+            }
+        }
         finally
         {
-            IsLoading = false;
+            if (version == _buildVersion)
+            {
+                IsLoading = false;
+            }
         }
     }
 

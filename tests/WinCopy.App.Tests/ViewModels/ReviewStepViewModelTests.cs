@@ -192,6 +192,70 @@ public sealed class ReviewStepViewModelTests
     }
 
     [Fact]
+    public async Task AFailingVerificationRebuildShowsTheGenericError()
+    {
+        using var _ = new EnglishCulture();
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var builder = new FakeBuildClonePlan((target, mode) =>
+        {
+            if (mode == VerificationMode.StructuralAndFull)
+            {
+                throw new InvalidOperationException("Plan build failed.");
+            }
+
+            return AppFixtures.PlanFor(inventory, target, mode: mode);
+        });
+        var vm = new ReviewStepViewModel(builder);
+        await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
+
+        vm.VerifyAllData = true;
+        await WaitForAsync(() => !vm.IsLoading);
+
+        vm.IsFailed.ShouldBeTrue();
+        vm.IsValid.ShouldBeFalse();
+        vm.BlockingReasons.ShouldContain(Loc.Get("Review_Failed_Generic"));
+    }
+
+    [Fact]
+    public async Task TwoQuickVerificationTogglesEndWithTheLastModeAndKeepNextDisabledWhileBuilding()
+    {
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var fullBuildStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFullBuild = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = new FakeBuildClonePlan(async (target, mode, _) =>
+        {
+            if (mode == VerificationMode.StructuralAndFull)
+            {
+                fullBuildStarted.SetResult();
+                await releaseFullBuild.Task;
+            }
+
+            return AppFixtures.PlanFor(inventory, target, mode: mode);
+        });
+        var vm = new ReviewStepViewModel(builder);
+        await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
+
+        vm.VerifyAllData = true;
+        await fullBuildStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        // While the full-verification plan is being built, the step cannot go on.
+        vm.IsLoading.ShouldBeTrue();
+        vm.IsValid.ShouldBeFalse();
+
+        // The newest build wins: the structural plan is applied at once, and the older build is ignored when it ends.
+        vm.VerifyAllData = false;
+        await WaitForAsync(() => !vm.IsLoading);
+        vm.Plan!.Verification.ShouldBe(VerificationMode.Structural);
+
+        releaseFullBuild.SetResult();
+        await Task.Delay(200, TestContext.Current.CancellationToken);
+
+        builder.CallCount.ShouldBe(3);
+        vm.IsLoading.ShouldBeFalse();
+        vm.Plan!.Verification.ShouldBe(VerificationMode.Structural);
+    }
+
+    [Fact]
     public async Task AcceptedWarningsStayAcceptedWhenTheVerificationChanges()
     {
         var inventory = AppFixtures.InventoryOf(
@@ -237,6 +301,15 @@ public sealed class ReviewStepViewModelTests
 
         builder.CallCount.ShouldBe(1);
         vm.HasPlan.ShouldBeFalse();
+    }
+
+    private static async Task WaitForAsync(Func<bool> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!condition())
+        {
+            await Task.Delay(10, timeout.Token);
+        }
     }
 
     [Fact]

@@ -30,11 +30,7 @@ public sealed class CompositionTests : IDisposable
     ];
 
     /// <summary>Puertos sin adaptador real todavía. Se quitan de esta lista cuando exista su implementación.</summary>
-    private static readonly Type[] NotImplementedYet =
-    [
-        // Sin adaptador: FR-011, US3 escenario 2.
-        typeof(IDeviceChangeMonitor),
-    ];
+    private static readonly Type[] NotImplementedYet = [];
 
     private readonly string _logDirectory = Path.Combine(
         Path.GetTempPath(),

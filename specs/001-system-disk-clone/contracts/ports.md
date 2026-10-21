@@ -30,7 +30,6 @@ interface IPlatformFactsProvider
     // posible destino, si está en uso (si falta el dato, se considera en uso).
 }
 
-interface IDeviceChangeMonitor   // FR-011, US3 escenario 2
 {
     IObservable<DeviceChange> Changes { get; }
 }

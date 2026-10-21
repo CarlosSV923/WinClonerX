@@ -28,7 +28,6 @@ La historia 3 está implementada: cancelación con confirmación, exportación d
 
 - [ ] **Cancelación en hardware real** (commit f5fe7ca). **Estado:** pendiente.
 - [ ] **Desconexión de un disco durante el clonado en hardware real.** **Estado:** pendiente. Hay que comprobar que la notificación de Windows llega, que el disco retirado deja de abrirse con uno de los códigos esperados y que la ejecución termina como fallida con `SourceDeviceRemoved` o `TargetDeviceRemoved`. Si la vigilancia no arranca, el registro muestra `DeviceMonitorUnavailable`.
-- [ ] **Puerto `IDeviceChangeMonitor` sin uso.** **Estado:** pendiente de quitar. Lo sustituye `IDeviceRemovalMonitor`.
 - [ ] **Diario de restauración del origen en hardware real** (commit 37757d8), incluido un cierre inesperado con C: reducido. **Estado:** pendiente. La validación de 2026-10-20 se hizo con 8467029, que no incluye el diario.
 - [ ] **Cierre inesperado de la aplicación en PrepareTarget** (mini PC, commit 8467029). **Estado:** sin explicación. No se ha vuelto a reproducir, y no hay registro ni datos del visor de eventos. Si vuelve a pasar, guarda el archivo `.clef` de `C:\ProgramData\WinCopy\logs` y el visor de eventos, y comprueba que el diario restaura C:.
 - [ ] **Nivel 4 completo en el segundo disco físico, con desinstalación** (T119). **Estado:** pendiente. El punto de control S2 se superó el 2026-10-20 (ver [validación manual](validacion-manual.md)), pero falta la lista completa, incluida la desinstalación.

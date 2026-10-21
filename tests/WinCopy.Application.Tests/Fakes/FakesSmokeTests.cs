@@ -114,22 +114,6 @@ public sealed class FakesSmokeTests
     }
 
     [Fact]
-    public void RaiseDeliversChangesOnlyToActiveSubscribers()
-    {
-        var monitor = new FakeDeviceChangeMonitor();
-        var received = new List<DeviceChange>();
-        var subscription = monitor.Changes.Subscribe(new CollectingObserver(received));
-
-        monitor.Raise(new DeviceChange(DeviceChangeKind.Removed, 2));
-        subscription.Dispose();
-        monitor.Raise(new DeviceChange(DeviceChangeKind.Arrived, 2));
-
-        received.Count.ShouldBe(1);
-        received[0].Kind.ShouldBe(DeviceChangeKind.Removed);
-        monitor.SubscriberCount.ShouldBe(0);
-    }
-
-    [Fact]
     public async Task MountReleaseIsCountedWhenReleased()
     {
         var mounter = new FakeTemporaryMounter();
@@ -142,14 +126,5 @@ public sealed class FakesSmokeTests
         mounter.ReleaseCount.ShouldBe(1);
     }
 
-    private sealed class CollectingObserver(List<DeviceChange> sink) : IObserver<DeviceChange>
-    {
-        public void OnNext(DeviceChange value) => sink.Add(value);
 
-        public void OnError(Exception error) => throw new InvalidOperationException("Unexpected error", error);
-
-        public void OnCompleted()
-        {
-        }
-    }
 }
