@@ -266,7 +266,7 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 ### Calidad, accesibilidad y textos
 
 - [X] T109 [P] Revisión de accesibilidad con Accessibility Insights de los pasos 1 y 3 (navegación por teclado, nombres accesibles, foco inicial, contraste) y corrección de hallazgos en `src/WinCopy.App/Views/` (FR-030). Revisión manual con Accessibility Insights y Narrator pendiente.
-- [ ] T110 [P] Revisión editorial de `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx` (tono claro y sin jerga; errores con "qué pasó / qué puedes hacer", principio VII)
+- [X] T110 [P] Revisión editorial de `src/WinCopy.App/Resources/Strings.resx` y `Strings.es.resx` (tono claro y sin jerga; errores con "qué pasó / qué puedes hacer", principio VII)
 - [ ] T111 [P] Prueba de rendimiento en `tests/WinCopy.Infrastructure.IntegrationTests/Performance/ProportionalDurationTests.cs`: 10 GB de datos en un VHDX de 20 GB frente a uno de 100 GB; la duración no difiere más de un 20 % (SC-003; misma proporción que en la especificación)
 - [ ] T112 [P] Medición de los objetivos de rendimiento del plan en `tests/WinCopy.Infrastructure.IntegrationTests/Performance/ThroughputAndMemoryTests.cs`:
   - Rendimiento de copia ≥ 85 % de la velocidad secuencial medida del VHDX más lento.

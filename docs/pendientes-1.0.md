@@ -37,7 +37,6 @@ La historia 3 está implementada: cancelación con confirmación, exportación d
 
 ## 5. Accesibilidad, textos y uso
 
-- [ ] **T110:** revisión editorial de los textos en español e inglés. Los errores deben decir qué pasó y qué puede hacer la persona (principio VII). **Estado:** pendiente.
 - [ ] **Revisión manual de accesibilidad** con Accessibility Insights y Narrator en un equipo Windows real. **Estado:** pendiente; T109 está completada a nivel de código.
 - [ ] **T120:** prueba de uso con al menos 5 personas sin perfil técnico. Cada una debe identificar el disco que se borrará antes de confirmar (SC-007, al menos 90 % de aciertos). **Estado:** pendiente. Hace falta el protocolo y los resultados en [validación manual](validacion-manual.md).
 

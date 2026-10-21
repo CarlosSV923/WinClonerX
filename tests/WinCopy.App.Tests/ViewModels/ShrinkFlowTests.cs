@@ -27,9 +27,9 @@ public sealed class ShrinkFlowTests
 
         var target = disks.Targets.Single();
         target.IsSelectable.ShouldBeTrue();
-        target.StrategyText.ShouldBe("Windows on the original disk must be shrunk first");
+        target.StrategyText.ShouldBe("The Windows partition on the source disk must be shrunk temporarily");
         target.StrategyText.ShouldBe(Loc.Get("Disks_Strategy_Shrink"));
-        target.HelpText.ShouldContain("Windows on the original disk must be shrunk first");
+        target.HelpText.ShouldContain("The Windows partition on the source disk must be shrunk temporarily");
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class ShrinkFlowTests
         using var _ = new CultureScope("es-ES");
         var disks = await LoadDisks(ShrinkInventory(), AppFixtures.ShrinkFacts());
 
-        disks.Targets.Single().StrategyText.ShouldBe("Hay que reducir Windows en el disco original");
+        disks.Targets.Single().StrategyText.ShouldBe("Se reducirá temporalmente la partición de Windows del disco de origen");
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public sealed class ShrinkFlowTests
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var disks = await LoadDisks(inventory, AppFixtures.Facts());
 
-        disks.Targets.Single().StrategyText.ShouldBe("Windows will be extended");
+        disks.Targets.Single().StrategyText.ShouldBe("The Windows partition does not need to be shrunk");
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public sealed class ShrinkFlowTests
             "Shrink_Review_Body",
             SizeText.Format(shrink.OriginalLength),
             SizeText.Format(shrink.ShrunkLength)));
-        review.SourceShrinkText.ShouldContain("Windows (C:) will go from");
+        review.SourceShrinkText.ShouldContain("The Windows partition on the source disk will go from");
         review.SourceShrinkText.ShouldContain("50 GiB");
     }
 

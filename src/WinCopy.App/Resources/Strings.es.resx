@@ -80,7 +80,7 @@
     <value>Cancelar</value>
   </data>
   <data name="Cancel_Confirm_Message" xml:space="preserve">
-    <value>¿Cancelar el clonado? El disco de destino quedará sin inicializar. Tu disco original no se modifica (si se redujo, se restaurará su tamaño).</value>
+    <value>¿Cancelar el clonado? El disco de destino quedará sin inicializar. El disco de origen no se modifica; si WinCopy redujo su partición de Windows, intentará restaurarla.</value>
   </data>
   <data name="Cancel_Confirm_Yes" xml:space="preserve">
     <value>Cancelar clonado</value>
@@ -101,13 +101,13 @@
     <value>Elige el disco de destino</value>
   </data>
   <data name="Disks_Subtitle" xml:space="preserve">
-    <value>El disco del sistema es el origen. Elige el disco que recibirá la copia. Todo lo que haya en el disco de destino se borrará.</value>
+    <value>El disco donde está instalado Windows es el disco de origen. Elige el disco de destino, que recibirá el clon. Se borrará todo su contenido.</value>
   </data>
   <data name="Disks_Loading" xml:space="preserve">
     <value>Leyendo los discos...</value>
   </data>
   <data name="Disks_Source_Heading" xml:space="preserve">
-    <value>Disco del sistema (origen)</value>
+    <value>Disco de origen</value>
   </data>
   <data name="Disks_Targets_Heading" xml:space="preserve">
     <value>Discos de destino</value>
@@ -131,10 +131,10 @@
     <value>No apto</value>
   </data>
   <data name="Disks_Strategy_Extend" xml:space="preserve">
-    <value>Se ampliará Windows</value>
+    <value>No hace falta reducir la partición de Windows</value>
   </data>
   <data name="Disks_Strategy_Shrink" xml:space="preserve">
-    <value>Hay que reducir Windows en el disco original</value>
+    <value>Se reducirá temporalmente la partición de Windows del disco de origen</value>
   </data>
   <data name="Disks_Shortfall" xml:space="preserve">
     <value>Faltan {0}</value>
@@ -212,13 +212,13 @@
     <value>Este equipo no arranca en modo UEFI, así que no se puede clonar en esta versión.</value>
   </data>
   <data name="Preflight_SourceNotGpt" xml:space="preserve">
-    <value>El disco del sistema no usa el estilo de particiones GPT, que esta versión necesita.</value>
+    <value>El disco de origen no usa GPT, un requisito de esta versión.</value>
   </data>
   <data name="Preflight_UnsupportedDiskKind" xml:space="preserve">
     <value>El disco del sistema usa una configuración de almacenamiento que esta versión no soporta, como discos dinámicos, RAID o Espacios de almacenamiento.</value>
   </data>
   <data name="Preflight_MultipleWindows" xml:space="preserve">
-    <value>El disco del sistema no contiene exactamente una instalación de Windows, así que no hay nada claro que clonar.</value>
+    <value>El disco de origen no tiene una única partición de Windows identificable. WinCopy no puede determinar qué clonar.</value>
   </data>
   <data name="Preflight_TargetIsSystem" xml:space="preserve">
     <value>Es el disco del sistema, así que no se puede usar como destino.</value>
@@ -230,13 +230,13 @@
     <value>El disco es demasiado pequeño para guardar Windows y sus datos. Le faltan {0}. Elige un disco más grande.</value>
   </data>
   <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
-    <value>Este disco tiene un tamaño de sector distinto al del disco del sistema, y esta versión no puede clonar entre ambos.</value>
+    <value>El disco de destino tiene un tamaño de sector lógico distinto al del disco de origen. WinCopy solo puede clonar entre discos con el mismo tamaño de sector lógico. Elige un disco compatible.</value>
   </data>
   <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
     <value>Windows no se puede reducir lo suficiente para caber en este disco. Libera espacio en el disco del sistema o elige un disco más grande.</value>
   </data>
   <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
-    <value>El sistema no puede crear la copia coherente que necesita mientras Windows está en uso. Comprueba que la Instantánea de volumen (VSS) está disponible y vuelve a intentarlo.</value>
+    <value>No se pudo crear la instantánea que necesita el clonado mientras Windows está en uso. Comprueba que el servicio de instantáneas de volumen (VSS) está disponible y vuelve a intentarlo.</value>
   </data>
   <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
     <value>El disco del sistema no tiene espacio libre suficiente para la copia coherente. Solo quedan {0} y hacen falta al menos 2 GiB. Libera espacio y vuelve a intentarlo.</value>
@@ -284,10 +284,10 @@
     <value>No se pudo crear el plan. Vuelve atrás e inténtalo de nuevo.</value>
   </data>
   <data name="Review_Before" xml:space="preserve">
-    <value>Antes (origen)</value>
+    <value>Antes (disco de origen)</value>
   </data>
   <data name="Review_After" xml:space="preserve">
-    <value>Después (destino)</value>
+    <value>Después (disco de destino)</value>
   </data>
   <data name="Review_Partitions_Heading" xml:space="preserve">
     <value>Particiones</value>
@@ -377,13 +377,13 @@
     <value>No se pudo guardar la confirmación. Inténtalo de nuevo.</value>
   </data>
   <data name="Shrink_Heading" xml:space="preserve">
-    <value>Reducción temporal del disco original</value>
+    <value>Reducción temporal de la partición de Windows del disco de origen</value>
   </data>
   <data name="Shrink_Review_Body" xml:space="preserve">
-    <value>Windows (C:) pasará de {0} a {1} durante la copia y se restaurará al terminar</value>
+    <value>La partición de Windows del disco de origen pasará de {0} a {1} antes del clonado. WinCopy intentará devolverla a su tamaño original al terminar.</value>
   </data>
   <data name="Shrink_Confirm_Body" xml:space="preserve">
-    <value>Para que quepa, WinCopy reducirá temporalmente la partición de Windows del disco original de {0} a {1}. Al terminar la devolverá a su tamaño. Windows puede tardar varios minutos en mover archivos.</value>
+    <value>Para que el clon quepa, WinCopy reducirá temporalmente la partición de Windows del disco de origen de {0} a {1}. Al terminar, intentará devolverla a su tamaño original. Windows puede tardar varios minutos en mover archivos.</value>
   </data>
   <data name="Shrink_Confirm_Understand" xml:space="preserve">
     <value>Entiendo y autorizo reducir temporalmente el disco original</value>
@@ -440,7 +440,7 @@
     <value>Comprobando que los discos no han cambiado</value>
   </data>
   <data name="Phase_ShrinkSource" xml:space="preserve">
-    <value>Reduciendo Windows en el disco original</value>
+    <value>Reduciendo la partición de Windows del disco de origen</value>
   </data>
   <data name="Phase_Snapshot" xml:space="preserve">
     <value>Creando una copia coherente del disco del sistema</value>
@@ -470,7 +470,7 @@
     <value>Limpiando datos temporales</value>
   </data>
   <data name="Phase_RestoreSource" xml:space="preserve">
-    <value>Restaurando el tamaño del disco original</value>
+    <value>Restaurando el tamaño de la partición de Windows del disco de origen</value>
   </data>
   <data name="Phase_Done" xml:space="preserve">
     <value>Terminado</value>
@@ -521,7 +521,7 @@
     <value>Configurado</value>
   </data>
   <data name="Result_Recovery_Warning" xml:space="preserve">
-    <value>No se pudo configurar WinRE en el disco nuevo. Windows arrancará igualmente, pero el entorno de recuperación no funcionará hasta que lo actives. Para hacerlo, abre el símbolo del sistema como administrador y ejecuta: reagentc /enable</value>
+    <value>No se pudo configurar WinRE en el disco de destino. Windows arrancará igualmente, pero el entorno de recuperación no funcionará hasta que lo actives. Después de iniciar Windows desde el clon, abre el símbolo del sistema como administrador y ejecuta: reagentc /enable</value>
   </data>
   <data name="Result_NextSteps_Heading" xml:space="preserve">
     <value>Pasos siguientes</value>
@@ -545,7 +545,7 @@
     <value>El disco original volvió a su tamaño original</value>
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
-    <value>No se pudo devolver Windows (C:) a su tamaño original. El clon es válido. Puedes recuperar el espacio desde Administración de discos → clic derecho en C: → Extender volumen</value>
+    <value>No se pudo restaurar el tamaño original de la partición de Windows del disco de origen. El clon es válido. Para recuperar el espacio, abre Administración de discos, haz clic derecho en C: y elige «Extender volumen».</value>
   </data>
   <data name="Result_Cancelled_Body" xml:space="preserve">
     <value>El disco de destino quedó sin inicializar y no se puede usar para arrancar Windows.</value>
@@ -617,7 +617,7 @@
     <value>No se pudo ajustar la configuración de arranque del clon. No arranques desde el clon. Inténtalo de nuevo.</value>
   </data>
   <data name="Error_RecoveryConfigFailed" xml:space="preserve">
-    <value>No se pudo configurar WinRE en el clon. Windows arrancará igualmente. Activa WinRE más tarde con reagentc /enable.</value>
+    <value>No se pudo configurar WinRE en el clon. Windows arrancará igualmente. Después de iniciar Windows desde el clon, activa WinRE con reagentc /enable.</value>
   </data>
   <data name="Error_RegistryEditFailed" xml:space="preserve">
     <value>No se pudieron ajustar los datos de sistema del clon. Inténtalo de nuevo.</value>
@@ -644,7 +644,7 @@
     <value>Los discos cambiaron después de planificar el clonado. Vuelve a planificarlo.</value>
   </data>
   <data name="Error_ShrinkInsufficient" xml:space="preserve">
-    <value>Windows no se puede reducir lo suficiente para caber en el disco de destino. Libera espacio en el disco del sistema o elige un disco más grande.</value>
+    <value>No se puede reducir lo suficiente la partición de Windows del disco de origen para que quepa en el disco de destino. Libera espacio en el disco de origen o elige un disco de destino más grande.</value>
   </data>
   <data name="Error_ShrinkJournalFailed" xml:space="preserve">
     <value>WinCopy no ha podido guardar el registro necesario para restaurar el disco de Windows, así que no lo ha reducido. El disco original no se ha modificado. Reinicia WinCopy e inténtalo de nuevo. Si vuelve a pasar, guarda el registro.</value>

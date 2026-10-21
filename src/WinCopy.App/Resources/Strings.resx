@@ -80,7 +80,7 @@
     <value>Cancel</value>
   </data>
   <data name="Cancel_Confirm_Message" xml:space="preserve">
-    <value>Cancel the clone? The target disk will be left uninitialized. Your original disk is not modified (if it was shrunk, its size is restored).</value>
+    <value>Cancel cloning? The target disk will be left uninitialized. The source disk is not modified; if WinCopy shrank its Windows partition, it will try to restore it.</value>
   </data>
   <data name="Cancel_Confirm_Yes" xml:space="preserve">
     <value>Cancel clone</value>
@@ -101,13 +101,13 @@
     <value>Choose the destination disk</value>
   </data>
   <data name="Disks_Subtitle" xml:space="preserve">
-    <value>Your system disk is the source. Pick the disk that will receive the copy. Everything on the destination disk will be erased.</value>
+    <value>The disk where Windows is installed is the source disk. Choose the target disk for the clone. Everything on it will be erased.</value>
   </data>
   <data name="Disks_Loading" xml:space="preserve">
     <value>Reading disks...</value>
   </data>
   <data name="Disks_Source_Heading" xml:space="preserve">
-    <value>System disk (source)</value>
+    <value>Source disk</value>
   </data>
   <data name="Disks_Targets_Heading" xml:space="preserve">
     <value>Destination disks</value>
@@ -131,10 +131,10 @@
     <value>Not eligible</value>
   </data>
   <data name="Disks_Strategy_Extend" xml:space="preserve">
-    <value>Windows will be extended</value>
+    <value>The Windows partition does not need to be shrunk</value>
   </data>
   <data name="Disks_Strategy_Shrink" xml:space="preserve">
-    <value>Windows on the original disk must be shrunk first</value>
+    <value>The Windows partition on the source disk must be shrunk temporarily</value>
   </data>
   <data name="Disks_Shortfall" xml:space="preserve">
     <value>Missing {0}</value>
@@ -212,13 +212,13 @@
     <value>This computer does not start in UEFI mode, so it cannot be cloned in this version.</value>
   </data>
   <data name="Preflight_SourceNotGpt" xml:space="preserve">
-    <value>The system disk does not use the GPT partition style, which this version requires.</value>
+    <value>The source disk does not use GPT, which this version requires.</value>
   </data>
   <data name="Preflight_UnsupportedDiskKind" xml:space="preserve">
     <value>The system disk uses a storage setup this version does not support, such as dynamic disks, RAID or Storage Spaces.</value>
   </data>
   <data name="Preflight_MultipleWindows" xml:space="preserve">
-    <value>The system disk does not contain exactly one Windows installation, so there is nothing clear to clone.</value>
+    <value>The source disk does not have exactly one identifiable Windows partition. WinCopy cannot determine what to clone.</value>
   </data>
   <data name="Preflight_TargetIsSystem" xml:space="preserve">
     <value>This is the system disk, so it cannot be used as the destination.</value>
@@ -230,13 +230,13 @@
     <value>The disk is too small to hold Windows and its data. It needs {0} more. Choose a larger disk.</value>
   </data>
   <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
-    <value>This disk uses a different sector size than the system disk, and this version cannot clone between them.</value>
+    <value>The target disk has a different logical sector size from the source disk. WinCopy can clone only between disks with the same logical sector size. Choose a compatible disk.</value>
   </data>
   <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
     <value>Windows cannot be shrunk enough to fit on this disk. Free up space on the system disk or choose a larger disk.</value>
   </data>
   <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
-    <value>The system cannot create the consistent copy it needs while Windows is running. Check that Volume Shadow Copy is available, then try again.</value>
+    <value>The snapshot needed for cloning could not be created while Windows is running. Check that Volume Shadow Copy (VSS) is available, then try again.</value>
   </data>
   <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
     <value>The system disk does not have enough free space for the consistent copy. Only {0} is free and at least 2 GiB is needed. Free up space and try again.</value>
@@ -284,10 +284,10 @@
     <value>The plan could not be created. Go back and try again.</value>
   </data>
   <data name="Review_Before" xml:space="preserve">
-    <value>Before (source)</value>
+    <value>Before (source disk)</value>
   </data>
   <data name="Review_After" xml:space="preserve">
-    <value>After (destination)</value>
+    <value>After (target disk)</value>
   </data>
   <data name="Review_Partitions_Heading" xml:space="preserve">
     <value>Partitions</value>
@@ -377,13 +377,13 @@
     <value>The confirmation could not be saved. Try again.</value>
   </data>
   <data name="Shrink_Heading" xml:space="preserve">
-    <value>Temporary shrink of the original disk</value>
+    <value>Temporary shrink of the Windows partition on the source disk</value>
   </data>
   <data name="Shrink_Review_Body" xml:space="preserve">
-    <value>Windows (C:) will go from {0} to {1} during the copy and will be restored when it finishes.</value>
+    <value>The Windows partition on the source disk will go from {0} to {1} before cloning. WinCopy will try to restore its original size when cloning finishes.</value>
   </data>
   <data name="Shrink_Confirm_Body" xml:space="preserve">
-    <value>To make it fit, WinCopy will temporarily shrink the Windows partition on the original disk from {0} to {1}. When it finishes, it gives the space back and restores its size. Windows may take several minutes to move files.</value>
+    <value>To make the clone fit, WinCopy will temporarily shrink the Windows partition on the source disk from {0} to {1}. When cloning finishes, it will try to restore the partition to its original size. Windows may take several minutes to move files.</value>
   </data>
   <data name="Shrink_Confirm_Understand" xml:space="preserve">
     <value>I understand and authorize temporarily shrinking the original disk</value>
@@ -440,7 +440,7 @@
     <value>Checking that the disks have not changed</value>
   </data>
   <data name="Phase_ShrinkSource" xml:space="preserve">
-    <value>Shrinking Windows on the original disk</value>
+    <value>Shrinking the Windows partition on the source disk</value>
   </data>
   <data name="Phase_Snapshot" xml:space="preserve">
     <value>Creating a consistent copy of the system disk</value>
@@ -470,7 +470,7 @@
     <value>Cleaning up temporary data</value>
   </data>
   <data name="Phase_RestoreSource" xml:space="preserve">
-    <value>Restoring the size of the original disk</value>
+    <value>Restoring the size of the Windows partition on the source disk</value>
   </data>
   <data name="Phase_Done" xml:space="preserve">
     <value>Finished</value>
@@ -521,7 +521,7 @@
     <value>Configured</value>
   </data>
   <data name="Result_Recovery_Warning" xml:space="preserve">
-    <value>WinRE could not be configured on the new disk. Windows will still start, but the recovery environment will not work until you enable it. To do it, open a command prompt as administrator and run: reagentc /enable</value>
+    <value>WinRE could not be configured on the target disk. Windows will still start, but the recovery environment will not work until you enable it. After starting Windows from the clone, open a command prompt as administrator and run: reagentc /enable</value>
   </data>
   <data name="Result_NextSteps_Heading" xml:space="preserve">
     <value>Next steps</value>
@@ -545,7 +545,7 @@
     <value>The original disk went back to its original size.</value>
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
-    <value>Windows (C:) could not be returned to its original size. The clone is valid. You can recover the space in Disk Management → right-click C: → Extend Volume.</value>
+    <value>The Windows partition on the source disk could not be restored to its original size. The clone is valid. To recover the space, open Disk Management, right-click C: and choose “Extend Volume.”</value>
   </data>
   <data name="Result_Cancelled_Body" xml:space="preserve">
     <value>The target disk was left uninitialized and cannot be used to start Windows.</value>
@@ -617,7 +617,7 @@
     <value>The boot settings of the clone could not be adjusted. Do not start from the clone. Try again.</value>
   </data>
   <data name="Error_RecoveryConfigFailed" xml:space="preserve">
-    <value>WinRE could not be configured on the clone. Windows will still start. Enable WinRE later with reagentc /enable.</value>
+    <value>WinRE could not be configured on the clone. Windows will still start. After starting Windows from the clone, enable WinRE with reagentc /enable.</value>
   </data>
   <data name="Error_RegistryEditFailed" xml:space="preserve">
     <value>The system settings of the clone could not be adjusted. Try again.</value>
@@ -644,7 +644,7 @@
     <value>The disks changed after the plan was made. Plan the clone again.</value>
   </data>
   <data name="Error_ShrinkInsufficient" xml:space="preserve">
-    <value>Windows cannot be shrunk enough to fit on the target disk. Free up space on the system disk or choose a larger disk.</value>
+    <value>The Windows partition on the source disk cannot be shrunk enough to fit on the target disk. Free up space on the source disk or choose a larger target disk.</value>
   </data>
   <data name="Error_ShrinkJournalFailed" xml:space="preserve">
     <value>WinCopy could not save the record needed to restore the Windows disk, so it did not shrink it. The original disk was not changed. Restart WinCopy and try again. If it happens again, keep the log file.</value>
