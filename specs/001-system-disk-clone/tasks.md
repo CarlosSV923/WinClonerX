@@ -275,11 +275,11 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 
 ### Distribución y documentación (constitución v1.1.1)
 
-- [ ] T113 Crear `.github/workflows/release.yml`: compila el MSI, calcula SHA-256, genera GitHub Artifact Attestations (`actions/attest-build-provenance`) y publica la versión con el hash en las notas
-- [ ] T114 Crear `README.md` en la raíz del repositorio (en español, con resumen en inglés): qué es WinCopy, requisitos (UEFI/GPT, Windows 10 22H2/11 x64), y una sección de instalación en el orden obligatorio de la constitución: (1) superar el aviso de SmartScreen, (2) verificar SHA-256 y la atestación (`gh attestation verify`), (3) compilar desde el código, (4) **solo como último recurso**, desactivar Smart App Control con la advertencia destacada de que puede no ser reversible sin reinstalar Windows
-- [ ] T115 [P] Crear `docs/validacion-manual.md` con la plantilla del nivel 4 de quickstart (versión, hardware, tamaños, duración y resultado de cada comprobación)
-- [ ] T116 [P] Actualizar `docs/glosario.md` con los términos que hayan aparecido en la implementación
-- [ ] T117 [P] Crear `docs/pendientes-1.0.md` con lo que la constitución exige antes de la versión 1.0:
+- [X] T113 Crear `.github/workflows/release.yml`: compila el MSI, calcula SHA-256, genera GitHub Artifact Attestations (`actions/attest-build-provenance`) y publica la versión con el hash en las notas
+- [X] T114 Crear `README.md` en la raíz del repositorio (en español, con resumen en inglés): qué es WinCopy, requisitos (UEFI/GPT, Windows 10 22H2/11 x64), y una sección de instalación en el orden obligatorio de la constitución: (1) superar el aviso de SmartScreen, (2) verificar SHA-256 y la atestación (`gh attestation verify`), (3) compilar desde el código, (4) **solo como último recurso**, desactivar Smart App Control con la advertencia destacada de que puede no ser reversible sin reinstalar Windows
+- [X] T115 [P] Crear `docs/validacion-manual.md` con la plantilla del nivel 4 de quickstart (versión, hardware, tamaños, duración y resultado de cada comprobación)
+- [X] T116 [P] Actualizar `docs/glosario.md` con los términos que hayan aparecido en la implementación
+- [X] T117 [P] Crear `docs/pendientes-1.0.md` con lo que la constitución exige antes de la versión 1.0:
   - Evaluar la firma gratuita para código abierto (SignPath Foundation): requisitos, solicitud y decisión.
   - Hacer la prueba de uso de SC-007 (tarea T120).
 
