@@ -211,6 +211,10 @@ Fuentes de Microsoft consultadas el 2026-10-13:
     cargador por defecto. El id de WinRE no cambia, así que el `ReAgent.xml` sigue siendo válido.
   - Todas las llamadas a `bcdedit` llevan `/store <S>:\EFI\Microsoft\Boot\BCD` como primeros argumentos, y el ejecutor
     lo exige antes de arrancar el proceso.
+- **Resultado de S2 (2026-10-20, hardware real)**: superado con `8467029`. El clon arranca sin menú, con un solo
+  cargador que conserva `locale`, `recoverysequence` y `hypervisorlaunchtype`. `reagentc /info` muestra WinRE
+  `Enabled` en la partición de recuperación del clon, y WinRE arranca. Windows queda en `C:`. Procedimiento y
+  pruebas en `docs/spikes/s2-arranque-hardware-real.md`.
 
 ## R8. Inventario de discos y comprobaciones previas
 

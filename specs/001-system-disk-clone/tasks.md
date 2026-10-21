@@ -168,7 +168,7 @@ comprobar que Windows arranca desde el clon con `C:` ampliado.
 - [X] T070 [US1] Implementar `BcdBootConfigurator` (`bcdboot <W>:\Windows /s <S>: /f UEFI`; **nunca** sin `/s`, para no tocar la NVRAM) y `ReagentcRecoveryConfigurator` (`reagentc /setreimage /path <R>:\Recovery\WindowsRE /target <W>:\Windows`; un fallo produce el aviso `RecoveryEnvironment: Warning`) en `src/WinCopy.Infrastructure.Windows/Boot/` (depende de T069)
 - [X] T071 [US1] Implementar `StructuralVerifier` (la tabla GPT coincide con el plan, cada volumen se monta y se lee, `\EFI\Microsoft\Boot\BCD` existe en la ESP del clon) en `src/WinCopy.Infrastructure.Windows/Verification/StructuralVerifier.cs`
 - [X] T072 [P] [US1] Implementar `PowerManager` (`SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)` y estado de batería) en `src/WinCopy.Infrastructure.Windows/Platform/PowerManager.cs`
-- [ ] T073 [US1] **Punto de control S2** (manual, VM Gen2 de Hyper-V), antes de empezar la interfaz:
+- [X] T073 [US1] **Punto de control S2** (manual, VM Gen2 de Hyper-V), antes de empezar la interfaz. **Superado el 2026-10-20 en hardware real con la aplicación completa, sin VM ni prototipo de línea de comandos; ver `docs/spikes/s2-arranque-hardware-real.md`**:
   - Crear el prototipo de línea de comandos `tests/WinCopy.Infrastructure.IntegrationTests/Spikes/CloneCliPrototype.cs`, que compone el orquestador T055 con los adaptadores T057–T072.
   - Clonar dentro de la VM, arrancar el clon y comprobar que el volumen de Windows es `C:` y que `reagentc /info` muestra WinRE habilitado.
   - Documentar el procedimiento y el resultado en `docs/spikes/s2-arranque-vm.md` y en `specs/001-system-disk-clone/research.md` (R5 y R7).
