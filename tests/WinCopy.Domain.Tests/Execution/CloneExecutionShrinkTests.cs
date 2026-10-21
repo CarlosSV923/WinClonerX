@@ -214,12 +214,17 @@ public sealed class CloneExecutionShrinkTests
     // ----- Cancelación -----
 
     [Fact]
-    public void CancelDuringShrinkSourceRequiresOnlyRestoreSourceAndAllowSleep()
+    public void CancelDuringShrinkSourceIsDeferredUntilTheReductionEndsAndThenRequiresRestoreSource()
     {
         var execution = Start(ConfirmedShrinkPlan(ByteSize.FromGiB(45)));
         BeginDuring(execution, ExecutionPhase.ShrinkSource);
 
         execution.RequestCancel();
+
+        execution.State.ShouldBe(ExecutionState.Running);
+        execution.CancelPending.ShouldBeTrue();
+
+        execution.CompletePhase(ExecutionPhase.ShrinkSource, T0);
 
         execution.State.ShouldBe(ExecutionState.Cancelling);
         execution.RequiredCompensations.ShouldBe(new[] { CompensationKind.RestoreSource, CompensationKind.AllowSleep });

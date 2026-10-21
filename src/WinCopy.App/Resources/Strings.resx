@@ -79,6 +79,15 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Cancel_Confirm_Message" xml:space="preserve">
+    <value>Cancel the clone? The target disk will be left uninitialized. Your original disk is not modified (if it was shrunk, its size is restored).</value>
+  </data>
+  <data name="Cancel_Confirm_Yes" xml:space="preserve">
+    <value>Cancel clone</value>
+  </data>
+  <data name="Cancel_Confirm_No" xml:space="preserve">
+    <value>Keep cloning</value>
+  </data>
   <data name="Rail_Steps_Label" xml:space="preserve">
     <value>Wizard steps</value>
   </data>
@@ -415,6 +424,12 @@
   <data name="Progress_Warning_NoChanges" xml:space="preserve">
     <value>Changes you make from now on will not be included in the clone</value>
   </data>
+  <data name="Progress_Cancelling" xml:space="preserve">
+    <value>Cancelling…</value>
+  </data>
+  <data name="Progress_Cancelling_SafeStep" xml:space="preserve">
+    <value>Finishing the current safe step…</value>
+  </data>
   <data name="Progress_State_Pending" xml:space="preserve">
     <value>Pending</value>
   </data>
@@ -525,6 +540,12 @@
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
     <value>Windows (C:) could not be returned to its original size. The clone is valid. You can recover the space in Disk Management → right-click C: → Extend Volume.</value>
+  </data>
+  <data name="Result_Cancelled_Body" xml:space="preserve">
+    <value>The target disk was left uninitialized and cannot be used to start Windows.</value>
+  </data>
+  <data name="Result_Cancelled_SourceUntouched" xml:space="preserve">
+    <value>Your original disk was not modified.</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Export log</value>

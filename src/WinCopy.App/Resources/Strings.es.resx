@@ -79,6 +79,15 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancelar</value>
   </data>
+  <data name="Cancel_Confirm_Message" xml:space="preserve">
+    <value>¿Cancelar el clonado? El disco de destino quedará sin inicializar. Tu disco original no se modifica (si se redujo, se restaurará su tamaño).</value>
+  </data>
+  <data name="Cancel_Confirm_Yes" xml:space="preserve">
+    <value>Cancelar clonado</value>
+  </data>
+  <data name="Cancel_Confirm_No" xml:space="preserve">
+    <value>Seguir clonando</value>
+  </data>
   <data name="Rail_Steps_Label" xml:space="preserve">
     <value>Pasos del asistente</value>
   </data>
@@ -415,6 +424,12 @@
   <data name="Progress_Warning_NoChanges" xml:space="preserve">
     <value>Los cambios que hagas desde ahora no se incluirán en el clon</value>
   </data>
+  <data name="Progress_Cancelling" xml:space="preserve">
+    <value>Cancelando…</value>
+  </data>
+  <data name="Progress_Cancelling_SafeStep" xml:space="preserve">
+    <value>Terminando paso seguro…</value>
+  </data>
   <data name="Progress_State_Pending" xml:space="preserve">
     <value>Pendiente</value>
   </data>
@@ -525,6 +540,12 @@
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
     <value>No se pudo devolver Windows (C:) a su tamaño original. El clon es válido. Puedes recuperar el espacio desde Administración de discos → clic derecho en C: → Extender volumen</value>
+  </data>
+  <data name="Result_Cancelled_Body" xml:space="preserve">
+    <value>El disco de destino quedó sin inicializar y no se puede usar para arrancar Windows.</value>
+  </data>
+  <data name="Result_Cancelled_SourceUntouched" xml:space="preserve">
+    <value>Tu disco original no se modificó.</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Exportar registro</value>

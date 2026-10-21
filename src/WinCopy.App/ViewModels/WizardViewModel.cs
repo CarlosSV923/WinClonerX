@@ -110,6 +110,26 @@ public sealed partial class WizardViewModel : ObservableObject
     /// <summary>Completes when the run has finished and the result page is shown. Lets callers and tests wait for it.</summary>
     public Task ExecutionCompletion { get; private set; } = Task.CompletedTask;
 
+    /// <summary>True while a run is in progress: the progress page is shown and the run has not ended.</summary>
+    public bool IsExecutionRunning => _progress?.IsRunning == true;
+
+    /// <summary>
+    /// Closing the window during a run is the same as Cancel (contracts/ui-wizard.md): it asks for the same confirmation and, if
+    /// confirmed, requests the cancel. Returns true when the cancel is in effect, so the window must close once
+    /// <see cref="ExecutionCompletion"/> ends. Returns false when the person declined or the cancel no longer applies: the window
+    /// stays open.
+    /// </summary>
+    public bool RequestCancelForClose()
+    {
+        if (_progress is null)
+        {
+            return false;
+        }
+
+        _progress.TryRequestCancel();
+        return _progress.IsCancelRequested;
+    }
+
     public int CurrentIndex
     {
         get => _currentIndex;

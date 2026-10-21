@@ -151,7 +151,7 @@ public sealed class ProgressStepViewModelTests
         using var _ = new EnglishCulture();
         var dispatcher = new TestUiDispatcher(deferred: true);
         var execute = new FakeExecuteClone();
-        var vm = new ProgressStepViewModel(execute, dispatcher);
+        var vm = new ProgressStepViewModel(execute, dispatcher, new FakeConfirmationService());
         var run = vm.StartAsync(Plan, TestContext.Current.CancellationToken);
 
         execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.Revalidate));
@@ -166,7 +166,7 @@ public sealed class ProgressStepViewModelTests
     }
 
     [Fact]
-    public void CancelIsNotAvailableYet()
+    public void CancelIsNotAvailableBeforeTheRunStarts()
     {
         var (vm, _, _) = Create();
 
@@ -180,7 +180,7 @@ public sealed class ProgressStepViewModelTests
     {
         var dispatcher = new TestUiDispatcher();
         var execute = new FakeExecuteClone();
-        return (new ProgressStepViewModel(execute, dispatcher), execute, dispatcher);
+        return (new ProgressStepViewModel(execute, dispatcher, new FakeConfirmationService()), execute, dispatcher);
     }
 
     private static ProgressReported Progress(long bytesDone, long bytesTotal, double throughput, TimeSpan? eta) =>

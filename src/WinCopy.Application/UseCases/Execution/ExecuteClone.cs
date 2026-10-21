@@ -43,8 +43,29 @@ public sealed class ExecuteClone(
 
     private readonly ExecutionEventSubject _subject = new();
 
+    /// <summary>Protege la ejecución activa, que la solicitud de cancelación lee desde la interfaz.</summary>
+    private readonly object _activeGate = new();
+
+    /// <summary>Ejecución en curso, o null. Solo hay una a la vez.</summary>
+    private ExecutionRun? _active;
+
     /// <inheritdoc />
     public IObservable<ExecutionEvent> Events => _subject;
+
+    /// <inheritdoc />
+    public void RequestCancel()
+    {
+        ExecutionRun? run;
+        lock (_activeGate)
+        {
+            run = _active;
+        }
+
+        if (run is not null)
+        {
+            Transition(run, execution => execution.RequestCancel());
+        }
+    }
 
     /// <inheritdoc />
     public async Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct)
@@ -69,15 +90,28 @@ public sealed class ExecuteClone(
         try
         {
             var startedAt = clock.UtcNow;
-            var run = new ExecutionRun(plan, CloneExecution.Start(new ExecutionId(Guid.NewGuid()), plan, startedAt), startedAt, sleep);
+            var run = new ExecutionRun(
+                plan,
+                CloneExecution.Start(new ExecutionId(Guid.NewGuid()), plan, startedAt),
+                startedAt,
+                sleep,
+                // No se libera: RequestCancel puede señalarlo justo después de que la ejecución termine.
+                new CancellationTokenSource());
+
+            // El token de la llamada y RequestCancel pasan por el mismo camino: una cancelación con token queda sujeta a las mismas reglas por fase.
+            using var cancelRegistration = ct.Register(() => Transition(run, execution => execution.RequestCancel()));
+            lock (_activeGate)
+            {
+                _active = run;
+            }
 
             try
             {
                 Flush(run);
-                await RunPhasesAsync(run, ct);
+                await RunPhasesAsync(run);
                 return FinishCompleted(run);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (IsCancelling(run))
             {
                 return await AbortAsync(run, failure: null);
             }
@@ -93,6 +127,16 @@ public sealed class ExecuteClone(
             {
                 return await AbortAsync(run, ("Unexpected", ex.ToString()));
             }
+            finally
+            {
+                lock (_activeGate)
+                {
+                    if (ReferenceEquals(_active, run))
+                    {
+                        _active = null;
+                    }
+                }
+            }
         }
         finally
         {
@@ -100,48 +144,62 @@ public sealed class ExecuteClone(
         }
     }
 
-    private async Task RunPhasesAsync(ExecutionRun run, CancellationToken ct)
+    private async Task RunPhasesAsync(ExecutionRun run)
     {
-        await RunPhaseAsync(run, ExecutionPhase.Revalidate, () => RevalidateAsync(run, ct), ct);
+        await RunPhaseAsync(run, ExecutionPhase.Revalidate, token => RevalidateAsync(run, token));
 
         // La reducción del origen va antes de la instantánea: la copia ve el origen ya reducido (FR-021).
         if (run.Plan.SourceShrink is not null)
         {
-            await RunPhaseAsync(run, ExecutionPhase.ShrinkSource, () => ShrinkSourceAsync(run, ct), ct);
+            await RunPhaseAsync(run, ExecutionPhase.ShrinkSource, _ => ShrinkSourceAsync(run));
         }
 
-        await RunPhaseAsync(run, ExecutionPhase.Snapshot, () => SnapshotAsync(run, ct), ct);
-        await RunPhaseAsync(run, ExecutionPhase.PrepareTarget, () => PrepareTargetAsync(run, ct), ct);
-        await RunPhaseAsync(run, ExecutionPhase.CopyData, () => CopyDataAsync(run, ct), ct);
-        await RunPhaseAsync(run, ExecutionPhase.CommitLayout, () => CommitLayoutAsync(run), ct);
+        await RunPhaseAsync(run, ExecutionPhase.Snapshot, token => SnapshotAsync(run, token));
+        await RunPhaseAsync(run, ExecutionPhase.PrepareTarget, token => PrepareTargetAsync(run, token));
+        await RunPhaseAsync(run, ExecutionPhase.CopyData, token => CopyDataAsync(run, token));
+        await RunPhaseAsync(run, ExecutionPhase.CommitLayout, _ => CommitLayoutAsync(run));
 
         if (run.Plan.Mappings.Any(mapping => mapping.Resize == ResizeKind.GrowFileSystem))
         {
-            await RunPhaseAsync(run, ExecutionPhase.ExpandFileSystem, () => ExpandFileSystemAsync(run, ct), ct);
+            await RunPhaseAsync(run, ExecutionPhase.ExpandFileSystem, token => ExpandFileSystemAsync(run, token));
         }
 
-        await RunPhaseAsync(run, ExecutionPhase.RepairBoot, () => RepairBootAsync(run, ct), ct);
-        await RunPhaseAsync(run, ExecutionPhase.StructuralVerification, () => VerifyStructureAsync(run, ct), ct);
-        await RunPhaseAsync(run, ExecutionPhase.Cleanup, () => CleanupAsync(run), ct);
+        await RunPhaseAsync(run, ExecutionPhase.RepairBoot, token => RepairBootAsync(run, token));
+        await RunPhaseAsync(run, ExecutionPhase.StructuralVerification, token => VerifyStructureAsync(run, token));
+        await RunPhaseAsync(run, ExecutionPhase.Cleanup, _ => CleanupAsync(run));
 
         // La restauración del origen es lo último del camino feliz: después de la limpieza y de una verificación correcta.
         if (run.Plan.SourceShrink is not null)
         {
-            await RunPhaseAsync(run, ExecutionPhase.RestoreSource, () => RestoreSourceAsync(run), ct);
+            await RunPhaseAsync(run, ExecutionPhase.RestoreSource, _ => RestoreSourceAsync(run));
         }
     }
 
-    /// <summary>Ejecuta una fase: comprueba la cancelación antes de empezar, la marca como iniciada y como completada, y publica sus eventos.</summary>
-    private async Task RunPhaseAsync(ExecutionRun run, ExecutionPhase phase, Func<Task> body, CancellationToken ct)
+    /// <summary>
+    /// Ejecuta una fase: no empieza si la ejecución se está cancelando, la marca como iniciada y como completada, y publica sus
+    /// eventos. Solo una fase interrumpible (<see cref="CloneExecution.IsInterruptible"/>) recibe el token de interrupción. Las
+    /// demás reciben <see cref="CancellationToken.None"/>: una cancelación pedida durante ellas se hace efectiva al completarlas,
+    /// antes de la siguiente fase.
+    /// </summary>
+    private async Task RunPhaseAsync(ExecutionRun run, ExecutionPhase phase, Func<CancellationToken, Task> body)
     {
-        ct.ThrowIfCancellationRequested();
+        // La comprobación y el inicio de la fase van bajo el mismo bloqueo: una cancelación que llega justo entre ambos no puede
+        // hacer que BeginPhase falle y convierta la cancelación en un fallo.
+        Transition(run, execution =>
+        {
+            if (execution.State == ExecutionState.Cancelling)
+            {
+                throw new OperationCanceledException("La ejecución se está cancelando.");
+            }
 
-        run.Execution.BeginPhase(phase, clock.UtcNow);
+            execution.BeginPhase(phase, clock.UtcNow);
+        });
         Flush(run);
 
-        await body();
+        var token = CloneExecution.IsInterruptible(phase) ? run.Interrupt.Token : CancellationToken.None;
+        await body(token);
 
-        run.Execution.CompletePhase(phase, clock.UtcNow);
+        Transition(run, execution => execution.CompletePhase(phase, clock.UtcNow));
         Flush(run);
     }
 
@@ -166,19 +224,18 @@ public sealed class ExecuteClone(
     /// Reduce temporalmente la partición de Windows del origen (FR-021). Antes de tocar nada consulta el mínimo que admite
     /// Windows: si ha subido por encima de la longitud reducida planificada, falla con ShrinkInsufficient sin reducir ni abrir
     /// el destino (US2, escenario 2). Solo se usa la partición de la reducción del plan.
+    /// <para>
+    /// Fase no interrumpible: una reducción en curso debe terminar, así que no recibe el token de cancelación.
+    /// </para>
     /// </summary>
-    private async Task ShrinkSourceAsync(ExecutionRun run, CancellationToken ct)
+    private async Task ShrinkSourceAsync(ExecutionRun run)
     {
         var shrink = RequireShrink(run);
 
         ByteSize minimum;
         try
         {
-            minimum = await resizer.GetMinimumSizeAsync(shrink.Partition, ct);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
+            minimum = await resizer.GetMinimumSizeAsync(shrink.Partition, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -196,11 +253,7 @@ public sealed class ExecuteClone(
         run.ShrinkAttempted = true;
         try
         {
-            await resizer.ShrinkAsync(shrink.Partition, shrink.ShrunkLength, ct);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
+            await resizer.ShrinkAsync(shrink.Partition, shrink.ShrunkLength, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -272,6 +325,8 @@ public sealed class ExecuteClone(
         {
             foreach (var mapping in run.Plan.Mappings)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var source = OpenSource(run, mapping);
                 opened.Add(source);
                 var allocation = await source.GetAllocationAsync(ct);
@@ -284,6 +339,8 @@ public sealed class ExecuteClone(
             long completed = 0;
             foreach (var item in items)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var before = completed;
                 var progress = new CallbackProgress(bytes => ReportCopyProgress(run, estimator, before + bytes));
 
@@ -313,8 +370,8 @@ public sealed class ExecuteClone(
     }
 
     /// <summary>
-    /// Escribe el diseño y lo pone en línea. La fase no se interrumpe: la cancelación pendiente se atiende justo después
-    /// (<see cref="CloneExecution"/> la difiere durante CommitLayout).
+    /// Escribe el diseño y lo pone en línea. Fase no interrumpible: una cancelación pedida aquí se atiende al completarla
+    /// (<see cref="CloneExecution.IsInterruptible"/>).
     /// </summary>
     private static async Task CommitLayoutAsync(ExecutionRun run)
     {
@@ -453,11 +510,7 @@ public sealed class ExecuteClone(
         var execution = run.Execution;
         if (failure is { } fault)
         {
-            execution.Fail(fault.Code, fault.Detail, clock.UtcNow);
-        }
-        else if (execution.State == ExecutionState.Running)
-        {
-            execution.RequestCancel();
+            Transition(run, e => e.Fail(fault.Code, fault.Detail, clock.UtcNow));
         }
 
         Flush(run);
@@ -621,6 +674,33 @@ public sealed class ExecuteClone(
     }
 
     /// <summary>
+    /// Cambia el agregado bajo el bloqueo de la ejecución. Si después del cambio la ejecución está cancelándose, interrumpe la
+    /// fase en curso. La señal se envía fuera del bloqueo, para que los suscriptores de la cancelación no se ejecuten con él tomado.
+    /// </summary>
+    private static void Transition(ExecutionRun run, Action<CloneExecution> change)
+    {
+        bool interrupt;
+        lock (run.Gate)
+        {
+            change(run.Execution);
+            interrupt = run.Execution.State == ExecutionState.Cancelling;
+        }
+
+        if (interrupt)
+        {
+            run.Interrupt.Cancel();
+        }
+    }
+
+    private static bool IsCancelling(ExecutionRun run)
+    {
+        lock (run.Gate)
+        {
+            return run.Execution.State == ExecutionState.Cancelling;
+        }
+    }
+
+    /// <summary>
     /// Escribe un evento en el registro sin dejar que un fallo del registro interrumpa la ejecución: si el registro lanza una
     /// excepción, la fase en curso y las compensaciones deben seguir igualmente (una compensación saltada dejaría el destino o
     /// el origen a medio hacer). Los eventos se publican a los suscriptores aunque el registro falle.
@@ -710,7 +790,12 @@ public sealed class ExecuteClone(
         run.Plan.SourceShrink is null ? null : run.SourceRestored ?? true;
 
     /// <summary>Estado de una ejecución en curso: el agregado de dominio y los recursos que hay que liberar.</summary>
-    private sealed class ExecutionRun(ClonePlan plan, CloneExecution execution, DateTimeOffset startedAt, SleepBlock sleep)
+    private sealed class ExecutionRun(
+        ClonePlan plan,
+        CloneExecution execution,
+        DateTimeOffset startedAt,
+        SleepBlock sleep,
+        CancellationTokenSource interrupt)
     {
         public object Gate { get; } = new();
 
@@ -721,6 +806,9 @@ public sealed class ExecuteClone(
         public DateTimeOffset StartedAt { get; } = startedAt;
 
         public SleepBlock Sleep { get; } = sleep;
+
+        /// <summary>Se cancela cuando el agregado pasa a Cancelling. Las fases interrumpibles reciben su token.</summary>
+        public CancellationTokenSource Interrupt { get; } = interrupt;
 
         public Disk? FreshTarget { get; set; }
 

@@ -1,0 +1,33 @@
+<Window x:Class="WinCopy.App.Views.ConfirmationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:themes="clr-namespace:WinCopy.App.Themes"
+        Width="480"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Brush.Background}"
+        FontFamily="{x:Static themes:WinCopyFonts.Text}">
+    <!-- Texts are set by the code-behind from the request, so there is no literal text here. The decline option is the default and Esc. -->
+    <StackPanel Margin="24">
+        <TextBlock x:Name="MessageText"
+                   Style="{StaticResource Text.Body}"
+                   TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,24,0,0">
+            <Button x:Name="ConfirmButton"
+                    Style="{StaticResource Button.Secondary}"
+                    MinWidth="140"
+                    Margin="0,0,12,0"
+                    Click="OnConfirmClick" />
+            <Button x:Name="DeclineButton"
+                    Style="{StaticResource Button.Primary}"
+                    MinWidth="140"
+                    IsDefault="True"
+                    IsCancel="True"
+                    Click="OnDeclineClick" />
+        </StackPanel>
+    </StackPanel>
+</Window>

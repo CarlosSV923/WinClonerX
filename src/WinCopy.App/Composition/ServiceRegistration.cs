@@ -22,6 +22,7 @@ internal static class ServiceRegistration
         services.AddWinCopyInfrastructure(options => options.AppVersion = appVersion);
 
         services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
+        services.AddSingleton<IConfirmationService, WpfConfirmationService>();
 
         services.AddSingleton<DisksStepViewModel>();
         services.AddSingleton<ReviewStepViewModel>();

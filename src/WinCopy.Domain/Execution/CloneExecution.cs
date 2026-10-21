@@ -8,7 +8,9 @@ namespace WinCopy.Domain.Execution;
 /// <para>
 /// Transiciones: Pending → Running (<see cref="Start"/>); Running → Completed (<see cref="Finish"/> con todas las fases);
 /// Running o Cancelling → Failing (<see cref="Fail"/>); Failing → Failed y Cancelling → Cancelled (<see cref="Finish"/>,
-/// tras las compensaciones); Running → Cancelling (<see cref="RequestCancel"/>), diferida durante CommitLayout.
+/// tras las compensaciones); Running → Cancelling (<see cref="RequestCancel"/>). En una fase no interrumpible
+/// (<see cref="IsInterruptible"/>) la cancelación queda pendiente (<see cref="CancelPending"/>) y pasa a Cancelling al terminar
+/// esa fase. Tras una verificación estructural superada, la solicitud se ignora.
 /// </para>
 /// <para>
 /// Restauración del origen (planes con reducción): si RestoreSource falla en el camino feliz, no es un fallo de la ejecución.
@@ -73,6 +75,19 @@ public sealed class CloneExecution
     /// <summary>Resultado de cada compensación, en el orden en que se ejecutaron.</summary>
     public IReadOnlyList<CompensationRecord> Compensations => _compensations;
 
+    /// <summary>
+    /// Cancelación aceptada pero diferida: se pidió durante una fase no interrumpible y se hace efectiva al terminar esa fase,
+    /// antes de que empiece la siguiente.
+    /// </summary>
+    public bool CancelPending => _cancelPending;
+
+    /// <summary>
+    /// Indica si todavía se puede solicitar la cancelación: la ejecución está en marcha, no hay una cancelación pendiente y la
+    /// verificación estructural no ha pasado.
+    /// </summary>
+    public bool CanRequestCancel =>
+        State == ExecutionState.Running && !_cancelPending && !_completed.Contains(ExecutionPhase.StructuralVerification);
+
     /// <summary>Informe final, presente solo cuando la ejecución ha terminado.</summary>
     public CloneResultReport? Result { get; private set; }
 
@@ -106,6 +121,15 @@ public sealed class CloneExecution
         phase is ExecutionPhase.ShrinkSource or ExecutionPhase.RestoreSource;
 
     /// <summary>
+    /// Indica si una cancelación puede interrumpir la fase. No pueden interrumpirse ShrinkSource (una reducción en curso debe
+    /// terminar), CommitLayout (la tabla de particiones debe quedar escrita), RepairBoot (las ediciones del registro y del BCD
+    /// no pueden quedar a medias), Cleanup y RestoreSource (el origen debe quedar restaurado). El resto sí.
+    /// </summary>
+    public static bool IsInterruptible(ExecutionPhase phase) =>
+        phase is not (ExecutionPhase.ShrinkSource or ExecutionPhase.CommitLayout or ExecutionPhase.RepairBoot
+            or ExecutionPhase.Cleanup or ExecutionPhase.RestoreSource);
+
+    /// <summary>
     /// Inicia la fase, que debe ser la siguiente planificada. La anterior tiene que estar completada y la ejecución,
     /// en marcha.
     /// </summary>
@@ -136,7 +160,8 @@ public sealed class CloneExecution
 
     /// <summary>
     /// Completa la fase en curso. Durante una cancelación, una fase que ya estaba en marcha puede terminar.
-    /// Si la cancelación se pidió durante CommitLayout, al completarla la ejecución pasa a Cancelling.
+    /// Si había una cancelación pendiente (pedida durante esta fase no interrumpible), la ejecución pasa a Cancelling antes
+    /// de la siguiente fase.
     /// </summary>
     public void CompletePhase(ExecutionPhase phase, DateTimeOffset now)
     {
@@ -154,7 +179,7 @@ public sealed class CloneExecution
         _inProgress = null;
         _events.Add(new PhaseCompleted(Id, now, phase, now - _phaseStartedAt));
 
-        if (_cancelPending && phase == ExecutionPhase.CommitLayout)
+        if (_cancelPending)
         {
             _cancelPending = false;
             State = ExecutionState.Cancelling;
@@ -162,13 +187,15 @@ public sealed class CloneExecution
     }
 
     /// <summary>
-    /// Registra un avance. Solo se acepta mientras se copian datos (CopyData) o se verifican (FullVerification).
+    /// Registra un avance. Solo se acepta mientras se copian datos (CopyData) o se verifican (FullVerification), en marcha o
+    /// mientras la cancelación se completa.
     /// </summary>
     public void ReportProgress(CloneProgress progress, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(progress);
 
-        if (State != ExecutionState.Running || _inProgress is not (ExecutionPhase.CopyData or ExecutionPhase.FullVerification))
+        if (State is not (ExecutionState.Running or ExecutionState.Cancelling)
+            || _inProgress is not (ExecutionPhase.CopyData or ExecutionPhase.FullVerification))
         {
             throw new InvalidOperationException("El progreso solo se informa durante CopyData o FullVerification, en marcha.");
         }
@@ -198,22 +225,19 @@ public sealed class CloneExecution
     }
 
     /// <summary>
-    /// Solicita la cancelación. Pasa a Cancelling, salvo durante CommitLayout: esa fase no se puede interrumpir, así que
-    /// la cancelación queda pendiente hasta que termine. Repetir la solicitud pendiente no tiene efecto.
+    /// Solicita la cancelación. No tiene efecto si la ejecución ya no está en marcha, si ya hay una cancelación pendiente o si la
+    /// verificación estructural ha pasado: el clon es válido y solo quedan la limpieza y la restauración del origen.
+    /// Si la fase en curso no es interrumpible (<see cref="IsInterruptible"/>), queda pendiente hasta que esa fase termine.
+    /// En otro caso pasa a Cancelling de inmediato, y la fase en curso debe detenerse.
     /// </summary>
     public void RequestCancel()
     {
-        if (State == ExecutionState.Running && _cancelPending)
+        if (!CanRequestCancel)
         {
             return;
         }
 
-        if (State != ExecutionState.Running)
-        {
-            throw new InvalidOperationException($"No se puede cancelar una ejecución en estado {State}.");
-        }
-
-        if (_inProgress == ExecutionPhase.CommitLayout)
+        if (_inProgress is { } phase && !IsInterruptible(phase))
         {
             _cancelPending = true;
             return;

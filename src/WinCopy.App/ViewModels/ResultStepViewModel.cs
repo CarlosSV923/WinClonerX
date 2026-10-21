@@ -9,8 +9,9 @@ namespace WinCopy.App.ViewModels;
 
 /// <summary>
 /// Step 5 "Result" (contracts/ui-wizard.md). A successful clone shows the structural verification, the duration, the state of
-/// WinRE and the next steps (FR-022, FR-023). A cancelled or failed one shows a minimal explanation for now.
-/// TODO(US3): the full variants of cancelled and failed results (state of both disks, log export).
+/// WinRE and the next steps (FR-022, FR-023). A cancelled or failed one says that the target disk is unusable, the state of the
+/// original disk (FR-024) and the failure details.
+/// TODO(US3): export the log from the cancelled and failed variants (T104, T105, FR-026).
 /// </summary>
 public sealed partial class ResultStepViewModel : ObservableObject
 {
@@ -184,7 +185,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
     {
         var outcome = report.Outcome;
         Title = Loc.Get(outcome == CloneOutcome.Cancelled ? "Result_Cancelled_Title" : "Result_Failed_Title");
-        Body = Loc.Get("Result_Failed_Body");
+        Body = outcome == CloneOutcome.Cancelled ? CancelledBody(report) : Loc.Get("Result_Failed_Body");
         Reason = outcome == CloneOutcome.Cancelled
             ? Loc.Get("Error_" + PlatformErrorCode.Cancelled)
             : ReasonFor(report.Failure?.Code);
@@ -203,6 +204,14 @@ public sealed partial class ResultStepViewModel : ObservableObject
 
         NextSteps.Add(Loc.Get("Result_Failed_KeepOriginal"));
     }
+
+    /// <summary>
+    /// Text of a cancelled run: the target disk was left uninitialized. The original disk is only said to be untouched when the
+    /// run did not shrink it; a shrunk one is covered by the restore line (<see cref="ShowSourceRestore"/>).
+    /// </summary>
+    private static string CancelledBody(CloneResultReport report) => report.SourceRestored is null
+        ? Loc.Get("Result_Cancelled_Body") + " " + Loc.Get("Result_Cancelled_SourceUntouched")
+        : Loc.Get("Result_Cancelled_Body");
 
     /// <summary>
     /// The message for this failure code: the platform error or the use case message with that code, or the generic message

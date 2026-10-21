@@ -197,8 +197,9 @@ public sealed class ExecuteCloneShrinkTests
     }
 
     [Fact]
-    public async Task CancellationDuringTheMinimumQueryDoesNotRestoreAnUntouchedSource()
+    public async Task CancellationTokenDuringShrinkSourceCompletesTheReductionThenRestoresIt()
     {
+        // ShrinkSource no es interrumpible: la cancelación pedida con el token se atiende al terminar la reducción.
         using var cts = new CancellationTokenSource();
         var h = NewHarness();
         h.OnEvent = e =>
@@ -212,9 +213,8 @@ public sealed class ExecuteCloneShrinkTests
         var report = await h.RunAsync(cts.Token);
 
         report.Outcome.ShouldBe(CloneOutcome.Cancelled);
-        h.Resizer.Calls.ShouldNotContain("ShrinkAsync");
-        h.Resizer.Shrinks.ShouldBeEmpty();
-        h.Resizer.Restores.ShouldBeEmpty();
+        h.Resizer.Shrinks.Count.ShouldBe(1);
+        h.Resizer.Restores.Count.ShouldBe(1);
         h.Compensations().ShouldBe(new[] { CompensationKind.RestoreSource, CompensationKind.AllowSleep });
         report.SourceRestored.ShouldBe(true);
         h.Power.IsSleepBlocked.ShouldBeFalse();

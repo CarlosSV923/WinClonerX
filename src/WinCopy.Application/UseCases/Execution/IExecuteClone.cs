@@ -14,4 +14,11 @@ public interface IExecuteClone
     /// <see cref="InvalidOperationException"/> solo si el plan no existe o no está confirmado, antes de tocar nada.
     /// </summary>
     Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct);
+
+    /// <summary>
+    /// Solicita la cancelación de la ejecución en curso (FR-024). Sin efecto si no hay ejecución en marcha, si ya se ha pedido
+    /// o si la verificación estructural ha pasado. Durante una fase no interrumpible, la cancelación se hace efectiva al terminar
+    /// esa fase, antes de la siguiente. El token de <see cref="ExecuteAsync"/> tiene el mismo efecto.
+    /// </summary>
+    void RequestCancel();
 }

@@ -22,7 +22,7 @@
                        Text="{loc:Loc Progress_Subtitle}" />
         </StackPanel>
 
-        <!-- TODO(US3): Cancel asks for confirmation and is enabled; until then it is shown disabled. -->
+        <!-- Cancel asks for confirmation (ProgressStepViewModel.TryRequestCancel). It is disabled once requested or after verification. -->
         <Button DockPanel.Dock="Bottom"
                 Style="{StaticResource Button.Secondary}"
                 HorizontalAlignment="Left"
@@ -30,15 +30,17 @@
                 MinWidth="120"
                 Content="{loc:Loc Common_Cancel}"
                 AutomationProperties.Name="{loc:Loc Common_Cancel}"
-                IsEnabled="{Binding IsCancelAvailable}"
-                ToolTip="{loc:Loc Common_ComingSoon}"
-                ToolTipService.ShowOnDisabled="True" />
+                Command="{Binding CancelCommand}" />
 
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Margin="0,8,0,0">
             <StackPanel>
                 <TextBlock Style="{StaticResource Text.Subtitle}" Text="{Binding CurrentPhaseText}" />
+                <TextBlock Style="{StaticResource Text.Body}"
+                           Margin="0,6,0,0"
+                           Text="{Binding CancelStatusText}"
+                           Visibility="{Binding HasCancelStatus, Converter={StaticResource BoolToVisibility}}" />
 
                 <ProgressBar Height="18"
                              Margin="0,12,0,0"

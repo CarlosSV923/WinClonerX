@@ -285,7 +285,7 @@ public sealed class WizardStepWiringTests
         var confirmPlan = new FakeConfirmClonePlan(plan);
         var confirm = new ConfirmStepViewModel(confirmPlan);
         var execute = new FakeExecuteClone();
-        var progress = new ProgressStepViewModel(execute, new TestUiDispatcher(deferredEvents));
+        var progress = new ProgressStepViewModel(execute, new TestUiDispatcher(deferredEvents), new FakeConfirmationService());
         var result = new ResultStepViewModel();
         var wizard = new WizardViewModel(disks, review, confirm, progress, result);
 

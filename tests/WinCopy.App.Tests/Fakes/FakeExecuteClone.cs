@@ -22,7 +22,12 @@ internal sealed class FakeExecuteClone : IExecuteClone
 
     public int ActiveObserverCount => _events.ActiveObserverCount;
 
+    /// <summary>Cancel requests received, in total.</summary>
+    public int CancelRequests { get; private set; }
+
     public void Publish(ExecutionEvent value) => _events.Publish(value);
+
+    public void RequestCancel() => CancelRequests++;
 
     public Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct)
     {
