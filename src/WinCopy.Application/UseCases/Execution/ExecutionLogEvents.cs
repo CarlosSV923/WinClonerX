@@ -152,6 +152,15 @@ internal static class ExecutionLogEvents
         ("Reason", reason),
         ("TechnicalDetail", technicalDetail));
 
+    /// <summary>
+    /// No se pudo activar la vigilancia de la desconexión de los discos. El clonado sigue: una desconexión se detecta igualmente
+    /// por el error de E/S que provoca.
+    /// </summary>
+    public static LogEvent DeviceMonitorUnavailable(string technicalDetail) => Create(
+        "DeviceMonitorUnavailable",
+        LogLevelKind.Warning,
+        ("TechnicalDetail", technicalDetail));
+
     private static LogEvent Create(string name, LogLevelKind level, params (string Key, object? Value)[] entries)
     {
         var properties = new Dictionary<string, object?>(StringComparer.Ordinal);

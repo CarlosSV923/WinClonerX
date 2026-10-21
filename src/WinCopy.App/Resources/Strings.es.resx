@@ -628,6 +628,12 @@
   <data name="Error_Unexpected" xml:space="preserve">
     <value>Un error inesperado detuvo el proceso. Inténtalo de nuevo. Si vuelve a pasar, guarda el archivo de registro: indica dónde se detuvo el proceso.</value>
   </data>
+  <data name="Error_SourceDeviceRemoved" xml:space="preserve">
+    <value>El disco del sistema se desconectó durante el clonado. Vuelve a conectarlo y empieza de nuevo. Guarda el archivo de registro.</value>
+  </data>
+  <data name="Error_TargetDeviceRemoved" xml:space="preserve">
+    <value>El disco de destino se desconectó durante el clonado, así que el clon está incompleto. Vuelve a conectarlo y empieza de nuevo.</value>
+  </data>
   <data name="Error_DisksChanged" xml:space="preserve">
     <value>Los discos cambiaron después de planificar el clonado. Vuelve a planificarlo.</value>
   </data>

@@ -101,7 +101,7 @@ internal sealed class TargetDisk : ITargetDisk, IDiskOperationLabel
         catch (Exception ex) when (ex is not PlatformException)
         {
             throw new PlatformException(
-                PlatformErrorCode.TargetWriteError,
+                IoErrorClassifier.ForTargetIo(ex),
                 $"Read of {alignedBuffer.Length} bytes at {diskOffset} failed.",
                 ex);
         }
@@ -460,7 +460,7 @@ internal sealed class TargetDisk : ITargetDisk, IDiskOperationLabel
         catch (Exception ex) when (ex is not PlatformException)
         {
             throw new PlatformException(
-                PlatformErrorCode.TargetWriteError,
+                IoErrorClassifier.ForTargetIo(ex),
                 $"Write of {data.Length} bytes at {offset} failed.",
                 ex);
         }

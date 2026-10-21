@@ -225,7 +225,7 @@ internal sealed class CopyPipeline : IVolumeCopier
         catch (Exception ex) when (ex is not PlatformException and not OperationCanceledException)
         {
             throw new PlatformException(
-                PlatformErrorCode.SourceReadError,
+                IoErrorClassifier.ForSourceRead(ex),
                 $"Read of {plan.Length} bytes at {plan.SourceOffset} failed.",
                 ex);
         }
@@ -247,7 +247,7 @@ internal sealed class CopyPipeline : IVolumeCopier
         catch (Exception ex) when (ex is not PlatformException and not OperationCanceledException)
         {
             throw new PlatformException(
-                PlatformErrorCode.TargetWriteError,
+                IoErrorClassifier.ForTargetIo(ex),
                 $"Write of {work.Plan.Length} bytes at {work.Plan.TargetOffset} failed.",
                 ex);
         }

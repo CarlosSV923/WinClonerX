@@ -657,7 +657,7 @@ public sealed class ExecuteCloneTests
             Journal = new FakeSourceRestoreJournal(Resizer);
             Orchestrator = new ExecuteClone(
                 Store, Inventory, Snapshots, Raw, Targets, Copier, Expander, MountFaults, Registry, Boot, Recovery,
-                Verifier, Resizer, Journal, Power, Log, Clock);
+                Verifier, Resizer, Journal, Power, RemovalMonitor, Log, Clock);
             Orchestrator.Events.Subscribe(new EventCollector(Events, e => OnEvent(e)));
         }
 
@@ -694,6 +694,8 @@ public sealed class ExecuteCloneTests
         public FakeSourceRestoreJournal Journal { get; }
 
         public FakePowerManager Power { get; } = new();
+
+        public FakeDeviceRemovalMonitor RemovalMonitor { get; } = new();
 
         public FakeExecutionLog Log { get; } = new();
 

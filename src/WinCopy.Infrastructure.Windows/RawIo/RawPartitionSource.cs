@@ -119,7 +119,7 @@ namespace WinCopy.Infrastructure.Windows.RawIo
             catch (Exception ex) when (ex is IOException or Win32Exception)
             {
                 return ValueTask.FromException<int>(new PlatformException(
-                    PlatformErrorCode.SourceReadError,
+                    IoErrorClassifier.ForSourceRead(ex),
                     $"Read at offset {offset} failed.",
                     ex));
             }

@@ -33,6 +33,7 @@ diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-
 | `CompensationCompleted` | `Compensation`, `Result` (`Succeeded`/`Failed`) | En cancelación o fallo |
 | `CleanupFailed` (Warning) | `Step`, `TechnicalDetail` | Un paso de la limpieza (soltar montajes, borrar la instantánea, cerrar el destino) falló después de una verificación correcta. El clon sigue siendo válido y el resultado es `Completed` |
 | `SourceRestoreFailed` (Warning) | `Partition`, `OriginalLength`, `TechnicalDetail` | La restauración del tamaño original del origen falló después de un clon verificado. El clon sigue siendo válido: el resultado es `Completed` con `SourceRestored = false`, y la partición del origen queda reducida |
+| `DeviceMonitorUnavailable` (Warning) | `TechnicalDetail` | No se pudo activar la vigilancia de la desconexión de los discos. El clonado sigue: una desconexión se detecta igualmente por el error de E/S que provoca |
 | `SourceRestoreJournalWritten` | `Partition`, `OriginalLength`, `PlanId` | Antes de reducir el origen: el diario de restauración tiene la entrada (FR-021a). Sin esta entrada no hay reducción (`ExecutionFailed` con `ShrinkJournalFailed`) |
 | `SourceRestoreJournalCleared` | `Partition` | El origen tiene su longitud original y el diario se ha borrado (camino feliz o compensación) |
 | `SourceRestoreJournalClearFailed` (Warning) | `Partition`, `TechnicalDetail` | No se ha podido borrar el diario. Es un aviso: el origen ya tiene su longitud original |

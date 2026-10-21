@@ -36,6 +36,19 @@ public sealed class InteropLayoutTests
     [Fact]
     public void StoragePropertyQueryIs12Bytes() => Unsafe.SizeOf<STORAGE_PROPERTY_QUERY>().ShouldBe(12);
 
+    // The native union holds WCHAR InstanceId[200], so the struct is 416 bytes. A smaller cbSize makes
+    // CM_Register_Notification reject the filter.
+    [Fact]
+    public void CmNotifyFilterHasTheSizeOfTheWholeNativeUnion()
+    {
+        Unsafe.SizeOf<Cfgmgr32.CM_NOTIFY_FILTER>().ShouldBe(416);
+        Marshal.SizeOf<Cfgmgr32.CM_NOTIFY_FILTER>().ShouldBe(416);
+    }
+
+    [Fact]
+    public void CmNotifyFilterClassGuidStartsTheUnionAt16() =>
+        Marshal.OffsetOf<Cfgmgr32.CM_NOTIFY_FILTER>(nameof(Cfgmgr32.CM_NOTIFY_FILTER.ClassGuid)).ToInt32().ShouldBe(16);
+
     [Fact]
     public void StorageDeviceDescriptorIs40BytesIncludingOneByteArray() =>
         Unsafe.SizeOf<STORAGE_DEVICE_DESCRIPTOR>().ShouldBe(40);

@@ -144,6 +144,24 @@ public sealed class RawPartitionReaderTests
     }
 
     [Theory]
+    [InlineData(1167, PlatformErrorCode.SourceDeviceRemoved)]
+    [InlineData(433, PlatformErrorCode.SourceDeviceRemoved)]
+    [InlineData(23, PlatformErrorCode.SourceReadError)]
+    [InlineData(30, PlatformErrorCode.SourceReadError)]
+    [InlineData(121, PlatformErrorCode.SourceReadError)]
+    public async Task ReadFailureIsClassifiedByItsWin32Code(int nativeError, PlatformErrorCode expected)
+    {
+        var opener = new FakeOpener();
+        opener.Device.ReadResult = (_, _) => throw new Win32Exception(nativeError);
+        IBlockSource source = new RawPartitionReader(opener).Open(Source, new Extent(MiB, 4 * MiB));
+
+        var ex = await Should.ThrowAsync<PlatformException>(
+            () => source.ReadAsync(0, new byte[4096], CancellationToken.None).AsTask());
+
+        ex.Code.ShouldBe(expected);
+    }
+
+    [Theory]
     [InlineData(5, PlatformErrorCode.AccessDenied)]
     [InlineData(2, PlatformErrorCode.DeviceNotFound)]
     [InlineData(3, PlatformErrorCode.DeviceNotFound)]

@@ -102,6 +102,9 @@ public static class DependencyInjection
 
         services.AddSingleton<IPowerManager>(static _ => new PowerManager());
 
+        // Cada ejecución activa la vigilancia de sus discos; el adaptador no registra nada hasta que se llama a Watch.
+        services.AddSingleton<IDeviceRemovalMonitor>(static _ => new DeviceChangeMonitor());
+
         // The journal is a plain file, so it is created right away; it writes only when a shrink is about to start.
         services.AddSingleton<ISourceRestoreJournal>(_ => journalDirectory is null
             ? FileSourceRestoreJournal.CreateDefault()

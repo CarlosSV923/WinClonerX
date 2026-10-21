@@ -7,6 +7,8 @@ public enum PlatformErrorCode
     AccessDenied,
     DeviceNotFound,
     DeviceRemoved,
+    SourceDeviceRemoved,
+    TargetDeviceRemoved,
     SourceReadError,
     TargetWriteError,
     SnapshotFailed,

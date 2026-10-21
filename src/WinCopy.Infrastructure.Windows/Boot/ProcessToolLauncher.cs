@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 
 namespace WinCopy.Infrastructure.Windows.Boot;
 
@@ -10,6 +12,12 @@ namespace WinCopy.Infrastructure.Windows.Boot;
 /// </summary>
 internal sealed class ProcessToolLauncher : IToolProcessLauncher
 {
+    /// <summary>
+    /// Encoding of the tools' output: the OEM code page of the culture, which is the console code page that bcdedit, bcdboot
+    /// and reagentc write with. Read once, on first use.
+    /// </summary>
+    private static readonly Encoding ToolOutputEncoding = ResolveOutputEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+
     public async Task<ToolResult> RunAsync(string absolutePath, IReadOnlyList<string> arguments, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(absolutePath);
@@ -21,6 +29,8 @@ internal sealed class ProcessToolLauncher : IToolProcessLauncher
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = ToolOutputEncoding,
+            StandardErrorEncoding = ToolOutputEncoding,
         };
 
         foreach (string argument in arguments)
@@ -49,6 +59,24 @@ internal sealed class ProcessToolLauncher : IToolProcessLauncher
         }
 
         return new ToolResult(process.ExitCode, await stdOut.ConfigureAwait(false), await stdErr.ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Returns the encoding for the given OEM code page. The code pages beyond ASCII and UTF-16 are registered with
+    /// <see cref="CodePagesEncodingProvider"/> first. If the code page is not available, returns the default encoding.
+    /// </summary>
+    internal static Encoding ResolveOutputEncoding(int oemCodePage)
+    {
+        try
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            return Encoding.GetEncoding(oemCodePage);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
+        {
+            // Without the code page the output is read with the default encoding, as before this fix.
+            return Encoding.Default;
+        }
     }
 
     private static void KillQuietly(Process process)

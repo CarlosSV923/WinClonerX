@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection;
 using Shouldly;
 using WinCopy.Application.Errors;
@@ -89,6 +90,38 @@ public sealed class CopyPipelineTests
 
         ex.Code.ShouldBe(PlatformErrorCode.SourceReadError);
         ex.InnerException.ShouldBeOfType<IOException>();
+    }
+
+    [Theory]
+    [InlineData(1167, PlatformErrorCode.SourceDeviceRemoved)]
+    [InlineData(433, PlatformErrorCode.SourceDeviceRemoved)]
+    [InlineData(1117, PlatformErrorCode.SourceReadError)]
+    [InlineData(23, PlatformErrorCode.SourceReadError)]
+    public async Task SourceReadFailureIsClassifiedByItsWin32Code(int nativeError, PlatformErrorCode expected)
+    {
+        Extent[] ranges = [new(0, 4 * Mib)];
+        var source = new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges), failOnRead: 0, failure: new Win32Exception(nativeError));
+
+        PlatformException ex = await Should.ThrowAsync<PlatformException>(() =>
+            NewPipeline().CopyAsync(source, Allocation(ranges), new MemoryTargetDisk(16 * Mib), 0, new RecordingProgress(), CancellationToken.None));
+
+        ex.Code.ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(1167, PlatformErrorCode.TargetDeviceRemoved)]
+    [InlineData(21, PlatformErrorCode.TargetDeviceRemoved)]
+    [InlineData(29, PlatformErrorCode.TargetWriteError)]
+    [InlineData(121, PlatformErrorCode.TargetWriteError)]
+    public async Task TargetWriteFailureIsClassifiedByItsWin32Code(int nativeError, PlatformErrorCode expected)
+    {
+        Extent[] ranges = [new(0, 16 * Mib)];
+        var target = new MemoryTargetDisk(16 * Mib, failOnWrite: 0, writeFailure: new Win32Exception(nativeError));
+
+        PlatformException ex = await Should.ThrowAsync<PlatformException>(() =>
+            NewPipeline().CopyAsync(new MemoryBlockSource(Pattern(16 * Mib), Allocation(ranges)), Allocation(ranges), target, 0, new RecordingProgress(), CancellationToken.None));
+
+        ex.Code.ShouldBe(expected);
     }
 
     [Fact]
@@ -339,7 +372,8 @@ public sealed class CopyPipelineTests
     }
 
     /// <summary>Records every write attempt and stores the bytes of the writes that succeed.</summary>
-    private sealed class MemoryTargetDisk(long length, int? failOnWrite = null, Action<int>? onWrite = null) : ITargetDisk, IDiskOperationLabel
+    private sealed class MemoryTargetDisk(long length, int? failOnWrite = null, Action<int>? onWrite = null, Exception? writeFailure = null)
+        : ITargetDisk, IDiskOperationLabel
     {
         public const string Label = "target-under-test";
 
@@ -357,7 +391,7 @@ public sealed class CopyPipelineTests
 
             if (index == failOnWrite)
             {
-                return ValueTask.FromException(new IOException("injected write failure"));
+                return ValueTask.FromException(writeFailure ?? new IOException("injected write failure"));
             }
 
             alignedBuffer.Span.CopyTo(Image.AsSpan((int)diskOffset));

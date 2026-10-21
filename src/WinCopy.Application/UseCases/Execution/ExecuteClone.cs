@@ -13,7 +13,8 @@ namespace WinCopy.Application.UseCases.Execution;
 /// <summary>
 /// Orquestador del clonado (US1). Aplica un plan confirmado en las fases de <see cref="ExecutionPhase"/>, en el orden del
 /// dominio, y publica cada hecho como <see cref="ExecutionEvent"/> y en el registro. El disco de origen solo se lee: todas
-/// las escrituras van al destino. Ante un fallo o una cancelación ejecuta las compensaciones que indica
+/// las escrituras van al destino. Si un disco de la ejecución se desconecta (<see cref="IDeviceRemovalMonitor"/>), la ejecución
+/// falla con el código de esa desconexión. Ante un fallo o una cancelación ejecuta las compensaciones que indica
 /// <see cref="CloneExecution.RequiredCompensations"/>, siempre en ese orden, y devuelve un informe; no relanza excepciones,
 /// salvo las de precondición del plan.
 /// </summary>
@@ -33,6 +34,7 @@ public sealed class ExecuteClone(
     ISourceResizer resizer,
     ISourceRestoreJournal journal,
     IPowerManager power,
+    IDeviceRemovalMonitor removals,
     IExecutionLog log,
     IClock clock) : IExecuteClone
 {
@@ -107,13 +109,27 @@ public sealed class ExecuteClone(
                 _active = run;
             }
 
+            IDisposable? removalWatch = null;
             try
             {
                 Flush(run);
+
+                // Los discos de la ejecución se vigilan mientras dura: una retirada aborta el clonado como fallo (US3, escenario 2).
+                // Si la vigilancia no se puede activar, el clonado sigue: una retirada se detecta igualmente por el error de E/S
+                // que provoca, solo que más tarde. Se deja constancia en el registro.
+                try
+                {
+                    removalWatch = removals.Watch([plan.Source.Number, plan.Target.Number], change => OnDiskRemoved(run, change));
+                }
+                catch (Exception ex)
+                {
+                    Record(ExecutionLogEvents.DeviceMonitorUnavailable(ex.ToString()));
+                }
+
                 await RunPhasesAsync(run);
                 return FinishCompleted(run);
             }
-            catch (OperationCanceledException) when (IsCancelling(run))
+            catch (OperationCanceledException) when (IsCancelling(run) || HasDeviceLoss(run))
             {
                 return await AbortAsync(run, failure: null);
             }
@@ -131,6 +147,8 @@ public sealed class ExecuteClone(
             }
             finally
             {
+                removalWatch?.Dispose();
+
                 lock (_activeGate)
                 {
                     if (ReferenceEquals(_active, run))
@@ -189,9 +207,10 @@ public sealed class ExecuteClone(
         // hacer que BeginPhase falle y convierta la cancelación en un fallo.
         Transition(run, execution =>
         {
-            if (execution.State == ExecutionState.Cancelling)
+            // Una retirada de disco pendiente impide empezar otra fase, igual que una cancelación: la causa va en DeviceLoss.
+            if (execution.State == ExecutionState.Cancelling || run.DeviceLoss is not null)
             {
-                throw new OperationCanceledException("La ejecución se está cancelando.");
+                throw new OperationCanceledException("La ejecución se está cancelando o se ha desconectado un disco.");
             }
 
             execution.BeginPhase(phase, clock.UtcNow);
@@ -572,6 +591,13 @@ public sealed class ExecuteClone(
     private async Task<CloneResultReport> AbortAsync(ExecutionRun run, (string Code, string Detail)? failure)
     {
         var execution = run.Execution;
+
+        // Una retirada de disco es la causa raíz: prevalece sobre el fallo o la cancelación que haya llegado con ella.
+        lock (run.Gate)
+        {
+            failure = run.DeviceLoss ?? failure;
+        }
+
         if (failure is { } fault)
         {
             Transition(run, e => e.Fail(fault.Code, fault.Detail, clock.UtcNow));
@@ -767,6 +793,60 @@ public sealed class ExecuteClone(
         }
     }
 
+    private static bool HasDeviceLoss(ExecutionRun run)
+    {
+        lock (run.Gate)
+        {
+            return run.DeviceLoss is not null;
+        }
+    }
+
+    /// <summary>
+    /// Recibe la retirada de un disco de la ejecución. Llega desde el hilo de notificación del sistema. Registra la causa, que
+    /// prevalece sobre cualquier fallo o cancelación posterior, e interrumpe la fase en curso si es interruptible. Una fase no
+    /// interruptible termina primero; después la ejecución no empieza la siguiente (<see cref="RunPhaseAsync"/>).
+    /// <para>
+    /// Una retirada posterior a la verificación estructural no hace nada: el clon ya está verificado y solo quedan la limpieza
+    /// y la restauración del origen, que cierran la ejecución por su cuenta.
+    /// </para>
+    /// </summary>
+    private static void OnDiskRemoved(ExecutionRun run, DeviceChange change)
+    {
+        if (change.Kind != DeviceChangeKind.Removed || change.DiskNumber is not { } number)
+        {
+            return;
+        }
+
+        (string Code, string Detail) loss;
+        if (number == run.Plan.Source.Number)
+        {
+            loss = (PlatformErrorCode.SourceDeviceRemoved.ToString(),
+                $"El disco de origen (número {number}) se desconectó durante la ejecución.");
+        }
+        else if (number == run.Plan.Target.Number)
+        {
+            loss = (PlatformErrorCode.TargetDeviceRemoved.ToString(),
+                $"El disco de destino (número {number}) se desconectó durante la ejecución.");
+        }
+        else
+        {
+            return;
+        }
+
+        lock (run.Gate)
+        {
+            bool inactive = run.Execution.State is not (ExecutionState.Running or ExecutionState.Cancelling);
+            if (run.DeviceLoss is not null || inactive || run.Structural is { Passed: true })
+            {
+                return;
+            }
+
+            run.DeviceLoss = loss;
+        }
+
+        run.Interrupt.Cancel();
+    }
+
     /// <summary>
     /// Escribe un evento en el registro sin dejar que un fallo del registro interrumpa la ejecución: si el registro lanza una
     /// excepción, la fase en curso y las compensaciones deben seguir igualmente (una compensación saltada dejaría el destino o
@@ -876,6 +956,12 @@ public sealed class ExecuteClone(
 
         /// <summary>Se cancela cuando el agregado pasa a Cancelling. Las fases interrumpibles reciben su token.</summary>
         public CancellationTokenSource Interrupt { get; } = interrupt;
+
+        /// <summary>
+        /// Código y detalle de la retirada de un disco de la ejecución, o null. Se escribe y se lee bajo <see cref="Gate"/>.
+        /// Con un valor, la ejecución termina como fallida con ese código (<see cref="OnDiskRemoved"/>).
+        /// </summary>
+        public (string Code, string Detail)? DeviceLoss { get; set; }
 
         public Disk? FreshTarget { get; set; }
 

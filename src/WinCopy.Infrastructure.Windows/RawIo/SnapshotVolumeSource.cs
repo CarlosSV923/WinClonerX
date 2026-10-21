@@ -275,7 +275,7 @@ internal sealed class SnapshotVolumeSource : IBlockSource
         {
             device.Dispose();
             throw new PlatformException(
-                PlatformErrorCode.SourceReadError, "Could not read the geometry of the snapshot volume.", ex);
+                IoErrorClassifier.ForSourceRead(ex), "Could not read the geometry of the snapshot volume.", ex);
         }
         catch (Exception)
         {
@@ -366,7 +366,7 @@ internal sealed class SnapshotVolumeSource : IBlockSource
         catch (Exception ex) when (ex is IOException or Win32Exception)
         {
             return ValueTask.FromException<int>(new PlatformException(
-                PlatformErrorCode.SourceReadError,
+                IoErrorClassifier.ForSourceRead(ex),
                 $"Read at offset {offset} failed.",
                 ex));
         }
@@ -394,7 +394,7 @@ internal sealed class SnapshotVolumeSource : IBlockSource
         catch (Win32Exception ex)
         {
             throw new PlatformException(
-                PlatformErrorCode.SourceReadError, "Could not read the volume bitmap of the snapshot.", ex);
+                IoErrorClassifier.ForSourceRead(ex), "Could not read the volume bitmap of the snapshot.", ex);
         }
 
         return VolumeAllocationPlanner.Plan(

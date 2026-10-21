@@ -628,6 +628,12 @@
   <data name="Error_Unexpected" xml:space="preserve">
     <value>An unexpected error stopped the process. Try again. If it happens again, keep the log file: it shows where the process stopped.</value>
   </data>
+  <data name="Error_SourceDeviceRemoved" xml:space="preserve">
+    <value>The system disk was disconnected during the clone. Connect it again, then start over. Keep the log file.</value>
+  </data>
+  <data name="Error_TargetDeviceRemoved" xml:space="preserve">
+    <value>The destination disk was disconnected during the clone, so the clone is incomplete. Connect it again and start over.</value>
+  </data>
   <data name="Error_DisksChanged" xml:space="preserve">
     <value>The disks changed after the plan was made. Plan the clone again.</value>
   </data>

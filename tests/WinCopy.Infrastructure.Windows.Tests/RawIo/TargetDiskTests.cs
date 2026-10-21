@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.ComponentModel;
 using System.Text;
 using Shouldly;
 using WinCopy.Application.Errors;
@@ -102,6 +103,24 @@ public sealed class TargetDiskTests
             await fx.Disk.WriteAsync(Mib, new byte[4096], CancellationToken.None));
 
         ex.Code.ShouldBe(PlatformErrorCode.TargetWriteError);
+    }
+
+    [Theory]
+    [InlineData(1167, PlatformErrorCode.TargetDeviceRemoved)]
+    [InlineData(1006, PlatformErrorCode.TargetDeviceRemoved)]
+    [InlineData(29, PlatformErrorCode.TargetWriteError)]
+    [InlineData(1117, PlatformErrorCode.TargetWriteError)]
+    public async Task DeviceWriteFailureIsClassifiedByItsWin32Code(int nativeError, PlatformErrorCode expected)
+    {
+        await using var fx = new Fixture();
+        await fx.GoOfflineAsync();
+        fx.Device.FailWriteAt = Mib;
+        fx.Device.WriteFailure = new Win32Exception(nativeError);
+
+        PlatformException ex = await Should.ThrowAsync<PlatformException>(async () =>
+            await fx.Disk.WriteAsync(Mib, new byte[4096], CancellationToken.None));
+
+        ex.Code.ShouldBe(expected);
     }
 
     [Fact]

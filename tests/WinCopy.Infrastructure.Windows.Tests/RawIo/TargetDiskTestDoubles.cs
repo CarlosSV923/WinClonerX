@@ -36,6 +36,9 @@ internal sealed class FakeTargetDiskDevice(long length, int sectorSize, Guid? gp
     /// <summary>When set, <see cref="Write"/> fails at this absolute offset.</summary>
     public long? FailWriteAt { get; set; }
 
+    /// <summary>The exception thrown by a failing <see cref="Write"/>. Null means an <see cref="IOException"/>.</summary>
+    public Exception? WriteFailure { get; set; }
+
     /// <summary>When true, <see cref="SetOffline"/> is recorded but has no effect, so the disk never reports offline.</summary>
     public bool IgnoreSetOffline { get; set; }
 
@@ -63,7 +66,7 @@ internal sealed class FakeTargetDiskDevice(long length, int sectorSize, Guid? gp
         Calls.Add($"Write({offset},{aligned.Length})");
         if (FailWriteAt == offset)
         {
-            throw new IOException("injected write failure");
+            throw WriteFailure ?? new IOException("injected write failure");
         }
 
         Writes.Add(new WrittenRange(offset, aligned.ToArray()));
