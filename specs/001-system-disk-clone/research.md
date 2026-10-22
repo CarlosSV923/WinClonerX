@@ -160,8 +160,15 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   - Reubicar NTFS por cuenta propia: descartado en la decisión 1.
   - VDS (`IVdsVolumeMF2`): en desuso y reemplazada por la Storage Management API.
 - **Margen de capacidad**: 10 % de los datos ocupados, con un mínimo de 10 GiB (supuesto de la
-  especificación). El tamaño reducido propuesto es el mayor entre el mínimo que admite Windows y lo que
-  ocupan los datos más el margen.
+  especificación). El mínimo que admite Windows y lo que ocupan los datos más el margen determinan el
+  tamaño mínimo elegible para la reducción; el tamaño propuesto es el espacio disponible para Windows en
+  el destino, alineado hacia abajo a 1 MiB.
+- **Nota (2026-10-21, hallazgo en hardware real)**: el mínimo informado por `MSFT_Partition.GetSupportedSize`
+  puede aumentar entre la planificación y la ejecución (en un equipo pasó de 395,771,379,712 a
+  403,432,570,880 bytes en dos minutos), aunque el destino tenía espacio para una partición Windows de
+  959,025,512,448 bytes. El mínimo y lo ocupado más el margen son solo el límite de elegibilidad; si el
+  destino tiene espacio suficiente, el plan reduce Windows al espacio disponible para Windows en el
+  destino. Así se mueven menos datos y queda más margen ante cambios del mínimo antes de ejecutar.
 - **Hallazgo en hardware real (2026-10-21)**: en una prueba en un equipo real, la aplicación se cerró mientras
   preparaba el destino (fase `PrepareTarget`) con el origen ya reducido. Las compensaciones solo se ejecutan dentro
   del proceso, así que nada restauró la partición de Windows y hubo que ejecutar `Resize-Partition` a mano. Un corte

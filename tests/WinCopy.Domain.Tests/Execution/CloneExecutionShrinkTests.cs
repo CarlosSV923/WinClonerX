@@ -14,7 +14,7 @@ public sealed class CloneExecutionShrinkTests
     private static readonly ExecutionId Id = new(new Guid("22222222-2222-2222-2222-222222222222"));
     private static readonly DateTimeOffset T0 = CapturedAt;
 
-    /// <summary>Fases de un plan que reduce el origen y cuyo destino de Windows crece después (ampliación del sistema de archivos).</summary>
+    /// <summary>Fases de un plan que reduce el origen al espacio disponible para Windows en el destino.</summary>
     private static readonly ExecutionPhase[] ShrinkPhases =
     [
         ExecutionPhase.Revalidate,
@@ -23,7 +23,6 @@ public sealed class CloneExecutionShrinkTests
         ExecutionPhase.PrepareTarget,
         ExecutionPhase.CopyData,
         ExecutionPhase.CommitLayout,
-        ExecutionPhase.ExpandFileSystem,
         ExecutionPhase.RepairBoot,
         ExecutionPhase.StructuralVerification,
         ExecutionPhase.Cleanup,

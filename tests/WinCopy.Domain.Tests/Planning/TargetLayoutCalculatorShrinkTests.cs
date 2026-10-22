@@ -14,31 +14,34 @@ public sealed class TargetLayoutCalculatorShrinkTests
     private const int WindowsIndex = 2;
 
     [Fact]
-    public void ShrunkLengthIsTheUsedSpacePlusMarginWhenTheMinimumIsSmaller()
+    public void ShrunkLengthUsesAllTargetWindowsSpaceWhenTheMinimumIsSmaller()
     {
         // 40 GiB ocupados + 10 GiB de margen = 50 GiB; el mínimo de 45 GiB no supera ese valor.
         var decision = Decide(SystemDisk(), TargetDisk(size: SmallTargetSize), ByteSize.FromGiB(45));
 
         decision.Strategy.ShouldBe(SizeStrategy.ShrinkSource);
-        decision.SourceShrink!.ShrunkLength.ShouldBe(ByteSize.FromGiB(50));
+        decision.SourceShrink!.ShrunkLength.ShouldBe(new ByteSize(SmallTargetWindowsLength));
     }
 
     [Fact]
-    public void ShrunkLengthIsTheMinimumWhenItIsLargerThanTheUsedSpacePlusMargin()
+    public void ShrunkLengthUsesAllTargetWindowsSpaceWhenMinimumExceedsUsedSpacePlusMargin()
     {
         var decision = Decide(SystemDisk(), TargetDisk(size: SmallTargetSize), ByteSize.FromGiB(60));
 
-        decision.SourceShrink!.ShrunkLength.ShouldBe(ByteSize.FromGiB(60));
+        decision.SourceShrink!.ShrunkLength.ShouldBe(new ByteSize(SmallTargetWindowsLength));
         decision.SourceShrink!.MinimumSupported.ShouldBe(ByteSize.FromGiB(60));
     }
 
     [Fact]
-    public void ShrunkLengthIsRoundedUpToOneMebibyte()
+    public void SlightlySmallerTargetNeedsOnlyASlightShrink()
     {
-        var decision = Decide(SystemDisk(), TargetDisk(size: SmallTargetSize), ByteSize.FromGiB(60) + new ByteSize(1));
+        var target = TargetDisk(size: 255 * Gib);
+        var decision = Decide(SystemDisk(), target, ByteSize.FromGiB(45));
 
         var shrunk = decision.SourceShrink!.ShrunkLength;
-        shrunk.ShouldBe(ByteSize.FromGiB(60) + ByteSize.FromMiB(1));
+        shrunk.ShouldBe(new ByteSize(decision.Extents[WindowsIndex].Length));
+        shrunk.Bytes.ShouldBeGreaterThan(ByteSize.FromGiB(200).Bytes);
+        (new ByteSize(SourceWindowsLength) - shrunk).Bytes.ShouldBeLessThan(ByteSize.FromGiB(2).Bytes);
         (shrunk.Bytes % Mib).ShouldBe(0L);
     }
 
@@ -82,7 +85,7 @@ public sealed class TargetLayoutCalculatorShrinkTests
 
         var decision = Decide(SystemDisk(), TargetDisk(size: SmallTargetSize), minimum);
 
-        decision.SourceShrink!.ShrunkLength.ShouldBe(minimum);
+        decision.SourceShrink!.ShrunkLength.ShouldBe(new ByteSize(SmallTargetWindowsLength));
         decision.Extents[WindowsIndex].Length.ShouldBe(SmallTargetWindowsLength);
     }
 

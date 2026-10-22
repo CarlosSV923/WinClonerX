@@ -4,8 +4,8 @@ namespace WinCopy.Domain.Planning;
 
 /// <summary>
 /// Reducción temporal de la partición de Windows del origen antes del clonado (FR-021). Guarda la longitud original, la
-/// longitud reducida (lo ocupado más el margen, redondeado a 1 MiB o el mínimo que admite Windows si es mayor) y el mínimo
-/// que admite Windows. Invariantes: la longitud reducida es menor que la original, no baja del mínimo y es múltiplo de 1 MiB.
+/// longitud reducida (el espacio disponible para Windows en el destino, alineado hacia abajo a 1 MiB) y el mínimo que
+/// admite Windows. Invariantes: la longitud reducida es menor que la original, no baja del mínimo y es múltiplo de 1 MiB.
 /// </summary>
 public sealed record SourceShrinkStep
 {

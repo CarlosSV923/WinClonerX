@@ -65,7 +65,7 @@ public sealed class ShrinkFlowTests
             SizeText.Format(shrink.OriginalLength),
             SizeText.Format(shrink.ShrunkLength)));
         review.SourceShrinkText.ShouldContain("The Windows partition on the source disk will go from");
-        review.SourceShrinkText.ShouldContain("50 GiB");
+        review.SourceShrinkText.ShouldContain(SizeText.Format(shrink.ShrunkLength));
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public sealed class ShrinkFlowTests
             "Shrink_Confirm_Body",
             SizeText.Format(shrink.OriginalLength),
             SizeText.Format(shrink.ShrunkLength)));
-        vm.SourceShrinkText.ShouldContain("50 GiB");
+        vm.SourceShrinkText.ShouldContain(SizeText.Format(shrink.ShrunkLength));
         vm.SourceShrinkText.ShouldContain("Windows may take several minutes");
     }
 

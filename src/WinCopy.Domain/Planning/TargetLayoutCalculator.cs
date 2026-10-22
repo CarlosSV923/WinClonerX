@@ -57,9 +57,9 @@ public static class TargetLayoutCalculator
 
     /// <summary>
     /// Decide el diseño del destino. Primero intenta SameOrLarger: Windows conserva su longitud y tiene el margen. Si no cabe,
-    /// y el mínimo que admite Windows es conocido, intenta ShrinkSource: Windows se reduce temporalmente a
-    /// máx(mínimo, lo ocupado + margen) redondeado hacia arriba a 1 MiB, y en el destino ocupa todo el espacio restante, que
-    /// luego se amplía. Si ni así cabe, falla con <see cref="ShrinkInsufficientCode"/> cuando el mínimo es el término que
+    /// y el mínimo que admite Windows es conocido, intenta ShrinkSource: el mínimo y lo ocupado más el margen determinan
+    /// el tamaño mínimo elegible; Windows se reduce temporalmente al espacio disponible para Windows en el destino, alineado
+    /// hacia abajo a 1 MiB. Si ni siquiera cabe el tamaño mínimo elegible, falla con <see cref="ShrinkInsufficientCode"/> cuando el mínimo es el término que
     /// manda, o con <see cref="TargetTooSmallCode"/> en otro caso; en ambos, el detalle son los bytes que faltan. Sin mínimo
     /// conocido no se reduce y se informa <see cref="TargetTooSmallCode"/> como en la versión 1.
     /// </summary>
@@ -92,17 +92,19 @@ public static class TargetLayoutCalculator
             return Fail<LayoutDecision>(TargetTooSmallCode, shortfall.ToString(CultureInfo.InvariantCulture));
         }
 
-        // Lo ocupado más el margen, o el mínimo si es mayor, redondeado hacia arriba a 1 MiB. Nunca es menor que ninguno de los dos.
-        var shrunk = Math.Max(AlignUp(Math.Max(minimum.Bytes, required)), AlignmentBytes);
+        // El mínimo y lo ocupado más el margen solo determinan si la reducción es viable.
+        var lower = Math.Max(AlignUp(Math.Max(minimum.Bytes, required)), AlignmentBytes);
 
-        if (available >= shrunk)
+        if (available >= lower)
         {
+            // Reducir lo mínimo mueve menos datos, acelera la reducción y deja mucho margen frente a cambios del mínimo de Windows entre planificación y ejecución.
+            var shrunk = available % AlignmentBytes == 0 ? available : AlignDown(available);
             // Aquí Windows del origen es mayor que el destino (available < windowsLength), así que la reducción es estrictamente menor.
             var step = new SourceShrinkStep(windows.UniqueId, new ByteSize(windowsLength), new ByteSize(shrunk), minimum);
             return Decision(SizeStrategy.ShrinkSource, Materialize(source, target, frame, available), step);
         }
 
-        var missing = (shrunk - available).ToString(CultureInfo.InvariantCulture);
+        var missing = (lower - available).ToString(CultureInfo.InvariantCulture);
         var code = minimum.Bytes >= required ? ShrinkInsufficientCode : TargetTooSmallCode;
 
         return Fail<LayoutDecision>(code, missing);

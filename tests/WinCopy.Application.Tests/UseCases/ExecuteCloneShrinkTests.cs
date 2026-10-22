@@ -29,7 +29,6 @@ public sealed class ExecuteCloneShrinkTests
         ExecutionPhase.PrepareTarget,
         ExecutionPhase.CopyData,
         ExecutionPhase.CommitLayout,
-        ExecutionPhase.ExpandFileSystem,
         ExecutionPhase.RepairBoot,
         ExecutionPhase.StructuralVerification,
         ExecutionPhase.Cleanup,

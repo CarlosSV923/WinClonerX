@@ -24,7 +24,7 @@ public sealed class ClonePlanShrinkTests
         var shrink = plan.SourceShrink.ShouldNotBeNull();
         shrink.Partition.ShouldBe(SourcePartitionGuid(3));
         shrink.OriginalLength.ShouldBe(new ByteSize(SourceWindowsLength));
-        shrink.ShrunkLength.ShouldBe(ByteSize.FromGiB(50));
+        shrink.ShrunkLength.ShouldBe(new ByteSize(SmallTargetWindowsLength));
         shrink.MinimumSupported.ShouldBe(ByteSize.FromGiB(45));
     }
 
@@ -36,7 +36,7 @@ public sealed class ClonePlanShrinkTests
 
         windows.Source.Extent.Length.ShouldBe(SourceWindowsLength, "the shrink happens at execution; the source extent is the current one");
         windows.TargetExtent.Length.ShouldBe(SmallTargetWindowsLength);
-        windows.Resize.ShouldBe(ResizeKind.GrowFileSystem, "the target file system grows from the shrunk length to the target length");
+        windows.Resize.ShouldBe(ResizeKind.None, "the shrunk source and target Windows lengths match");
     }
 
     [Fact]
@@ -109,13 +109,18 @@ public sealed class ClonePlanShrinkTests
     }
 
     [Fact]
-    public void Invariant5RequiresTheFileSystemToGrowFromTheShrunkLength()
+    public void Invariant5RequiresGrowthWhenTheTargetExceedsTheShrunkLength()
     {
         var setup = ShrinkSetup();
         var mappings = setup.Mappings.ToArray();
         mappings[WindowsIndex] = mappings[WindowsIndex] with { Resize = ResizeKind.None };
+        var smallerShrink = new SourceShrinkStep(
+            setup.Shrink.Partition,
+            setup.Shrink.OriginalLength,
+            ByteSize.FromGiB(50),
+            setup.Shrink.MinimumSupported);
 
-        AssertInvariant(5, () => Create(setup.Source, setup.Target, mappings, setup.Shrink));
+        AssertInvariant(5, () => Create(setup.Source, setup.Target, mappings, smallerShrink));
     }
 
     [Fact]
