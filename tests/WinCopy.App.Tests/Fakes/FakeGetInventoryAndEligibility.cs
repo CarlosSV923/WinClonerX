@@ -9,10 +9,13 @@ internal sealed class FakeGetInventoryAndEligibility(params InventoryOverview[] 
 
     public int CallCount { get; private set; }
 
+    public Action? OnCall { get; set; }
+
     public Task<InventoryOverview> ExecuteAsync(CancellationToken ct)
     {
         var index = Math.Min(CallCount, _results.Length - 1);
         CallCount++;
+        OnCall?.Invoke();
         return Task.FromResult(_results[index]);
     }
 }

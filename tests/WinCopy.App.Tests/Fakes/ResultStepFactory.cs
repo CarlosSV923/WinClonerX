@@ -9,5 +9,6 @@ internal static class ResultStepFactory
         new FakeExportLog(),
         new FakeFileDialogService(),
         new FakeFolderOpener(),
-        new FixedClock());
+        new FixedClock(),
+        new FakeAppLifetime());
 }

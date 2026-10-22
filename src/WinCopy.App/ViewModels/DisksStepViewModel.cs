@@ -150,9 +150,15 @@ public sealed partial class DisksStepViewModel : ObservableObject
     /// Runs the startup recovery once per application start, before the first inventory read. It never throws: an unexpected
     /// failure is reported as needing attention, and the wizard still starts.
     /// </summary>
-    private async Task RecoverPendingSourceRestoreOnceAsync()
+    private Task RecoverPendingSourceRestoreOnceAsync()
     {
-        if (_recovery is null || _recoveryChecked)
+        return _recoveryChecked ? Task.CompletedTask : RecoverPendingSourceRestoreAsync();
+    }
+
+    /// <summary>Runs source recovery again before a restart reads the current disk inventory.</summary>
+    public async Task RecoverPendingSourceRestoreAsync()
+    {
+        if (_recovery is null)
         {
             return;
         }

@@ -72,7 +72,28 @@ public sealed class ExecuteClone(
 
         if (run is not null)
         {
-            Transition(run, execution => execution.RequestCancel());
+            ExecutionPhase phase;
+            bool pending;
+            bool interrupt;
+            lock (run.Gate)
+            {
+                if (run.CancelRequestLogged || !run.Execution.CanRequestCancel)
+                {
+                    return;
+                }
+
+                run.Execution.RequestCancel();
+                run.CancelRequestLogged = true;
+                phase = run.Execution.CurrentPhase;
+                pending = run.Execution.CancelPending;
+                interrupt = run.Execution.State == ExecutionState.Cancelling;
+            }
+
+            Record(ExecutionLogEvents.CancelRequested(phase, pending));
+            if (interrupt)
+            {
+                run.Interrupt.Cancel();
+            }
         }
     }
 
@@ -1044,6 +1065,8 @@ public sealed class ExecuteClone(
         CancellationTokenSource interrupt)
     {
         public object Gate { get; } = new();
+
+        public bool CancelRequestLogged { get; set; }
 
         public ClonePlan Plan { get; } = plan;
 

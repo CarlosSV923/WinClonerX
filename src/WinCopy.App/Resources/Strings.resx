@@ -667,4 +667,10 @@
   <data name="PartitionBar_Free" xml:space="preserve">
     <value>Unallocated space: {0}</value>
   </data>
+  <data name="Result_StartOver" xml:space="preserve">
+    <value>Start over</value>
+  </data>
+  <data name="Result_CloseApp" xml:space="preserve">
+    <value>Close WinCopy</value>
+  </data>
 </root>

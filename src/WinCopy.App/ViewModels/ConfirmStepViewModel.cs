@@ -158,6 +158,25 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
 
     private bool CanCloneNow() => IsReadyToClone && !IsBusy && _plan is not null;
 
+    /// <summary>Clears the confirmation after its plan has been used.</summary>
+    public void Clear()
+    {
+        _target = null;
+        _plan = null;
+        _acceptedWarnings = new HashSet<PreflightCode>();
+        TargetCard = null;
+        TypedSuffix = string.Empty;
+        PromptText = string.Empty;
+        UsesGuidFallback = false;
+        HasSourceShrink = false;
+        SourceShrinkText = string.Empty;
+        ConfirmSourceShrink = false;
+        ErrorMessage = null;
+        OnPropertyChanged(nameof(IsSuffixValid));
+        OnPropertyChanged(nameof(IsReadyToClone));
+        CloneNowCommand.NotifyCanExecuteChanged();
+    }
+
     partial void OnTypedSuffixChanged(string value)
     {
         OnPropertyChanged(nameof(IsSuffixValid));

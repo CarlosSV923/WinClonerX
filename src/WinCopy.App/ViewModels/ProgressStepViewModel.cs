@@ -24,6 +24,7 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     private readonly IUiDispatcher _dispatcher;
     private readonly IConfirmationService _confirmation;
     private IDisposable? _subscription;
+    private int _runGeneration;
 
     /// <summary>Phase in progress, from the events. Null between phases. Decides whether a requested cancel waits for it.</summary>
     private ExecutionPhase? _runningPhase;
@@ -99,10 +100,11 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     /// </summary>
     public async Task<CloneResultReport> StartAsync(PlanId planId, CancellationToken cancellationToken = default)
     {
-        Reset();
+        Clear();
+        var generation = ++_runGeneration;
         IsRunning = true;
         IsCancelAvailable = true;
-        _subscription = _execute.Events.Subscribe(new EventObserver(this));
+        _subscription = _execute.Events.Subscribe(new EventObserver(this, generation));
         try
         {
             return await _execute.ExecuteAsync(planId, cancellationToken);
@@ -147,8 +149,13 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsCancelAvailable))]
     private void Cancel() => TryRequestCancel();
 
-    private void Reset()
+    public void Clear()
     {
+        _runGeneration++;
+        _subscription?.Dispose();
+        _subscription = null;
+        IsRunning = false;
+        IsCancelAvailable = false;
         Phases.Clear();
         Percent = 0;
         BytesText = string.Empty;
@@ -240,9 +247,15 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     }
 
     /// <summary>Receives the events of the run and applies each one on the UI thread, in order.</summary>
-    private sealed class EventObserver(ProgressStepViewModel owner) : IObserver<ExecutionEvent>
+    private sealed class EventObserver(ProgressStepViewModel owner, int generation) : IObserver<ExecutionEvent>
     {
-        public void OnNext(ExecutionEvent value) => owner._dispatcher.Post(() => owner.Apply(value));
+        public void OnNext(ExecutionEvent value) => owner._dispatcher.Post(() =>
+        {
+            if (owner._runGeneration == generation)
+            {
+                owner.Apply(value);
+            }
+        });
 
         public void OnError(Exception error)
         {

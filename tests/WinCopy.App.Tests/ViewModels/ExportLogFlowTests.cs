@@ -170,7 +170,7 @@ public sealed class ExportLogFlowTests
         var export = new FakeExportLog();
         var dialog = new FakeFileDialogService();
         var folder = new FakeFolderOpener();
-        var vm = new ResultStepViewModel(export, dialog, folder, new FixedClock());
+        var vm = new ResultStepViewModel(export, dialog, folder, new FixedClock(), new FakeAppLifetime());
         vm.Show(Report(CloneOutcome.Completed));
 
         return (vm, export, dialog, folder);

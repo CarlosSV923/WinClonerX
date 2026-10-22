@@ -27,14 +27,16 @@ public sealed partial class ResultStepViewModel : ObservableObject
     private readonly IFileDialogService _fileDialog;
     private readonly IFolderOpener _folderOpener;
     private readonly IClock _clock;
+    private readonly IAppLifetime _appLifetime;
 
     /// <summary>Creates the step with the services it needs to export the log and to open its folder.</summary>
-    public ResultStepViewModel(IExportLog exportLog, IFileDialogService fileDialog, IFolderOpener folderOpener, IClock clock)
+    public ResultStepViewModel(IExportLog exportLog, IFileDialogService fileDialog, IFolderOpener folderOpener, IClock clock, IAppLifetime appLifetime)
     {
         _exportLog = exportLog ?? throw new ArgumentNullException(nameof(exportLog));
         _fileDialog = fileDialog ?? throw new ArgumentNullException(nameof(fileDialog));
         _folderOpener = folderOpener ?? throw new ArgumentNullException(nameof(folderOpener));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _appLifetime = appLifetime ?? throw new ArgumentNullException(nameof(appLifetime));
     }
 
     /// <summary>Outcome of the run. Null until <see cref="Show"/> is called.</summary>
@@ -149,8 +151,20 @@ public sealed partial class ResultStepViewModel : ObservableObject
 
     public bool IsFailure => Outcome is CloneOutcome.Failed or CloneOutcome.Cancelled;
 
+    public bool CanStartOver => Outcome is CloneOutcome.Cancelled or CloneOutcome.Failed;
+
+    public bool CanCloseApp => Outcome == CloneOutcome.Completed;
+
     /// <summary>True when there is an export or folder message to show.</summary>
     public bool HasExportStatus => ExportStatusText.Length > 0;
+
+    [RelayCommand(CanExecute = nameof(CanStartOver))]
+    private void StartOver() => StartOverRequested?.Invoke(this, EventArgs.Empty);
+
+    public event EventHandler? StartOverRequested;
+
+    [RelayCommand(CanExecute = nameof(CanCloseApp))]
+    private void CloseApp() => _appLifetime.Shutdown();
 
     /// <summary>Exports the log of the run to a .zip the person picks (FR-026). Available for every outcome.</summary>
     [RelayCommand]
@@ -200,6 +214,8 @@ public sealed partial class ResultStepViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsSuccess));
         OnPropertyChanged(nameof(IsFailure));
+        StartOverCommand.NotifyCanExecuteChanged();
+        CloseAppCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnExportStatusTextChanged(string value)
@@ -367,7 +383,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
         IsExportStatusError = isError;
     }
 
-    private void Clear()
+    public void Clear()
     {
         Outcome = null;
         Title = string.Empty;
@@ -392,6 +408,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
         IsSourceRestored = false;
         IsSourceRestoreWarning = false;
         SourceRestoreText = string.Empty;
+        IncludeInventory = false;
         ExportStatusText = string.Empty;
         IsExportStatusError = false;
     }

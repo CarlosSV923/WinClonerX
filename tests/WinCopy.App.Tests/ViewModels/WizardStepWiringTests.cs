@@ -11,6 +11,7 @@ namespace WinCopy.App.Tests.ViewModels;
 
 public sealed class WizardStepWiringTests
 {
+    private static readonly string[] RestartReadOrder = ["recovery", "inventory"];
     [Fact]
     public async Task NextOnDisksIsEnabledOnlyAfterAnEligibleSelection()
     {
@@ -208,6 +209,51 @@ public sealed class WizardStepWiringTests
     }
 
     [Fact]
+    public async Task StartingOverClearsThePreviousRunAndAllowsANewRun()
+    {
+        var order = new List<string>();
+        var recovery = new FakeRecoverPendingSourceRestore { OnCall = () => order.Add("recovery") };
+        var h = await CreateAtReview(TestContext.Current.CancellationToken, recovery: recovery, order: order);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+        h.Execute.Completion.SetResult(Report(CloneOutcome.Failed));
+        await h.Wizard.ExecutionCompletion;
+
+        h.Result.StartOverCommand.CanExecute(null).ShouldBeTrue();
+        await h.Wizard.StartOverCommand.ExecuteAsync(null);
+
+        h.Wizard.CurrentIndex.ShouldBe(0);
+        recovery.CallCount.ShouldBe(2);
+        order.TakeLast(2).ShouldBe(RestartReadOrder);
+        h.Wizard.Notice.ShouldBeNull();
+        h.Inventory.CallCount.ShouldBe(2);
+        h.Disks.SelectedTarget.ShouldBeNull();
+        h.Review.HasPlan.ShouldBeFalse();
+        h.Confirm.TypedSuffix.ShouldBeEmpty();
+        h.Confirm.ConfirmSourceShrink.ShouldBeFalse();
+        h.Progress.Phases.ShouldBeEmpty();
+        h.Progress.IsRunning.ShouldBeFalse();
+        h.Result.Outcome.ShouldBeNull();
+        h.Result.HasExportStatus.ShouldBeFalse();
+        h.Wizard.StepItems.ShouldAllBe(step => !step.IsCompleted);
+
+        h.Disks.SelectTargetCommand.Execute(h.Disks.Targets.Single());
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        await h.Wizard.NextCommand.ExecuteAsync(null);
+        h.Confirm.TypedSuffix = "0002";
+        await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+        h.Execute.Completion.SetResult(Report() with { LogFile = "new-run.clef" });
+        await h.Wizard.ExecutionCompletion;
+
+        h.Wizard.CurrentIndex.ShouldBe(4);
+        h.Result.IsSuccess.ShouldBeTrue();
+        h.Result.LogFile.ShouldBe("new-run.clef");
+        h.Execute.CallCount.ShouldBe(2);
+        h.Execute.ActiveObserverCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task AnUnexpectedExceptionFromTheRunStillEndsOnAFailedResultPage()
     {
         using var _ = new EnglishCulture();
@@ -275,11 +321,16 @@ public sealed class WizardStepWiringTests
     /// Full five-step wizard on a fresh system disk and a blank USB target, with the disks already selected and loaded.
     /// With <paramref name="deferredEvents"/> the progress page never gets to run the events it is given.
     /// </summary>
-    private static async Task<Harness> CreateAtReview(CancellationToken ct, bool deferredEvents = false)
+    private static async Task<Harness> CreateAtReview(
+        CancellationToken ct,
+        bool deferredEvents = false,
+        FakeRecoverPendingSourceRestore? recovery = null,
+        List<string>? order = null)
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var inventoryFake = new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory));
-        var disks = new DisksStepViewModel(inventoryFake);
+        inventoryFake.OnCall = () => order?.Add("inventory");
+        var disks = new DisksStepViewModel(inventoryFake, recovery);
         var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
         var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value;
         var confirmPlan = new FakeConfirmClonePlan(plan);

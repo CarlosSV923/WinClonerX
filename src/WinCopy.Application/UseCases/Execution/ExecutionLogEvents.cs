@@ -25,6 +25,10 @@ internal static class ExecutionLogEvents
     public static LogEvent PhaseCompleted(ExecutionPhase phase, TimeSpan duration) =>
         Create("PhaseCompleted", LogLevelKind.Information, ("Phase", phase.ToString()), ("DurationMs", Milliseconds(duration)));
 
+    /// <summary>A person requested cancellation while the run still accepted it.</summary>
+    public static LogEvent CancelRequested(ExecutionPhase phase, bool pending) =>
+        Create("CancelRequested", LogLevelKind.Information, ("Phase", phase.ToString()), ("CancelPending", pending));
+
     /// <summary>Avance de la copia medido, con su rendimiento y el tiempo restante si ya se conoce.</summary>
     public static LogEvent ProgressReported(CloneProgress progress) => Create(
         "ProgressReported",

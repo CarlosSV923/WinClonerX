@@ -25,6 +25,7 @@ internal static class ServiceRegistration
         services.AddSingleton<IConfirmationService, WpfConfirmationService>();
         services.AddSingleton<IFileDialogService, WpfFileDialogService>();
         services.AddSingleton<IFolderOpener, ExplorerFolderOpener>();
+        services.AddSingleton<IAppLifetime, WpfAppLifetime>();
 
         services.AddSingleton<DisksStepViewModel>();
         services.AddSingleton<ReviewStepViewModel>();

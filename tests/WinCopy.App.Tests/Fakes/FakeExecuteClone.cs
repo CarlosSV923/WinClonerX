@@ -13,7 +13,7 @@ internal sealed class FakeExecuteClone : IExecuteClone
 
     public IObservable<ExecutionEvent> Events => _events;
 
-    public TaskCompletionSource<CloneResultReport> Completion { get; } =
+    public TaskCompletionSource<CloneResultReport> Completion { get; private set; } =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public int CallCount { get; private set; }
@@ -31,6 +31,11 @@ internal sealed class FakeExecuteClone : IExecuteClone
 
     public Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct)
     {
+        if (Completion.Task.IsCompleted)
+        {
+            Completion = new TaskCompletionSource<CloneResultReport>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
         CallCount++;
         LastPlanId = planId;
         return Completion.Task;

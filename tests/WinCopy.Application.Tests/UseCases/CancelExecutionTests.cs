@@ -30,6 +30,10 @@ public sealed class CancelExecutionTests
         h.Power.IsSleepBlocked.ShouldBeFalse();
         h.Events.OfType<ExecutionCancelled>().Count().ShouldBe(1);
         h.Events.OfType<ExecutionFailed>().ShouldBeEmpty();
+        var cancelLog = h.Log.Events.Where(e => e.Event == "CancelRequested").ToArray();
+        cancelLog.Length.ShouldBe(1);
+        cancelLog[0].Properties["Phase"].ShouldBe(nameof(ExecutionPhase.CopyData));
+        cancelLog[0].Properties["CancelPending"].ShouldBe(false);
     }
 
     [Fact]
@@ -57,6 +61,7 @@ public sealed class CancelExecutionTests
             if (e is PhaseStarted { Phase: ExecutionPhase.ShrinkSource })
             {
                 h.Orchestrator.RequestCancel();
+                h.Orchestrator.RequestCancel();
             }
         };
 
@@ -69,6 +74,10 @@ public sealed class CancelExecutionTests
         h.Resizer.Restores.Count.ShouldBe(1);
         report.SourceRestored.ShouldBe(true);
         h.Power.IsSleepBlocked.ShouldBeFalse();
+        var cancelLog = h.Log.Events.Where(e => e.Event == "CancelRequested").ToArray();
+        cancelLog.Length.ShouldBe(1);
+        cancelLog[0].Properties["Phase"].ShouldBe(nameof(ExecutionPhase.ShrinkSource));
+        cancelLog[0].Properties["CancelPending"].ShouldBe(true);
     }
 
     [Fact]
@@ -162,6 +171,7 @@ public sealed class CancelExecutionTests
         h.Compensations().ShouldBeEmpty();
         h.Events.OfType<ExecutionCompleted>().Count().ShouldBe(1);
         h.Events.OfType<ExecutionCancelled>().ShouldBeEmpty();
+        h.Log.Events.ShouldNotContain(e => e.Event == "CancelRequested");
     }
 
     [Fact]

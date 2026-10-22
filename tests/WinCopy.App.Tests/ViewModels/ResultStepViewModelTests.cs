@@ -11,6 +11,36 @@ namespace WinCopy.App.Tests.ViewModels;
 public sealed class ResultStepViewModelTests
 {
     [Fact]
+    public void StartOverIsAvailableOnlyForCancelledAndFailedOutcomes()
+    {
+        var vm = ResultStepFactory.Create();
+
+        vm.StartOverCommand.CanExecute(null).ShouldBeFalse();
+        vm.Show(Failed(CloneOutcome.Cancelled));
+        vm.StartOverCommand.CanExecute(null).ShouldBeTrue();
+        vm.Show(Failed(CloneOutcome.Failed));
+        vm.StartOverCommand.CanExecute(null).ShouldBeTrue();
+        vm.Show(Success());
+        vm.StartOverCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CloseAppIsAvailableOnlyForCompletedAndCallsLifetime()
+    {
+        var lifetime = new FakeAppLifetime();
+        var vm = new ResultStepViewModel(
+            new FakeExportLog(), new FakeFileDialogService(), new FakeFolderOpener(), new FixedClock(), lifetime);
+
+        vm.CloseAppCommand.CanExecute(null).ShouldBeFalse();
+        vm.Show(Success());
+        vm.CloseAppCommand.CanExecute(null).ShouldBeTrue();
+        vm.CloseAppCommand.Execute(null);
+        lifetime.ShutdownCalls.ShouldBe(1);
+        vm.Show(Failed(CloneOutcome.Failed));
+        vm.CloseAppCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
     public void SuccessWithWinRecoveryConfiguredShowsTheConfiguredState()
     {
         using var _ = new EnglishCulture();

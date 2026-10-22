@@ -80,6 +80,7 @@ public sealed partial class WizardViewModel : ObservableObject
         confirmStep.PropertyChanged += OnStepPagePropertyChanged;
         confirmStep.PlanConfirmed += OnPlanConfirmed;
         confirmStep.ReturnToDisksRequested += OnReturnToDisksRequested;
+        resultStep.StartOverRequested += OnStartOverRequested;
         RefreshStepValidity();
     }
 
@@ -296,6 +297,27 @@ public sealed partial class WizardViewModel : ObservableObject
         CurrentIndex = 0;
         Notice = e.Message;
         DisksStep?.RefreshCommand.Execute(null);
+    }
+
+    private void OnStartOverRequested(object? sender, EventArgs e) => StartOverCommand.Execute(null);
+
+    [RelayCommand]
+    private async Task StartOverAsync()
+    {
+        ReviewStep?.Clear();
+        _confirm?.Clear();
+        _progress?.Clear();
+        _result?.Clear();
+        ExecutionCompletion = Task.CompletedTask;
+        Notice = null;
+        IsNoticeSuccess = false;
+        CurrentIndex = 0;
+
+        if (DisksStep is not null)
+        {
+            await DisksStep.RecoverPendingSourceRestoreAsync();
+            await DisksStep.RefreshCommand.ExecuteAsync(null);
+        }
     }
 
     /// <summary>
