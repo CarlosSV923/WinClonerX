@@ -78,16 +78,6 @@
                            Text="{Binding ErrorMessage}"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}" />
 
-                <!-- The destructive action. Only enabled when the characters match. -->
-                <Button Style="{StaticResource Button.Danger}"
-                        Margin="0,16,0,0"
-                        MinWidth="180"
-                        HorizontalAlignment="Left"
-                        IsDefault="True"
-                        Content="{loc:Loc Confirm_CloneNow}"
-                        AutomationProperties.Name="{loc:Loc Confirm_CloneNow}"
-                        AutomationProperties.HelpText="{loc:Loc Confirm_CloneNow_Help}"
-                        Command="{Binding CloneNowCommand}" />
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

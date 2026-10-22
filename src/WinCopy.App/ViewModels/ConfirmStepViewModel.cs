@@ -33,13 +33,13 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
     [ObservableProperty]
     private string _typedSuffix = string.Empty;
 
-    /// <summary>Localized prompt. It shows the length of the expected characters, never their value.</summary>
+    /// <summary>Localized prompt with the full identifier shown on the disk card.</summary>
     [ObservableProperty]
     private string _promptText = string.Empty;
 
-    /// <summary>True when the disk reports no serial number, so the GUID is asked for instead.</summary>
+    /// <summary>Source of the identifier the person is asked to type.</summary>
     [ObservableProperty]
-    private bool _usesGuidFallback;
+    private ConfirmationSource _identifierSource;
 
     /// <summary>True when the plan reduces the source disk (FR-013). Shows the shrink panel.</summary>
     [ObservableProperty]
@@ -136,10 +136,16 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         _acceptedWarnings = acceptedWarnings;
 
         TargetCard = new DiskCardViewModel(target);
-        UsesGuidFallback = TargetConfirmation.UsesGuidFallback(target);
-        PromptText = UsesGuidFallback
-            ? Loc.Format("Confirm_Prompt_Guid", DiskCardViewModel.GroupedGuid(target.Id.DiskGuid))
-            : Loc.Format("Confirm_Prompt_Serial", ExpectedMask());
+        IdentifierSource = TargetConfirmation.GetSource(target);
+        var sourceKey = IdentifierSource switch
+        {
+            ConfirmationSource.SerialNumber => "Confirm_Source_Serial",
+            ConfirmationSource.DiskGuid => "Confirm_Source_Guid",
+            ConfirmationSource.Model => "Confirm_Source_Model",
+            ConfirmationSource.DiskNumber => "Confirm_Source_DiskNumber",
+            _ => throw new InvalidOperationException("Unknown confirmation source."),
+        };
+        PromptText = Loc.Format("Confirm_Prompt", Loc.Get(sourceKey), TargetConfirmation.ConfirmationIdentifier(target, IdentifierSource));
 
         HasSourceShrink = plan.SourceShrink is not null;
         SourceShrinkText = plan.SourceShrink is { } shrink
@@ -167,7 +173,7 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         TargetCard = null;
         TypedSuffix = string.Empty;
         PromptText = string.Empty;
-        UsesGuidFallback = false;
+        IdentifierSource = default;
         HasSourceShrink = false;
         SourceShrinkText = string.Empty;
         ConfirmSourceShrink = false;
@@ -195,10 +201,6 @@ public sealed partial class ConfirmStepViewModel : ObservableObject
         CloneNowCommand.NotifyCanExecuteChanged();
     }
 
-    /// <summary>The expected characters replaced by X, so the prompt shows the length without the value.</summary>
-    private string ExpectedMask() => _target is null
-        ? string.Empty
-        : new string('X', TargetConfirmation.ExpectedSuffix(_target).Length);
 }
 
 /// <summary>Arguments of <see cref="ConfirmStepViewModel.PlanConfirmed"/>.</summary>

@@ -95,7 +95,8 @@ internal static class PlanningFixtures
         bool withDataPartition = false,
         BusKind bus = BusKind.Usb,
         bool isReadOnly = false,
-        DiskId? id = null)
+        DiskId? id = null,
+        string model = "Modelo destino")
     {
         var partitions = new List<Partition>();
         if (withDataPartition)
@@ -106,7 +107,7 @@ internal static class PlanningFixtures
                     EncryptionState.None, false, null)));
         }
 
-        return new Disk(id ?? TargetId, "Modelo destino", serial, new ByteSize(size), new SectorSize(sector),
+        return new Disk(id ?? TargetId, model, serial, new ByteSize(size), new SectorSize(sector),
             SectorSize.Bytes4096, bus, PartitionStyle.Gpt, false, partitions, IsOffline: false, IsReadOnly: isReadOnly);
     }
 

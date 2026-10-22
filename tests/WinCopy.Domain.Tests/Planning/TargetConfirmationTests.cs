@@ -103,7 +103,7 @@ public sealed class TargetConfirmationTests
         var disk = TargetDisk(serial: "0000000000000000", id: GuidDisk);
 
         TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
-        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.DiskGuid);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class TargetConfirmationTests
         var disk = TargetDisk(serial: " 0000. ", id: GuidDisk);
 
         TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
-        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.DiskGuid);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class TargetConfirmationTests
     {
         var disk = TargetDisk(serial: "...", id: GuidDisk);
 
-        TargetConfirmation.UsesGuidFallback(disk).ShouldBeTrue();
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.DiskGuid);
         TargetConfirmation.ExpectedSuffix(disk).ShouldBe("B3C4");
     }
 
@@ -129,7 +129,7 @@ public sealed class TargetConfirmationTests
     {
         var disk = TargetDisk(serial: "0000A0", id: GuidDisk);
 
-        TargetConfirmation.UsesGuidFallback(disk).ShouldBeFalse();
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.SerialNumber);
         TargetConfirmation.ExpectedSuffix(disk).ShouldBe("00A0");
     }
 
@@ -140,5 +140,23 @@ public sealed class TargetConfirmationTests
 
         new TargetConfirmation(disk.Id, "0000", At).Matches(disk).ShouldBeFalse();
         new TargetConfirmation(disk.Id, "b3c4", At).Matches(disk).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AnEmptyGuidUsesTheLastFourAlphanumericCharactersOfTheModel()
+    {
+        var disk = TargetDisk(serial: "0000000000000000", model: "WDC WDS9 60G2G0C-00AJM0", id: new DiskId(7, Guid.Empty));
+
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.Model);
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("AJM0");
+    }
+
+    [Fact]
+    public void AModelWithFewerThanFourAlphanumericCharactersUsesDiskNumber()
+    {
+        var disk = TargetDisk(serial: string.Empty, model: "!!!", id: new DiskId(123, Guid.Empty));
+
+        TargetConfirmation.GetSource(disk).ShouldBe(ConfirmationSource.DiskNumber);
+        TargetConfirmation.ExpectedSuffix(disk).ShouldBe("O123");
     }
 }

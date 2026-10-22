@@ -300,6 +300,11 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 
 ## R13. Confirmación informada del borrado
 
+- **Nota (2026-10-22)**: si el número de serie está vacío o solo contiene ceros, se piden los últimos 4 caracteres del GUID de
+  disco cuando existe. Si el GUID está vacío, se usan los últimos 4 caracteres alfanuméricos del modelo, ignorando espacios y
+  puntuación; si quedan menos de 4, se usa `DISCO<n>` y se escriben sus últimos 4 caracteres. El prompt y la tarjeta muestran
+  la misma fuente y el valor completo.
+
 - **Decisión**: la confirmación de FR-012 exige **escribir los 4 últimos caracteres del número de serie**
   del disco de destino, que se muestra junto al modelo, la capacidad y las particiones actuales. El
   dominio solo acepta un `ClonePlan` confirmado con un `TargetConfirmation` que coincida con el disco del

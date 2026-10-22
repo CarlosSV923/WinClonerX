@@ -153,6 +153,7 @@ public sealed partial class WizardViewModel : ObservableObject
             OnPropertyChanged(nameof(CanGoBack));
             OnPropertyChanged(nameof(CanGoNext));
             OnPropertyChanged(nameof(IsNextVisible));
+            OnPropertyChanged(nameof(IsConfirmActionVisible));
             BackCommand.NotifyCanExecuteChanged();
             NextCommand.NotifyCanExecuteChanged();
             RefreshStepValidity();
@@ -199,6 +200,8 @@ public sealed partial class WizardViewModel : ObservableObject
     /// Whether the generic Next button applies. Step 3 has its own "Clone now" action, and step 4 advances by itself.
     /// </summary>
     public bool IsNextVisible => CurrentStep.Kind is not (WizardStepKind.Confirm or WizardStepKind.Progress);
+
+    public bool IsConfirmActionVisible => CurrentStep.Kind == WizardStepKind.Confirm;
 
     public bool CanGoNext => CurrentIndex < Steps.Count - 1 && IsCurrentStepValid && IsNextVisible;
 

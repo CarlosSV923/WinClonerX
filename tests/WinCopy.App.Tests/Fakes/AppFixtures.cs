@@ -59,9 +59,9 @@ internal static class AppFixtures
     }
 
     /// <summary>Blank destination disk, connected over USB by default.</summary>
-    public static Disk TargetDisk(long size = 512 * Gib, string serial = "TGT-0002", BusKind bus = BusKind.Usb, DiskId? id = null)
+    public static Disk TargetDisk(long size = 512 * Gib, string serial = "TGT-0002", BusKind bus = BusKind.Usb, DiskId? id = null, string model = "Target model")
     {
-        return new Disk(id ?? TargetId, "Target model", serial, new ByteSize(size), new SectorSize(512), SectorSize.Bytes4096,
+        return new Disk(id ?? TargetId, model, serial, new ByteSize(size), new SectorSize(512), SectorSize.Bytes4096,
             bus, PartitionStyle.Gpt, false, [], IsOffline: false, IsReadOnly: false);
     }
 

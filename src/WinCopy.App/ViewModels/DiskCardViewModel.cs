@@ -35,14 +35,25 @@ public partial class DiskCardViewModel : ObservableObject
         HelpText = PartitionBar.AccessibleText;
 
         // An empty or all-zero serial (some USB bridges) is not shown as if it were a real number.
-        var serialShown = TargetConfirmation.UsesGuidFallback(disk) ? Loc.Get("Disk_Serial_NotReported") : SerialNumber.Trim();
+        var serialShown = TargetConfirmation.GetSource(disk) is not ConfirmationSource.SerialNumber
+            ? Loc.Get("Disk_Serial_NotReported")
+            : SerialNumber.Trim();
         SerialText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Serial"), serialShown);
         CapacityText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Capacity"), SizeText.Format(Capacity));
         BusText = Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Connection"), BusLabel);
-        GuidText = Loc.Format(
-            "Disk_Field_Format",
-            Loc.Get("Disk_Label_Guid"),
-            disk.Id.DiskGuid == Guid.Empty ? Loc.Get("Disk_Guid_NotReported") : GroupedGuid(disk.Id.DiskGuid));
+        var source = TargetConfirmation.GetSource(disk);
+        var identifier = disk.Id.DiskGuid == Guid.Empty
+            ? source switch
+            {
+                ConfirmationSource.Model => disk.Model.Trim(),
+                ConfirmationSource.DiskNumber => $"DISCO{disk.Id.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)}",
+                _ => Loc.Get("Disk_Guid_NotReported"),
+            }
+            : GroupedGuid(disk.Id.DiskGuid);
+        var identifierLabel = disk.Id.DiskGuid == Guid.Empty && source is ConfirmationSource.Model or ConfirmationSource.DiskNumber
+            ? Loc.Get("Disk_Label_FallbackIdentifier")
+            : Loc.Get("Disk_Label_Guid");
+        GuidText = Loc.Format("Disk_Field_Format", identifierLabel, identifier);
         AutomationName = Loc.Format("Disk_Automation_Name", Model, SerialText, CapacityText, BusText);
     }
 

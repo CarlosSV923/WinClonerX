@@ -340,6 +340,9 @@
   <data name="Disk_Label_Guid" xml:space="preserve">
     <value>Identificador del disco</value>
   </data>
+  <data name="Disk_Label_FallbackIdentifier" xml:space="preserve">
+    <value>Identificador</value>
+  </data>
   <data name="Disk_Guid_NotReported" xml:space="preserve">
     <value>No disponible</value>
   </data>
@@ -349,17 +352,29 @@
   <data name="Confirm_Subtitle" xml:space="preserve">
     <value>Aún no se ha cambiado nada. Este es el último paso en el que puedes parar.</value>
   </data>
+  <data name="Confirm_Source_Serial" xml:space="preserve">
+    <value>número de serie</value>
+  </data>
+  <data name="Confirm_Source_Guid" xml:space="preserve">
+    <value>identificador del disco</value>
+  </data>
+  <data name="Confirm_Source_Model" xml:space="preserve">
+    <value>modelo</value>
+  </data>
+  <data name="Confirm_Source_DiskNumber" xml:space="preserve">
+    <value>número de disco</value>
+  </data>
+  <data name="Confirm_Continue" xml:space="preserve">
+    <value>Continuar con el clonado</value>
+  </data>
   <data name="Confirm_Target_Heading" xml:space="preserve">
     <value>Disco que se borrará</value>
   </data>
   <data name="Confirm_Erase_Warning" xml:space="preserve">
     <value>Se borrará TODO el contenido de este disco</value>
   </data>
-  <data name="Confirm_Prompt_Serial" xml:space="preserve">
-    <value>Escribe los 4 últimos caracteres del número de serie ({0}) para confirmar</value>
-  </data>
-  <data name="Confirm_Prompt_Guid" xml:space="preserve">
-    <value>Escribe los 4 últimos caracteres del identificador del disco ({0}) para confirmar</value>
+  <data name="Confirm_Prompt" xml:space="preserve">
+    <value>Escribe los 4 últimos caracteres del {0} ({1}) para confirmar</value>
   </data>
   <data name="Confirm_Field_Help" xml:space="preserve">
     <value>No importan las mayúsculas ni las minúsculas. Copia los caracteres de la tarjeta del disco de arriba.</value>
@@ -386,7 +401,7 @@
     <value>Para que el clon quepa, WinCopy reducirá temporalmente la partición de Windows del disco de origen de {0} a {1}. Al terminar, intentará devolverla a su tamaño original. Windows puede tardar varios minutos en mover archivos.</value>
   </data>
   <data name="Shrink_Confirm_Understand" xml:space="preserve">
-    <value>Entiendo y autorizo reducir temporalmente el disco original</value>
+    <value>Entiendo y autorizo reducir temporalmente la partición de Windows del disco de origen</value>
   </data>
   <data name="Progress_Title" xml:space="preserve">
     <value>Clonado en curso</value>
@@ -476,7 +491,7 @@
     <value>Terminado</value>
   </data>
   <data name="NextStep_ShutDownAndReplaceDisk" xml:space="preserve">
-    <value>Apaga el equipo y sustituye el disco original por el nuevo.</value>
+    <value>Apaga el equipo y sustituye el disco de origen por el nuevo.</value>
   </data>
   <data name="NextStep_SelectBootDeviceInFirmware" xml:space="preserve">
     <value>Enciende el equipo y abre el menú de arranque (normalmente F12, F8 o Esc, según el fabricante). Elige el disco nuevo. También puedes ponerlo primero en la configuración del firmware.</value>
@@ -485,7 +500,7 @@
     <value>Vuelve a activar BitLocker en Windows en el disco nuevo, porque la copia no está cifrada.</value>
   </data>
   <data name="NextStep_KeepOriginalDiskUntilVerified" xml:space="preserve">
-    <value>Guarda el disco original en un lugar seguro hasta comprobar que el disco nuevo arranca y funciona.</value>
+    <value>Guarda el disco de origen en un lugar seguro hasta comprobar que el disco nuevo arranca y funciona.</value>
   </data>
   <data name="Result_Success_Title" xml:space="preserve">
     <value>El clon está listo</value>
@@ -533,16 +548,16 @@
     <value>El clonado se canceló</value>
   </data>
   <data name="Result_Failed_Body" xml:space="preserve">
-    <value>El disco de destino quedó sin terminar y no se puede usar para arrancar Windows. Tu disco original sigue siendo utilizable.</value>
+    <value>El disco de destino quedó sin terminar y no se puede usar para arrancar Windows. Tu disco de origen sigue siendo utilizable.</value>
   </data>
   <data name="Result_Failed_Generic" xml:space="preserve">
     <value>Un error detuvo el proceso antes de que pudiera terminar.</value>
   </data>
   <data name="Result_Failed_KeepOriginal" xml:space="preserve">
-    <value>Mantén tu disco original como está y sigue usándolo. Elige otro disco de destino y vuelve a intentarlo.</value>
+    <value>Mantén tu disco de origen como está y sigue usándolo. Elige otro disco de destino y vuelve a intentarlo.</value>
   </data>
   <data name="Result_SourceRestored" xml:space="preserve">
-    <value>El disco original volvió a su tamaño original</value>
+    <value>La partición de Windows del disco de origen volvió a su tamaño original</value>
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
     <value>No se pudo restaurar el tamaño original de la partición de Windows del disco de origen. El clon es válido. Para recuperar el espacio, abre Administración de discos, haz clic derecho en C: y elige «Extender volumen».</value>
@@ -551,7 +566,7 @@
     <value>El disco de destino quedó sin inicializar y no se puede usar para arrancar Windows.</value>
   </data>
   <data name="Result_Cancelled_SourceUntouched" xml:space="preserve">
-    <value>Tu disco original no se modificó.</value>
+    <value>Tu disco de origen no se modificó.</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Exportar registro</value>
@@ -602,10 +617,10 @@
     <value>No se pudo crear la copia coherente del disco del sistema. Comprueba que Volume Shadow Copy funciona e inténtalo de nuevo.</value>
   </data>
   <data name="Error_ShrinkFailed" xml:space="preserve">
-    <value>No se pudo reducir Windows en el disco original. Reinicia el equipo e inténtalo de nuevo.</value>
+    <value>No se pudo reducir Windows en el disco de origen. Reinicia el equipo e inténtalo de nuevo.</value>
   </data>
   <data name="Error_RestoreFailed" xml:space="preserve">
-    <value>No se pudo restaurar el tamaño original del disco original. No lo modifiques, guarda el registro y pide ayuda.</value>
+    <value>No se pudo restaurar el tamaño original de la partición de Windows del disco de origen. No la modifiques, guarda el registro y pide ayuda.</value>
   </data>
   <data name="Error_ExtendFailed" xml:space="preserve">
     <value>Windows no pudo usar todo el espacio nuevo del disco de destino. Revisa el registro e inténtalo de nuevo.</value>
@@ -647,7 +662,7 @@
     <value>No se puede reducir lo suficiente la partición de Windows del disco de origen para que quepa en el disco de destino. Libera espacio en el disco de origen o elige un disco de destino más grande.</value>
   </data>
   <data name="Error_ShrinkJournalFailed" xml:space="preserve">
-    <value>WinCopy no ha podido guardar el registro necesario para restaurar el disco de Windows, así que no lo ha reducido. El disco original no se ha modificado. Reinicia WinCopy e inténtalo de nuevo. Si vuelve a pasar, guarda el registro.</value>
+    <value>WinCopy no ha podido guardar el registro necesario para restaurar el disco de Windows, así que no lo ha reducido. El disco de origen no se ha modificado. Reinicia WinCopy e inténtalo de nuevo. Si vuelve a pasar, guarda el registro.</value>
   </data>
   <data name="Startup_SourceRestored" xml:space="preserve">
     <value>La última clonación se interrumpió y tu disco de Windows había quedado reducido. WinCopy lo ha restaurado a su tamaño original.</value>

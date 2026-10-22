@@ -5,6 +5,7 @@ using WinCopy.App.ViewModels;
 using WinCopy.Application.UseCases.Planning;
 using WinCopy.Domain.Inventory;
 using WinCopy.Domain.Planning;
+using WinCopy.Domain.Shared;
 using Xunit;
 
 namespace WinCopy.App.Tests.ViewModels;
@@ -84,8 +85,8 @@ public sealed class ConfirmStepViewModelTests
         var vm = new ConfirmStepViewModel(new FakeConfirmClonePlan(plan));
         vm.Prepare(target, plan, new HashSet<PreflightCode>());
 
-        vm.UsesGuidFallback.ShouldBeTrue();
-        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Guid", GroupedTargetGuid));
+        vm.IdentifierSource.ShouldBe(ConfirmationSource.DiskGuid);
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt", Loc.Get("Confirm_Source_Guid"), GroupedTargetGuid));
 
         vm.TypedSuffix = "0200";
         vm.IsSuffixValid.ShouldBeTrue();
@@ -103,8 +104,8 @@ public sealed class ConfirmStepViewModelTests
 
         vm.Prepare(target, plan, new HashSet<PreflightCode>());
 
-        vm.UsesGuidFallback.ShouldBeTrue();
-        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Guid", GroupedTargetGuid));
+        vm.IdentifierSource.ShouldBe(ConfirmationSource.DiskGuid);
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt", Loc.Get("Confirm_Source_Guid"), GroupedTargetGuid));
         vm.PromptText.ShouldContain(GroupedTargetGuid);
         vm.TargetCard.ShouldNotBeNull();
         vm.TargetCard.SerialText.ShouldBe(Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_Serial"), Loc.Get("Disk_Serial_NotReported")));
@@ -124,9 +125,42 @@ public sealed class ConfirmStepViewModelTests
 
         vm.Prepare(target, plan, new HashSet<PreflightCode>());
 
-        vm.UsesGuidFallback.ShouldBeFalse();
-        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Serial", "XXXX"));
-        vm.PromptText.ShouldNotContain("AB7F");
+        vm.IdentifierSource.ShouldBe(ConfirmationSource.SerialNumber);
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt", Loc.Get("Confirm_Source_Serial"), SerialWithSuffix));
+        vm.PromptText.ShouldContain(SerialWithSuffix);
+    }
+
+    [Fact]
+    public void AnEmptyGuidUsesAndShowsTheModelIdentifierOnTheCard()
+    {
+        using var _ = new EnglishCulture();
+        var model = "WDC WDS9 60G2G0C-00AJM0";
+        var (planTarget, plan) = Plan(AppFixtures.TargetDisk(model: model));
+        var target = planTarget with { Id = new DiskId(7, Guid.Empty), SerialNumber = "0000000000000000", PartitionStyle = PartitionStyle.Raw };
+        var vm = new ConfirmStepViewModel(new FakeConfirmClonePlan(plan));
+        vm.Prepare(target, plan, new HashSet<PreflightCode>());
+
+        vm.IdentifierSource.ShouldBe(ConfirmationSource.Model);
+        vm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt", Loc.Get("Confirm_Source_Model"), model));
+        vm.TargetCard!.GuidText.ShouldBe(Loc.Format("Disk_Field_Format", Loc.Get("Disk_Label_FallbackIdentifier"), model));
+        vm.TypedSuffix = "AJM0";
+        vm.IsSuffixValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AShortModelUsesTheDiskNumber()
+    {
+        using var _ = new EnglishCulture();
+        var (planTarget, plan) = Plan(AppFixtures.TargetDisk(model: "!!!"));
+        var target = planTarget with { Id = new DiskId(123, Guid.Empty), SerialNumber = string.Empty, PartitionStyle = PartitionStyle.Raw };
+        var vm = new ConfirmStepViewModel(new FakeConfirmClonePlan(plan));
+        vm.Prepare(target, plan, new HashSet<PreflightCode>());
+
+        vm.IdentifierSource.ShouldBe(ConfirmationSource.DiskNumber);
+        vm.PromptText.ShouldContain("DISCO123");
+        vm.TargetCard!.GuidText.ShouldContain("DISCO123");
+        vm.TypedSuffix = "O123";
+        vm.IsSuffixValid.ShouldBeTrue();
     }
 
     [Fact]

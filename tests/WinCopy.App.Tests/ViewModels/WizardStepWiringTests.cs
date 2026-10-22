@@ -111,7 +111,7 @@ public sealed class WizardStepWiringTests
         h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Confirm);
         h.Wizard.CurrentPage.ShouldBeSameAs(h.Confirm);
         h.Confirm.TargetCard!.Model.ShouldBe(AppFixtures.TargetDisk().Model);
-        h.Confirm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt_Serial", "XXXX"));
+        h.Confirm.PromptText.ShouldBe(Loc.Format("Confirm_Prompt", Loc.Get("Confirm_Source_Serial"), "TGT-0002"));
         h.Wizard.IsCurrentStepValid.ShouldBeFalse();
         // Step 3 has its own action: the generic Next button is hidden and disabled.
         h.Wizard.IsNextVisible.ShouldBeFalse();

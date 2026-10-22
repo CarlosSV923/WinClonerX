@@ -185,7 +185,7 @@ public sealed class ShrinkFlowTests
 
         vm.IsSourceRestored.ShouldBeTrue();
         vm.IsSourceRestoreWarning.ShouldBeFalse();
-        vm.SourceRestoreText.ShouldBe("The original disk went back to its original size.");
+        vm.SourceRestoreText.ShouldBe("The Windows partition on the source disk went back to its original size.");
         vm.SourceRestoreText.ShouldBe(Loc.Get("Result_SourceRestored"));
     }
 

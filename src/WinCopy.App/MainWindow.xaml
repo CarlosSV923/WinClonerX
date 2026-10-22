@@ -87,7 +87,7 @@
             <ContentControl Content="{Binding CurrentPage}" />
         </DockPanel>
 
-        <!-- Bottom bar: Back and Next. -->
+        <!-- Bottom bar: Back and the current step action. -->
         <StackPanel Grid.Row="1" Grid.Column="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
@@ -98,7 +98,15 @@
                     Content="{loc:Loc Common_Back}"
                     AutomationProperties.Name="{loc:Loc Common_Back}"
                     Command="{Binding BackCommand}" />
-            <!-- Hidden on steps 3 and 4: step 3 has its own "Clone now" button and step 4 advances by itself. -->
+            <Button Style="{StaticResource Button.Danger}"
+                    MinWidth="180"
+                    Content="{loc:Loc Confirm_Continue}"
+                    AutomationProperties.Name="{loc:Loc Confirm_Continue}"
+                    AutomationProperties.HelpText="{loc:Loc Confirm_CloneNow_Help}"
+                    Visibility="{Binding IsConfirmActionVisible, Converter={StaticResource BoolToVisibility}}"
+                    IsDefault="True"
+                    Command="{Binding ConfirmStep.CloneNowCommand}" />
+            <!-- Hidden on step 3 and step 4: step 3 has its own confirmation action and step 4 advances by itself. -->
             <Button Style="{StaticResource Button.Primary}"
                     MinWidth="120"
                     Content="{loc:Loc Common_Next}"

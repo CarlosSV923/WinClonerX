@@ -340,6 +340,9 @@
   <data name="Disk_Label_Guid" xml:space="preserve">
     <value>Disk identifier</value>
   </data>
+  <data name="Disk_Label_FallbackIdentifier" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
   <data name="Disk_Guid_NotReported" xml:space="preserve">
     <value>Not available</value>
   </data>
@@ -349,17 +352,29 @@
   <data name="Confirm_Subtitle" xml:space="preserve">
     <value>Nothing has been changed yet. This is the last step where you can stop.</value>
   </data>
+  <data name="Confirm_Source_Serial" xml:space="preserve">
+    <value>serial number</value>
+  </data>
+  <data name="Confirm_Source_Guid" xml:space="preserve">
+    <value>disk identifier</value>
+  </data>
+  <data name="Confirm_Source_Model" xml:space="preserve">
+    <value>model</value>
+  </data>
+  <data name="Confirm_Source_DiskNumber" xml:space="preserve">
+    <value>disk number</value>
+  </data>
+  <data name="Confirm_Continue" xml:space="preserve">
+    <value>Continue with the clone</value>
+  </data>
   <data name="Confirm_Target_Heading" xml:space="preserve">
     <value>Disk to erase</value>
   </data>
   <data name="Confirm_Erase_Warning" xml:space="preserve">
     <value>EVERYTHING on this disk will be erased</value>
   </data>
-  <data name="Confirm_Prompt_Serial" xml:space="preserve">
-    <value>Type the last 4 characters of the serial number ({0}) to confirm</value>
-  </data>
-  <data name="Confirm_Prompt_Guid" xml:space="preserve">
-    <value>Type the last 4 characters of the disk identifier ({0}) to confirm</value>
+  <data name="Confirm_Prompt" xml:space="preserve">
+    <value>Type the last 4 characters of the {0} ({1}) to confirm</value>
   </data>
   <data name="Confirm_Field_Help" xml:space="preserve">
     <value>Upper and lower case do not matter. Copy the characters from the disk card above.</value>
@@ -386,7 +401,7 @@
     <value>To make the clone fit, WinCopy will temporarily shrink the Windows partition on the source disk from {0} to {1}. When cloning finishes, it will try to restore the partition to its original size. Windows may take several minutes to move files.</value>
   </data>
   <data name="Shrink_Confirm_Understand" xml:space="preserve">
-    <value>I understand and authorize temporarily shrinking the original disk</value>
+    <value>I understand and authorize temporarily shrinking the Windows partition on the source disk</value>
   </data>
   <data name="Progress_Title" xml:space="preserve">
     <value>Cloning in progress</value>
@@ -476,7 +491,7 @@
     <value>Finished</value>
   </data>
   <data name="NextStep_ShutDownAndReplaceDisk" xml:space="preserve">
-    <value>Shut down the computer, then replace the original disk with the new one.</value>
+    <value>Shut down the computer, then replace the source disk with the new one.</value>
   </data>
   <data name="NextStep_SelectBootDeviceInFirmware" xml:space="preserve">
     <value>Turn the computer on and open the boot menu (usually F12, F8 or Esc, depending on the manufacturer). Choose the new disk. You can also set it as the first boot device in the firmware settings.</value>
@@ -485,7 +500,7 @@
     <value>Turn BitLocker back on in Windows on the new disk, because the copy is not encrypted.</value>
   </data>
   <data name="NextStep_KeepOriginalDiskUntilVerified" xml:space="preserve">
-    <value>Keep the original disk in a safe place until you have checked that the new disk starts and works.</value>
+    <value>Keep the source disk in a safe place until you have checked that the new disk starts and works.</value>
   </data>
   <data name="Result_Success_Title" xml:space="preserve">
     <value>The clone is ready</value>
@@ -533,16 +548,16 @@
     <value>The clone was cancelled</value>
   </data>
   <data name="Result_Failed_Body" xml:space="preserve">
-    <value>The destination disk was left unfinished and cannot be used to start Windows. Your original disk is still usable.</value>
+    <value>The destination disk was left unfinished and cannot be used to start Windows. Your source disk is still usable.</value>
   </data>
   <data name="Result_Failed_Generic" xml:space="preserve">
     <value>An error stopped the process before it could finish.</value>
   </data>
   <data name="Result_Failed_KeepOriginal" xml:space="preserve">
-    <value>Keep your original disk as it is and keep using it. Choose another destination disk and try again.</value>
+    <value>Keep your source disk as it is and keep using it. Choose another destination disk and try again.</value>
   </data>
   <data name="Result_SourceRestored" xml:space="preserve">
-    <value>The original disk went back to its original size.</value>
+    <value>The Windows partition on the source disk went back to its original size.</value>
   </data>
   <data name="Result_SourceRestore_Failed" xml:space="preserve">
     <value>The Windows partition on the source disk could not be restored to its original size. The clone is valid. To recover the space, open Disk Management, right-click C: and choose “Extend Volume.”</value>
@@ -551,7 +566,7 @@
     <value>The target disk was left uninitialized and cannot be used to start Windows.</value>
   </data>
   <data name="Result_Cancelled_SourceUntouched" xml:space="preserve">
-    <value>Your original disk was not modified.</value>
+    <value>Your source disk was not modified.</value>
   </data>
   <data name="Result_ExportLog" xml:space="preserve">
     <value>Export log</value>
@@ -602,10 +617,10 @@
     <value>The consistent copy of the system disk could not be created. Check that Volume Shadow Copy works, then try again.</value>
   </data>
   <data name="Error_ShrinkFailed" xml:space="preserve">
-    <value>Windows could not be shrunk on the original disk. Restart the computer and try again.</value>
+    <value>Windows could not be shrunk on the source disk. Restart the computer and try again.</value>
   </data>
   <data name="Error_RestoreFailed" xml:space="preserve">
-    <value>The original disk could not be restored to its original size. Do not change it, keep the log and ask for help.</value>
+    <value>The Windows partition on the source disk could not be restored to its original size. Do not change it, keep the log and ask for help.</value>
   </data>
   <data name="Error_ExtendFailed" xml:space="preserve">
     <value>Windows could not use all the new space on the destination disk. Check the log and try again.</value>
@@ -647,7 +662,7 @@
     <value>The Windows partition on the source disk cannot be shrunk enough to fit on the target disk. Free up space on the source disk or choose a larger target disk.</value>
   </data>
   <data name="Error_ShrinkJournalFailed" xml:space="preserve">
-    <value>WinCopy could not save the record needed to restore the Windows disk, so it did not shrink it. The original disk was not changed. Restart WinCopy and try again. If it happens again, keep the log file.</value>
+    <value>WinCopy could not save the record needed to restore the Windows disk, so it did not shrink it. The source disk was not changed. Restart WinCopy and try again. If it happens again, keep the log file.</value>
   </data>
   <data name="Startup_SourceRestored" xml:space="preserve">
     <value>The last clone was interrupted and your Windows disk had been shrunk. WinCopy has restored it to its original size.</value>
