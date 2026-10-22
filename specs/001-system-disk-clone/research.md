@@ -173,7 +173,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
   preparaba el destino (fase `PrepareTarget`) con el origen ya reducido. Las compensaciones solo se ejecutan dentro
   del proceso, así que nada restauró la partición de Windows y hubo que ejecutar `Resize-Partition` a mano. Un corte
   de energía o un proceso matado darían el mismo resultado.
-- **Decisión (diario de restauración, FR-021a)**: el archivo `%ProgramData%\WinCopy\pending-source-restore.json`
+- **Decisión (diario de restauración, FR-021a)**: el archivo `%ProgramData%\WinClonerX\pending-source-restore.json`
   guarda la partición, su longitud original, el plan y el instante UTC. Se escribe de forma duradera (archivo
   temporal con `FileOptions.WriteThrough` y `Flush(true)`, luego reemplazo) justo antes de `ShrinkAsync`: si la
   escritura falla, la ejecución aborta con `ShrinkJournalFailed` y no se reduce nada. Se borra solo cuando el origen
@@ -269,7 +269,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 - **Decisión**:
   - Suspensión: `SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)` mientras dura la
     ejecución.
-  - Instancia única: mutex con nombre `Global\WinCopy.SingleInstance`. Si ya existe una instancia, se
+  - Instancia única: mutex con nombre `Global\WinClonerX.SingleInstance`. Si ya existe una instancia, se
     trae al frente su ventana (FR-031).
 - **Motivo**: son APIs públicas y sencillas, y se liberan automáticamente si el proceso termina.
 
@@ -277,7 +277,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 
 - **Decisión**:
   - WPF en .NET 10 con el **tema Fluent integrado** (`ThemeMode`) como base, más diccionarios de
-    recursos propios con la paleta, los tipos de letra y los componentes de WinCopy.
+    recursos propios con la paleta, los tipos de letra y los componentes de WinClonerX.
   - MVVM con **CommunityToolkit.Mvvm** (MIT) y DI con **Microsoft.Extensions.Hosting**.
   - Componentes clave: barra de disco con particiones a escala y color por tipo, tarjetas de disco y
     asistente por pasos con indicador de progreso lateral.
@@ -318,7 +318,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 
 - **Decisión**:
   - **Serilog** (Apache-2.0) con formato JSON compacto (`Serilog.Formatting.Compact`), un archivo por
-    ejecución en `%ProgramData%\WinCopy\logs\`.
+    ejecución en `%ProgramData%\WinClonerX\logs\`.
   - Eventos estructurados con el esquema de [contracts/log-events.md](contracts/log-events.md).
   - La exportación copia el archivo de la ejecución, y opcionalmente el inventario en JSON, a la ruta
     que elija la persona (FR-026).
@@ -331,7 +331,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 - **Decisión**:
   - **xUnit v3** (Apache-2.0) y **Shouldly** (BSD) para aserciones. Fakes escritos a mano para los
     puertos (sin librerías de mocks).
-  - **NetArchTest.Rules** (MIT), solo en `WinCopy.ArchitectureTests`: verifica de forma declarativa que
+  - **NetArchTest.Rules** (MIT), solo en `WinClonerX.ArchitectureTests`: verifica de forma declarativa que
     el dominio no depende de Windows ni WPF y que las capas solo dependen hacia dentro (principio III).
     Alternativa descartada: reflexión manual sobre las referencias de ensamblado (más código propio que
     mantener y menos expresivo).
@@ -344,7 +344,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
        Admite restricciones globales del proceso que **solo pueden añadir prohibiciones**.
     2. El ensamblado de pruebas de integración registra con un `[ModuleInitializer]` una restricción
        que solo autoriza discos `BusType == FileBackedVirtual` (15) respaldados por un VHDX bajo
-       `%TEMP%\WinCopyTests\`. Así, aunque una prueba cree un adaptador directamente con el número de un
+       `%TEMP%\WinClonerXTests\`. Así, aunque una prueba cree un adaptador directamente con el número de un
        disco físico, la apertura falla antes de llamar a `CreateFile`.
   - Arranque: pruebas manuales o semiautomatizadas en VM Gen2 de Hyper-V (opcional) y validación final
     en el segundo disco físico con la lista de [quickstart.md](quickstart.md).
@@ -356,7 +356,7 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 
 - **Decisión**:
   - **WiX Toolset v6** con proyecto SDK (`WixToolset.Sdk`): MSI x64 por máquina, instalado en
-    `Program Files\WinCopy`, con acceso directo en el menú Inicio y desinstalación limpia (FR-032).
+    `Program Files\WinClonerX`, con acceso directo en el menú Inicio y desinstalación limpia (FR-032).
   - La app se publica como *self-contained* para win-x64, sin necesidad de instalar el runtime de .NET.
   - El manifiesto de la app declara `requireAdministrator`.
   - Las versiones se publican sin firmar, con SHA-256 y GitHub Artifact Attestations (constitución

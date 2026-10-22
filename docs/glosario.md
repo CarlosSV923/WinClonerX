@@ -98,7 +98,7 @@ Valores usados por más de un contexto.
 | Entorno de recuperación | `RecoveryEnvironmentState` | Estado del entorno de recuperación del clon: `Configured` (configurado) o `Warning` (aviso que no impide arrancar). |
 | Pasos siguientes | `NextStepCode` | Código de la acción que la persona debe hacer tras el clonado, por ejemplo intercambiar los discos o elegir el arranque. |
 | Fase no interrumpible | `CloneExecution.IsInterruptible` | Fase que una cancelación no puede interrumpir: `ShrinkSource`, `CommitLayout`, `RepairBoot`, `Cleanup` y `RestoreSource`. Si se pide cancelar durante una de ellas, la cancelación queda pendiente hasta que la fase termina (`CancelPending`). |
-| Diario de restauración del origen | `ISourceRestoreJournal`, `FileSourceRestoreJournal` | Archivo `%ProgramData%\WinCopy\pending-source-restore.json` que se escribe de forma duradera antes de reducir el origen. Guarda la partición, su tamaño original y el plan. Se borra cuando el origen vuelve a su tamaño original. Si la aplicación se cierra antes, `RecoverPendingSourceRestore` lo valida contra el inventario actual y restaura el origen al abrirse. |
+| Diario de restauración del origen | `ISourceRestoreJournal`, `FileSourceRestoreJournal` | Archivo `%ProgramData%\WinClonerX\pending-source-restore.json` que se escribe de forma duradera antes de reducir el origen. Guarda la partición, su tamaño original y el plan. Se borra cuando el origen vuelve a su tamaño original. Si la aplicación se cierra antes, `RecoverPendingSourceRestore` lo valida contra el inventario actual y restaura el origen al abrirse. |
 
 ## Reparación de arranque
 
@@ -126,7 +126,7 @@ Valores usados por más de un contexto.
 | DiskWriteGuard | `DiskWriteGuard` | Único punto por el que se abre un disco físico para escribir. Rechaza el disco del sistema y cualquier disco que contenga el Windows en ejecución. Las restricciones del proceso solo pueden añadir prohibiciones, nunca permitir lo que la regla base prohíbe. |
 | Instantánea VSS | `VssSnapshotService`, `VssSnapshotSet` | Copia coherente de los volúmenes, creada con el servicio de instantáneas de volumen de Windows (Volume Shadow Copy Service, VSS). Es la instantánea de la que se leen los datos del clonado (ver Instantánea). Se borra siempre al terminar. |
 | Mapa de bits del volumen | `VolumeAllocationPlanner` | Mapa que indica qué clústeres de un volumen están ocupados (`FSCTL_GET_VOLUME_BITMAP`). Con él se copian solo los datos usados, uniendo los clústeres contiguos en tramos. |
-| Letra automática (automount) | No aplica (comportamiento de Windows) | Letra de unidad que Windows asigna sola a un volumen nuevo cuando aparece en línea. Durante el clonado, el volumen del clon puede recibir una letra automática. WinCopy la reutiliza en lugar de asignar otra (hallazgo del punto de control S2). |
+| Letra automática (automount) | No aplica (comportamiento de Windows) | Letra de unidad que Windows asigna sola a un volumen nuevo cuando aparece en línea. Durante el clonado, el volumen del clon puede recibir una letra automática. WinClonerX la reutiliza en lugar de asignar otra (hallazgo del punto de control S2). |
 
 ## Reglas de uso
 

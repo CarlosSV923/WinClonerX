@@ -2,7 +2,7 @@
 
 **Feature**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md) | **Research**: [research.md](research.md)
 
-Modelo de dominio (DDD). Todo lo de este documento vive en `WinCopy.Domain`, que no tiene dependencias
+Modelo de dominio (DDD). Todo lo de este documento vive en `WinClonerX.Domain`, que no tiene dependencias
 de Windows. Los nombres en `código` forman el lenguaje ubicuo, que se recogerá en `docs/glosario.md`.
 
 ## Contextos delimitados

@@ -1,0 +1,51 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="WinClonerX"
+           Manufacturer="WinClonerX"
+           Version="$(var.WinClonerXVersion)"
+           UpgradeCode="45375F69-2C6C-4BB1-BD51-4B9D75111B6C"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of WinClonerX is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Clean uninstall (FR-032). The MSI removes every installed file under Program Files\WinClonerX, the Start menu
+         shortcut and its HKCU marker value (the shortcut component's KeyPath). There are no custom actions and no
+         services. The logs in %ProgramData%\WinClonerX are user data and are deliberately NOT removed. -->
+    <Feature Id="MainFeature" Title="WinClonerX" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="WinClonerX" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="WinClonerX" />
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Every file of the self-contained publish (WinClonerX.App, the .NET runtime, WPF), one Component per file,
+       placed in INSTALLFOLDER with the folder structure of the publish. The publish runs in the
+       WinClonerXPublishApp target before this is compiled. -->
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.WinClonerXPublishDir)\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Start menu shortcut for all users. A non-advertised shortcut in a per-machine package needs a per-user
+       KeyPath (ICE38/ICE43/ICE57 enforce this), so the KeyPath is an HKCU value. Windows Installer removes it,
+       and the shortcut, on uninstall. -->
+  <Fragment>
+    <Component Id="StartMenuShortcut" Guid="FE30D10D-8BDD-4026-A4C4-1ED404923FDB" Directory="ApplicationProgramsFolder">
+      <Shortcut Id="WinClonerXStartMenuShortcut"
+                Name="WinClonerX"
+                Target="[INSTALLFOLDER]WinClonerX.App.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\WinClonerX" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+</Wix>

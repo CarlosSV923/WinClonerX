@@ -8,7 +8,7 @@ La constitución (principio IV) exige validar cada versión a mano en un disco f
 
 1. Copia la plantilla de abajo, con el título de la nueva ejecución, al final de esta página. Las ejecuciones más recientes van al final.
 2. Rellena cada campo. Si una comprobación no se hizo, escribe "No registrado". No marques nada que no hayas comprobado.
-3. Anota el nombre del archivo `.clef` de la ejecución. Los registros están en `C:\ProgramData\WinCopy\logs`.
+3. Anota el nombre del archivo `.clef` de la ejecución. Los registros están en `C:\ProgramData\WinClonerX\logs`.
 4. Haz commit del cambio.
 
 ## Plantilla
@@ -17,7 +17,7 @@ La constitución (principio IV) exige validar cada versión a mano en un disco f
 
 | Campo | Valor |
 |---|---|
-| Versión de WinCopy | |
+| Versión de WinClonerX | |
 | Commit | |
 | Fecha | |
 | Equipo (fabricante y modelo) | |
@@ -51,7 +51,7 @@ La constitución (principio IV) exige validar cada versión a mano en un disco f
 | 14 | Si hubo reducción, C: vuelve a su tamaño original | FR-021a, SC-010 | | Solo en destino menor |
 | 15 | La verificación completa detecta una alteración de datos | FR-022a, SC-009 | | Solo si se activó. Pendiente, T108 |
 | 16 | Se puede exportar el registro | FR-026 | | Pendiente, T103 a T105 |
-| 17 | Tras desinstalar no quedan archivos en `Program Files\WinCopy`, entradas en Programas ni procesos o servicios | FR-032 | | T119 |
+| 17 | Tras desinstalar no quedan archivos en `Program Files\WinClonerX`, entradas en Programas ni procesos o servicios | FR-032 | | T119 |
 
 Incidencias de esta ejecución:
 
@@ -67,7 +67,7 @@ Validación en hardware real del punto de control S2 (T073), con la aplicación 
 
 | Campo | Valor |
 |---|---|
-| Versión de WinCopy | 1.0.0+8467029 |
+| Versión de WinClonerX | 1.0.0+8467029 |
 | Commit | 8467029 |
 | Fecha | 2026-10-20 |
 | Equipo | Mini PC con Windows 11 (es-MX), UEFI con GPT |
@@ -116,7 +116,7 @@ La barra de particiones expone su nombre localizado y el detalle de particiones,
 
 ### Contraste WCAG 2.1
 
-Los colores se leen de `WinCopyTheme.xaml`. El texto normal requiere 4.5:1; los bordes de controles y el texto grande requieren 3:1. Los controles desactivados están exentos, pero el texto desactivado se mantuvo legible.
+Los colores se leen de `WinClonerXTheme.xaml`. El texto normal requiere 4.5:1; los bordes de controles y el texto grande requieren 3:1. Los controles desactivados están exentos, pero el texto desactivado se mantuvo legible.
 
 | Elemento | Primer plano | Fondo | Contraste | Umbral |
 |---|---|---|---:|---:|
@@ -165,7 +165,7 @@ Queda pendiente la comprobación manual con Accessibility Insights y Narrator en
 Propuesta de Codex (gpt-6-luna) revisada y aplicada el 2026-10-21. Una primera reescritura de 140 textos se descartó porque tenía errores gramaticales, perdía datos útiles (UEFI, GPT, tamaño de sector) y daba un consejo equivocado. En esta segunda pasada se cambiaron 20 claves en cada idioma. Tres textos tenían un significado incorrecto o engañoso:
 
 - **Disks_Strategy_Extend** prometía que Windows se ampliaría siempre, pero con un destino del mismo tamaño no se amplía.
-- **La restauración del origen** se presentaba como segura, pero puede fallar (el resultado lo muestra aparte). Ahora dice que WinCopy «intentará» restaurarla.
+- **La restauración del origen** se presentaba como segura, pero puede fallar (el resultado lo muestra aparte). Ahora dice que WinClonerX «intentará» restaurarla.
 - **El aviso de WinRE** pedía ejecutar `reagentc /enable` sin decir dónde. Ejecutado antes de arrancar desde el clon, actuaría sobre el Windows de origen.
 
 | Clave | Idioma | Antes | Después |
@@ -180,10 +180,10 @@ Propuesta de Codex (gpt-6-luna) revisada y aplicada el 2026-10-21. Una primera r
 | Disks_Strategy_Shrink | en | Windows on the original disk must be shrunk first | The Windows partition on the source disk must be shrunk temporarily |
 | Preflight_SourceNotGpt | es | El disco del sistema no usa el estilo de particiones GPT, que esta versión necesita. | El disco de origen no usa GPT, un requisito de esta versión. |
 | Preflight_SourceNotGpt | en | The system disk does not use the GPT partition style, which this version requires. | The source disk does not use GPT, which this version requires. |
-| Preflight_MultipleWindows | es | El disco del sistema no contiene exactamente una instalación de Windows, así que no hay nada claro que clonar. | El disco de origen no tiene una única partición de Windows identificable. WinCopy no puede determinar qué clonar. |
-| Preflight_MultipleWindows | en | The system disk does not contain exactly one Windows installation, so there is nothing clear to clone. | The source disk does not have exactly one identifiable Windows partition. WinCopy cannot determine what to clone. |
-| Preflight_SectorSizeMismatch | es | Este disco tiene un tamaño de sector distinto al del disco del sistema, y esta versión no puede clonar entre ambos. | El disco de destino tiene un tamaño de sector lógico distinto al del disco de origen. WinCopy solo puede clonar entre discos con el mismo tamaño de sector lógico. Elige un disco compatible. |
-| Preflight_SectorSizeMismatch | en | This disk uses a different sector size than the system disk, and this version cannot clone between them. | The target disk has a different logical sector size from the source disk. WinCopy can clone only between disks with the same logical sector size. Choose a compatible disk. |
+| Preflight_MultipleWindows | es | El disco del sistema no contiene exactamente una instalación de Windows, así que no hay nada claro que clonar. | El disco de origen no tiene una única partición de Windows identificable. WinClonerX no puede determinar qué clonar. |
+| Preflight_MultipleWindows | en | The system disk does not contain exactly one Windows installation, so there is nothing clear to clone. | The source disk does not have exactly one identifiable Windows partition. WinClonerX cannot determine what to clone. |
+| Preflight_SectorSizeMismatch | es | Este disco tiene un tamaño de sector distinto al del disco del sistema, y esta versión no puede clonar entre ambos. | El disco de destino tiene un tamaño de sector lógico distinto al del disco de origen. WinClonerX solo puede clonar entre discos con el mismo tamaño de sector lógico. Elige un disco compatible. |
+| Preflight_SectorSizeMismatch | en | This disk uses a different sector size than the system disk, and this version cannot clone between them. | The target disk has a different logical sector size from the source disk. WinClonerX can clone only between disks with the same logical sector size. Choose a compatible disk. |
 | Preflight_SnapshotUnavailable | es | El sistema no puede crear la copia coherente que necesita mientras Windows está en uso. Comprueba que la Instantánea de volumen (VSS) está disponible y vuelve a intentarlo. | No se pudo crear la instantánea que necesita el clonado mientras Windows está en uso. Comprueba que el servicio de instantáneas de volumen (VSS) está disponible y vuelve a intentarlo. |
 | Preflight_SnapshotUnavailable | en | The system cannot create the consistent copy it needs while Windows is running. Check that Volume Shadow Copy is available, then try again. | The snapshot needed for cloning could not be created while Windows is running. Check that Volume Shadow Copy (VSS) is available, then try again. |
 | Review_Before | es | Antes (origen) | Antes (disco de origen) |
@@ -192,12 +192,12 @@ Propuesta de Codex (gpt-6-luna) revisada y aplicada el 2026-10-21. Una primera r
 | Review_After | en | After (destination) | After (target disk) |
 | Shrink_Heading | es | Reducción temporal del disco original | Reducción temporal de la partición de Windows del disco de origen |
 | Shrink_Heading | en | Temporary shrink of the original disk | Temporary shrink of the Windows partition on the source disk |
-| Shrink_Review_Body | es | Windows (C:) pasará de {0} a {1} durante la copia y se restaurará al terminar | La partición de Windows del disco de origen pasará de {0} a {1} antes del clonado. WinCopy intentará devolverla a su tamaño original al terminar. |
-| Shrink_Review_Body | en | Windows (C:) will go from {0} to {1} during the copy and will be restored when it finishes. | The Windows partition on the source disk will go from {0} to {1} before cloning. WinCopy will try to restore its original size when cloning finishes. |
-| Shrink_Confirm_Body | es | Para que quepa, WinCopy reducirá temporalmente la partición de Windows del disco original de {0} a {1}. Al terminar la devolverá a su tamaño. Windows puede tardar varios minutos en mover archivos. | Para que el clon quepa, WinCopy reducirá temporalmente la partición de Windows del disco de origen de {0} a {1}. Al terminar, intentará devolverla a su tamaño original. Windows puede tardar varios minutos en mover archivos. |
-| Shrink_Confirm_Body | en | To make it fit, WinCopy will temporarily shrink the Windows partition on the original disk from {0} to {1}. When it finishes, it gives the space back and restores its size. Windows may take several minutes to move files. | To make the clone fit, WinCopy will temporarily shrink the Windows partition on the source disk from {0} to {1}. When cloning finishes, it will try to restore the partition to its original size. Windows may take several minutes to move files. |
-| Cancel_Confirm_Message | es | ¿Cancelar el clonado? El disco de destino quedará sin inicializar. Tu disco original no se modifica (si se redujo, se restaurará su tamaño). | ¿Cancelar el clonado? El disco de destino quedará sin inicializar. El disco de origen no se modifica; si WinCopy redujo su partición de Windows, intentará restaurarla. |
-| Cancel_Confirm_Message | en | Cancel the clone? The target disk will be left uninitialized. Your original disk is not modified (if it was shrunk, its size is restored). | Cancel cloning? The target disk will be left uninitialized. The source disk is not modified; if WinCopy shrank its Windows partition, it will try to restore it. |
+| Shrink_Review_Body | es | Windows (C:) pasará de {0} a {1} durante la copia y se restaurará al terminar | La partición de Windows del disco de origen pasará de {0} a {1} antes del clonado. WinClonerX intentará devolverla a su tamaño original al terminar. |
+| Shrink_Review_Body | en | Windows (C:) will go from {0} to {1} during the copy and will be restored when it finishes. | The Windows partition on the source disk will go from {0} to {1} before cloning. WinClonerX will try to restore its original size when cloning finishes. |
+| Shrink_Confirm_Body | es | Para que quepa, WinClonerX reducirá temporalmente la partición de Windows del disco original de {0} a {1}. Al terminar la devolverá a su tamaño. Windows puede tardar varios minutos en mover archivos. | Para que el clon quepa, WinClonerX reducirá temporalmente la partición de Windows del disco de origen de {0} a {1}. Al terminar, intentará devolverla a su tamaño original. Windows puede tardar varios minutos en mover archivos. |
+| Shrink_Confirm_Body | en | To make it fit, WinClonerX will temporarily shrink the Windows partition on the original disk from {0} to {1}. When it finishes, it gives the space back and restores its size. Windows may take several minutes to move files. | To make the clone fit, WinClonerX will temporarily shrink the Windows partition on the source disk from {0} to {1}. When cloning finishes, it will try to restore the partition to its original size. Windows may take several minutes to move files. |
+| Cancel_Confirm_Message | es | ¿Cancelar el clonado? El disco de destino quedará sin inicializar. Tu disco original no se modifica (si se redujo, se restaurará su tamaño). | ¿Cancelar el clonado? El disco de destino quedará sin inicializar. El disco de origen no se modifica; si WinClonerX redujo su partición de Windows, intentará restaurarla. |
+| Cancel_Confirm_Message | en | Cancel the clone? The target disk will be left uninitialized. Your original disk is not modified (if it was shrunk, its size is restored). | Cancel cloning? The target disk will be left uninitialized. The source disk is not modified; if WinClonerX shrank its Windows partition, it will try to restore it. |
 | Error_ShrinkInsufficient | es | Windows no se puede reducir lo suficiente para caber en el disco de destino. Libera espacio en el disco del sistema o elige un disco más grande. | No se puede reducir lo suficiente la partición de Windows del disco de origen para que quepa en el disco de destino. Libera espacio en el disco de origen o elige un disco de destino más grande. |
 | Error_ShrinkInsufficient | en | Windows cannot be shrunk enough to fit on the target disk. Free up space on the system disk or choose a larger disk. | The Windows partition on the source disk cannot be shrunk enough to fit on the target disk. Free up space on the source disk or choose a larger target disk. |
 | Phase_ShrinkSource | es | Reduciendo Windows en el disco original | Reduciendo la partición de Windows del disco de origen |

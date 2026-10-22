@@ -1,7 +1,7 @@
 # Contrato: Eventos del registro de operación
 
 Formato: JSON compacto de Serilog (CLEF), una línea por evento, en
-`%ProgramData%\WinCopy\logs\winCopy-<yyyyMMdd-HHmmss>-<executionId>.clef`. El registro no contiene datos
+`%ProgramData%\WinClonerX\logs\winClonerX-<yyyyMMdd-HHmmss>-<executionId>.clef`. El registro no contiene datos
 personales más allá de los identificadores de disco (modelo, número de serie y GUID) necesarios para el
 diagnóstico. Nunca sale del equipo salvo que la persona lo exporte (FR-026, FR-027).
 

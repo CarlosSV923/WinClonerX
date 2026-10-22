@@ -33,13 +33,13 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore WinCopy.slnx
+        run: dotnet restore WinClonerX.slnx
 
       - name: Build
-        run: dotnet build WinCopy.slnx -c Release --no-restore
+        run: dotnet build WinClonerX.slnx -c Release --no-restore
 
       - name: Test
-        run: dotnet test WinCopy.slnx -c Release --no-build --filter "Category!=Integration" --logger trx --results-directory TestResults
+        run: dotnet test WinClonerX.slnx -c Release --no-build --filter "Category!=Integration" --logger trx --results-directory TestResults
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -53,6 +53,6 @@ jobs:
       - name: Upload MSI
         uses: actions/upload-artifact@v4
         with:
-          name: WinCopy-msi
-          path: installer/WinCopy.Installer/bin/x64/Release/*.msi
+          name: WinClonerX-msi
+          path: installer/WinClonerX.Installer/bin/x64/Release/*.msi
           if-no-files-found: error

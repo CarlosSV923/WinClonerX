@@ -14,10 +14,10 @@ Guía para comprobar que la funcionalidad cumple la [especificación](spec.md). 
 ## Nivel 1: Pruebas unitarias (sin privilegios ni discos)
 
 ```powershell
-dotnet test tests/WinCopy.Domain.Tests
-dotnet test tests/WinCopy.Application.Tests
-dotnet test tests/WinCopy.App.Tests
-dotnet test tests/WinCopy.Infrastructure.Windows.Tests
+dotnet test tests/WinClonerX.Domain.Tests
+dotnet test tests/WinClonerX.Application.Tests
+dotnet test tests/WinClonerX.App.Tests
+dotnet test tests/WinClonerX.Infrastructure.Windows.Tests
 ```
 
 Resultado esperado: todo en verde. Cubren:
@@ -29,10 +29,10 @@ Resultado esperado: todo en verde. Cubren:
 ## Nivel 2: Integración con discos virtuales (administrador)
 
 ```powershell
-dotnet test tests/WinCopy.Infrastructure.IntegrationTests
+dotnet test tests/WinClonerX.Infrastructure.IntegrationTests
 ```
 
-- Los fixtures crean VHDX temporales en `%TEMP%\WinCopyTests\`, los adjuntan, los usan y los eliminan.
+- Los fixtures crean VHDX temporales en `%TEMP%\WinClonerXTests\`, los adjuntan, los usan y los eliminan.
 - **Comprobación de seguridad**: el fixture rechaza cualquier disco que no sea `FileBackedVirtual` creado
   por él mismo (principio IV). Hay un test específico que intenta usar un disco físico y debe fallar
   antes de abrirlo.
@@ -48,7 +48,7 @@ dotnet test tests/WinCopy.Infrastructure.IntegrationTests
 
 1. Crear una VM Gen2 de Hyper-V con Windows 11 (disco de 64 GB) y añadirle un segundo VHDX vacío de
    80 GB (destino mayor) o de 40 GB (destino menor).
-2. Instalar el MSI de WinCopy dentro de la VM y clonar al segundo disco.
+2. Instalar el MSI de WinClonerX dentro de la VM y clonar al segundo disco.
 3. Apagar la VM, quitar el disco original y arrancar desde el clon.
 4. Comprobar:
    - Windows arranca (SC-002) con la unidad `C:`, los mismos usuarios, programas y archivos.
@@ -62,7 +62,7 @@ dotnet test tests/WinCopy.Infrastructure.IntegrationTests
 
 > ⚠️ Se borrará todo el contenido del segundo disco.
 
-1. Instalar el MSI y abrir WinCopy.
+1. Instalar el MSI y abrir WinClonerX.
 2. Comprobar que el disco del sistema no aparece como destino (FR-004) y que el segundo disco muestra el
    modelo y el número de serie correctos.
 3. Revisar el plan y confirmar escribiendo los 4 últimos caracteres del número de serie. Cronometrar
@@ -72,8 +72,8 @@ dotnet test tests/WinCopy.Infrastructure.IntegrationTests
 5. Al terminar, exportar el registro.
 6. Apagar, arrancar desde el disco clonado (menú de arranque del firmware o intercambiando los discos) y
    repetir las comprobaciones del nivel 3.
-7. Desinstalar WinCopy desde Configuración → Aplicaciones y comprobar que no queda nada en
-   `Program Files\WinCopy`, ni en la lista de programas, ni procesos o servicios (FR-032).
+7. Desinstalar WinClonerX desde Configuración → Aplicaciones y comprobar que no queda nada en
+   `Program Files\WinClonerX`, ni en la lista de programas, ni procesos o servicios (FR-032).
 8. Registrar el resultado en `docs/validacion-manual.md`: versión, hardware, tamaños, duración,
    respuesta de la interfaz durante la copia (< 100 ms percibido) y resultado de cada comprobación.
 

@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="App_Title" xml:space="preserve">
+    <value>WinClonerX</value>
+  </data>
+  <data name="Wizard_Step_Disks" xml:space="preserve">
+    <value>Disks</value>
+  </data>
+  <data name="Wizard_Step_Review" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="Wizard_Step_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Wizard_Step_Progress" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="Wizard_Step_Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Cancel_Confirm_Message" xml:space="preserve">
+    <value>Cancel cloning? The target disk will be left uninitialized. The source disk is not modified; if WinClonerX shrank its Windows partition, it will try to restore it.</value>
+  </data>
+  <data name="Cancel_Confirm_Yes" xml:space="preserve">
+    <value>Cancel clone</value>
+  </data>
+  <data name="Cancel_Confirm_No" xml:space="preserve">
+    <value>Keep cloning</value>
+  </data>
+  <data name="Rail_Steps_Label" xml:space="preserve">
+    <value>Wizard steps</value>
+  </data>
+  <data name="Icon_Check" xml:space="preserve">
+    <value>&#xE73E;</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Disks_Title" xml:space="preserve">
+    <value>Choose the destination disk</value>
+  </data>
+  <data name="Disks_Subtitle" xml:space="preserve">
+    <value>The disk where Windows is installed is the source disk. Choose the target disk for the clone. Everything on it will be erased.</value>
+  </data>
+  <data name="Disks_Loading" xml:space="preserve">
+    <value>Reading disks...</value>
+  </data>
+  <data name="Disks_Source_Heading" xml:space="preserve">
+    <value>Source disk</value>
+  </data>
+  <data name="Disks_Targets_Heading" xml:space="preserve">
+    <value>Destination disks</value>
+  </data>
+  <data name="Disks_Blocked_Title" xml:space="preserve">
+    <value>This computer cannot be cloned in this version</value>
+  </data>
+  <data name="Disks_Blocked_Body" xml:space="preserve">
+    <value>Fix the reasons below, then press Refresh.</value>
+  </data>
+  <data name="Disks_Empty_Title" xml:space="preserve">
+    <value>No destination disk is available</value>
+  </data>
+  <data name="Disks_Empty_Body" xml:space="preserve">
+    <value>Connect an internal or USB disk of at least {0}. Everything on it will be erased, so use a disk without important data, then press Refresh.</value>
+  </data>
+  <data name="Disks_Status_Eligible" xml:space="preserve">
+    <value>Eligible</value>
+  </data>
+  <data name="Disks_Status_NotEligible" xml:space="preserve">
+    <value>Not eligible</value>
+  </data>
+  <data name="Disks_Strategy_Extend" xml:space="preserve">
+    <value>The Windows partition does not need to be shrunk</value>
+  </data>
+  <data name="Disks_Strategy_Shrink" xml:space="preserve">
+    <value>The Windows partition on the source disk must be shrunk temporarily</value>
+  </data>
+  <data name="Disks_Shortfall" xml:space="preserve">
+    <value>Missing {0}</value>
+  </data>
+  <data name="Disks_Reason_GlobalBlocked" xml:space="preserve">
+    <value>The checks for this computer failed, so no disk can be used.</value>
+  </data>
+  <data name="Disks_Select_Hint" xml:space="preserve">
+    <value>Press Space or Enter to select this disk.</value>
+  </data>
+  <data name="Disk_Automation_Name" xml:space="preserve">
+    <value>{0}. {1}. {2}. {3}.</value>
+  </data>
+  <data name="Disk_Field_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Disk_Label_Serial" xml:space="preserve">
+    <value>Serial number</value>
+  </data>
+  <data name="Disk_Label_Capacity" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="Disk_Label_Connection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="Disks_Bus_Internal" xml:space="preserve">
+    <value>Internal</value>
+  </data>
+  <data name="Disks_Bus_Usb" xml:space="preserve">
+    <value>USB</value>
+  </data>
+  <data name="Disks_Bus_Virtual" xml:space="preserve">
+    <value>Virtual</value>
+  </data>
+  <data name="Partition_Role_EfiSystem" xml:space="preserve">
+    <value>EFI</value>
+  </data>
+  <data name="Partition_Role_MsReserved" xml:space="preserve">
+    <value>MSR</value>
+  </data>
+  <data name="Partition_Role_Windows" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Partition_Role_Recovery" xml:space="preserve">
+    <value>Recovery</value>
+  </data>
+  <data name="Partition_Role_Data" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Partition_Role_Unsupported" xml:space="preserve">
+    <value>Unsupported</value>
+  </data>
+  <data name="Partition_Role_Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Partition_Tooltip" xml:space="preserve">
+    <value>{0}: {1} of {2}</value>
+  </data>
+  <data name="Partition_Tooltip_NoUsage" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Severity_Pass" xml:space="preserve">
+    <value>Passed</value>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Severity_Blocking" xml:space="preserve">
+    <value>Blocks cloning</value>
+  </data>
+  <data name="Preflight_Reason_Format" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Preflight_FirmwareNotUefi" xml:space="preserve">
+    <value>This computer does not start in UEFI mode, so it cannot be cloned in this version.</value>
+  </data>
+  <data name="Preflight_SourceNotGpt" xml:space="preserve">
+    <value>The source disk does not use GPT, which this version requires.</value>
+  </data>
+  <data name="Preflight_UnsupportedDiskKind" xml:space="preserve">
+    <value>The system disk uses a storage setup this version does not support, such as dynamic disks, RAID or Storage Spaces.</value>
+  </data>
+  <data name="Preflight_MultipleWindows" xml:space="preserve">
+    <value>The source disk does not have exactly one identifiable Windows partition. WinClonerX cannot determine what to clone.</value>
+  </data>
+  <data name="Preflight_TargetIsSystem" xml:space="preserve">
+    <value>This is the system disk, so it cannot be used as the destination.</value>
+  </data>
+  <data name="Preflight_TargetInUse" xml:space="preserve">
+    <value>This disk is in use by Windows or another program. Close the programs that use it or disconnect it, then press Refresh.</value>
+  </data>
+  <data name="Preflight_TargetTooSmall" xml:space="preserve">
+    <value>The disk is too small to hold Windows and its data. It needs {0} more. Choose a larger disk.</value>
+  </data>
+  <data name="Preflight_SectorSizeMismatch" xml:space="preserve">
+    <value>The target disk has a different logical sector size from the source disk. WinClonerX can clone only between disks with the same logical sector size. Choose a compatible disk.</value>
+  </data>
+  <data name="Preflight_ShrinkInsufficient" xml:space="preserve">
+    <value>Windows cannot be shrunk enough to fit on this disk. Free up space on the system disk or choose a larger disk.</value>
+  </data>
+  <data name="Preflight_SnapshotUnavailable" xml:space="preserve">
+    <value>The snapshot needed for cloning could not be created while Windows is running. Check that Volume Shadow Copy (VSS) is available, then try again.</value>
+  </data>
+  <data name="Preflight_SnapshotSpaceLow" xml:space="preserve">
+    <value>The system disk does not have enough free space for the consistent copy. Only {0} is free and at least 2 GiB is needed. Free up space and try again.</value>
+  </data>
+  <data name="Preflight_BitLockerOn" xml:space="preserve">
+    <value>BitLocker is on for Windows, so the copy will not be encrypted. To encrypt the new disk again, turn BitLocker on in Windows after cloning.</value>
+  </data>
+  <data name="Preflight_OnBattery" xml:space="preserve">
+    <value>This computer is running on battery. Connect the charger before you start so it does not sleep or run out of power during the copy.</value>
+  </data>
+  <data name="Preflight_TargetNotEmpty" xml:space="preserve">
+    <value>This disk has partitions or data. Everything on it will be erased.</value>
+  </data>
+  <data name="Size_Tb" xml:space="preserve">
+    <value>{0} TiB</value>
+  </data>
+  <data name="Size_Gb" xml:space="preserve">
+    <value>{0} GiB</value>
+  </data>
+  <data name="Size_Mb" xml:space="preserve">
+    <value>{0} MiB</value>
+  </data>
+  <data name="Size_Kb" xml:space="preserve">
+    <value>{0} KiB</value>
+  </data>
+  <data name="Size_B" xml:space="preserve">
+    <value>{0} B</value>
+  </data>
+  <data name="Review_Title" xml:space="preserve">
+    <value>Review the plan</value>
+  </data>
+  <data name="Review_Subtitle" xml:space="preserve">
+    <value>Check what will happen before you continue. No disk is changed yet.</value>
+  </data>
+  <data name="Review_Loading" xml:space="preserve">
+    <value>Calculating the plan...</value>
+  </data>
+  <data name="Review_Failed_Title" xml:space="preserve">
+    <value>This disk cannot be used</value>
+  </data>
+  <data name="Review_Failed_Body" xml:space="preserve">
+    <value>Go back and choose another disk, or fix the reasons below.</value>
+  </data>
+  <data name="Review_Failed_Generic" xml:space="preserve">
+    <value>The plan could not be created. Go back and try again.</value>
+  </data>
+  <data name="Review_Before" xml:space="preserve">
+    <value>Before (source disk)</value>
+  </data>
+  <data name="Review_After" xml:space="preserve">
+    <value>After (target disk)</value>
+  </data>
+  <data name="Review_Partitions_Heading" xml:space="preserve">
+    <value>Partitions</value>
+  </data>
+  <data name="Review_Change_Grow" xml:space="preserve">
+    <value>+{0}</value>
+  </data>
+  <data name="Review_Change_Shrink" xml:space="preserve">
+    <value>-{0}</value>
+  </data>
+  <data name="Review_Change_None" xml:space="preserve">
+    <value>No change</value>
+  </data>
+  <data name="Review_Change_Line" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Review_Summary_Heading" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Review_Summary_Copy" xml:space="preserve">
+    <value>Data to copy: {0}</value>
+  </data>
+  <data name="Review_Summary_Duration" xml:space="preserve">
+    <value>Estimated duration: {0}</value>
+  </data>
+  <data name="Review_Duration_Hours" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="Review_Duration_Minutes" xml:space="preserve">
+    <value>About {0} min</value>
+  </data>
+  <data name="Review_Duration_UnderMinute" xml:space="preserve">
+    <value>Less than a minute</value>
+  </data>
+  <data name="Review_Warnings_Heading" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="Review_Warning_Understand" xml:space="preserve">
+    <value>I understand</value>
+  </data>
+  <data name="Review_VerifyAll" xml:space="preserve">
+    <value>Verify all data (roughly doubles the duration)</value>
+  </data>
+  <data name="Common_ComingSoon" xml:space="preserve">
+    <value>Coming soon</value>
+  </data>
+  <data name="Disk_Serial_NotReported" xml:space="preserve">
+    <value>Not reported by the disk</value>
+  </data>
+  <data name="Disk_Label_Guid" xml:space="preserve">
+    <value>Disk identifier</value>
+  </data>
+  <data name="Disk_Label_FallbackIdentifier" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="Disk_Guid_NotReported" xml:space="preserve">
+    <value>Not available</value>
+  </data>
+  <data name="Confirm_Title" xml:space="preserve">
+    <value>Confirm before erasing</value>
+  </data>
+  <data name="Confirm_Subtitle" xml:space="preserve">
+    <value>Nothing has been changed yet. This is the last step where you can stop.</value>
+  </data>
+  <data name="Confirm_Source_Serial" xml:space="preserve">
+    <value>serial number</value>
+  </data>
+  <data name="Confirm_Source_Guid" xml:space="preserve">
+    <value>disk identifier</value>
+  </data>
+  <data name="Confirm_Source_Model" xml:space="preserve">
+    <value>model</value>
+  </data>
+  <data name="Confirm_Source_DiskNumber" xml:space="preserve">
+    <value>disk number</value>
+  </data>
+  <data name="Confirm_Continue" xml:space="preserve">
+    <value>Continue with the clone</value>
+  </data>
+  <data name="Confirm_Target_Heading" xml:space="preserve">
+    <value>Disk to erase</value>
+  </data>
+  <data name="Confirm_Erase_Warning" xml:space="preserve">
+    <value>EVERYTHING on this disk will be erased</value>
+  </data>
+  <data name="Confirm_Prompt" xml:space="preserve">
+    <value>Type the last 4 characters of the {0} ({1}) to confirm</value>
+  </data>
+  <data name="Confirm_Field_Help" xml:space="preserve">
+    <value>Upper and lower case do not matter. Copy the characters from the disk card above.</value>
+  </data>
+  <data name="Confirm_CloneNow" xml:space="preserve">
+    <value>Clone now</value>
+  </data>
+  <data name="Confirm_CloneNow_Help" xml:space="preserve">
+    <value>Erases the disk above and starts the clone. Available only when the characters match.</value>
+  </data>
+  <data name="Confirm_PlanInvalidated" xml:space="preserve">
+    <value>The disks changed; please review again</value>
+  </data>
+  <data name="Confirm_Failed" xml:space="preserve">
+    <value>The confirmation could not be saved. Try again.</value>
+  </data>
+  <data name="Shrink_Heading" xml:space="preserve">
+    <value>Temporary shrink of the Windows partition on the source disk</value>
+  </data>
+  <data name="Shrink_Review_Body" xml:space="preserve">
+    <value>The Windows partition on the source disk will go from {0} to {1} before cloning. WinClonerX will try to restore its original size when cloning finishes.</value>
+  </data>
+  <data name="Shrink_Confirm_Body" xml:space="preserve">
+    <value>To make the clone fit, WinClonerX will temporarily shrink the Windows partition on the source disk from {0} to {1}. When cloning finishes, it will try to restore the partition to its original size. Windows may take several minutes to move files.</value>
+  </data>
+  <data name="Shrink_Confirm_Understand" xml:space="preserve">
+    <value>I understand and authorize temporarily shrinking the Windows partition on the source disk</value>
+  </data>
+  <data name="Progress_Title" xml:space="preserve">
+    <value>Cloning in progress</value>
+  </data>
+  <data name="Progress_Subtitle" xml:space="preserve">
+    <value>Keep the computer plugged in and do not turn it off.</value>
+  </data>
+  <data name="Progress_Phases_Heading" xml:space="preserve">
+    <value>Phases</value>
+  </data>
+  <data name="Progress_Bar_Name" xml:space="preserve">
+    <value>Overall progress</value>
+  </data>
+  <data name="Progress_Percent" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
+  <data name="Progress_Bytes" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="Progress_Throughput" xml:space="preserve">
+    <value>{0} MiB/s</value>
+  </data>
+  <data name="Progress_Eta" xml:space="preserve">
+    <value>Time left: {0}</value>
+  </data>
+  <data name="Progress_Eta_Calculating" xml:space="preserve">
+    <value>Calculating…</value>
+  </data>
+  <data name="Progress_CurrentPhase" xml:space="preserve">
+    <value>Current phase: {0}</value>
+  </data>
+  <data name="Progress_Warning_NoChanges" xml:space="preserve">
+    <value>Changes you make from now on will not be included in the clone</value>
+  </data>
+  <data name="Progress_Cancelling" xml:space="preserve">
+    <value>Cancelling…</value>
+  </data>
+  <data name="Progress_Cancelling_SafeStep" xml:space="preserve">
+    <value>Finishing the current safe step…</value>
+  </data>
+  <data name="Progress_State_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="Progress_State_InProgress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="Progress_State_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Phase_Revalidate" xml:space="preserve">
+    <value>Checking that the disks have not changed</value>
+  </data>
+  <data name="Phase_ShrinkSource" xml:space="preserve">
+    <value>Shrinking the Windows partition on the source disk</value>
+  </data>
+  <data name="Phase_Snapshot" xml:space="preserve">
+    <value>Creating a consistent copy of the system disk</value>
+  </data>
+  <data name="Phase_PrepareTarget" xml:space="preserve">
+    <value>Preparing the destination disk</value>
+  </data>
+  <data name="Phase_CopyData" xml:space="preserve">
+    <value>Copying data</value>
+  </data>
+  <data name="Phase_CommitLayout" xml:space="preserve">
+    <value>Writing the new partition table</value>
+  </data>
+  <data name="Phase_ExpandFileSystem" xml:space="preserve">
+    <value>Extending Windows to the new space</value>
+  </data>
+  <data name="Phase_RepairBoot" xml:space="preserve">
+    <value>Adjusting the clone so it starts</value>
+  </data>
+  <data name="Phase_StructuralVerification" xml:space="preserve">
+    <value>Checking the structure of the clone</value>
+  </data>
+  <data name="Phase_FullVerification" xml:space="preserve">
+    <value>Comparing all data with the original</value>
+  </data>
+  <data name="Phase_Cleanup" xml:space="preserve">
+    <value>Cleaning up temporary data</value>
+  </data>
+  <data name="Phase_RestoreSource" xml:space="preserve">
+    <value>Restoring the size of the Windows partition on the source disk</value>
+  </data>
+  <data name="Phase_Done" xml:space="preserve">
+    <value>Finished</value>
+  </data>
+  <data name="NextStep_ShutDownAndReplaceDisk" xml:space="preserve">
+    <value>Shut down the computer, then replace the source disk with the new one.</value>
+  </data>
+  <data name="NextStep_SelectBootDeviceInFirmware" xml:space="preserve">
+    <value>Turn the computer on and open the boot menu (usually F12, F8 or Esc, depending on the manufacturer). Choose the new disk. You can also set it as the first boot device in the firmware settings.</value>
+  </data>
+  <data name="NextStep_ReenableBitLocker" xml:space="preserve">
+    <value>Turn BitLocker back on in Windows on the new disk, because the copy is not encrypted.</value>
+  </data>
+  <data name="NextStep_KeepOriginalDiskUntilVerified" xml:space="preserve">
+    <value>Keep the source disk in a safe place until you have checked that the new disk starts and works.</value>
+  </data>
+  <data name="Result_Success_Title" xml:space="preserve">
+    <value>The clone is ready</value>
+  </data>
+  <data name="Result_Success_Body" xml:space="preserve">
+    <value>Windows has been copied to the new disk. Follow the steps below to start from it.</value>
+  </data>
+  <data name="Result_Verification_Heading" xml:space="preserve">
+    <value>Verification</value>
+  </data>
+  <data name="Result_Verification_Passed" xml:space="preserve">
+    <value>The structure of the new disk matches the plan.</value>
+  </data>
+  <data name="Result_Verification_Failed" xml:space="preserve">
+    <value>The structure check found problems:</value>
+  </data>
+  <data name="Result_FullVerification_Heading" xml:space="preserve">
+    <value>Full data verification</value>
+  </data>
+  <data name="Result_FullVerification_Passed" xml:space="preserve">
+    <value>All data matches the original.</value>
+  </data>
+  <data name="Result_FullVerification_Failed" xml:space="preserve">
+    <value>{0} bytes differ from the original. First differing offsets on the new disk: {1}.</value>
+  </data>
+  <data name="Result_Duration" xml:space="preserve">
+    <value>Duration: {0}</value>
+  </data>
+  <data name="Result_Recovery_Heading" xml:space="preserve">
+    <value>Recovery environment (WinRE)</value>
+  </data>
+  <data name="Result_Recovery_Configured" xml:space="preserve">
+    <value>Configured</value>
+  </data>
+  <data name="Result_Recovery_Warning" xml:space="preserve">
+    <value>WinRE could not be configured on the target disk. Windows will still start, but the recovery environment will not work until you enable it. After starting Windows from the clone, open a command prompt as administrator and run: reagentc /enable</value>
+  </data>
+  <data name="Result_NextSteps_Heading" xml:space="preserve">
+    <value>Next steps</value>
+  </data>
+  <data name="Result_Failed_Title" xml:space="preserve">
+    <value>The clone did not finish</value>
+  </data>
+  <data name="Result_Cancelled_Title" xml:space="preserve">
+    <value>The clone was cancelled</value>
+  </data>
+  <data name="Result_Failed_Body" xml:space="preserve">
+    <value>The destination disk was left unfinished and cannot be used to start Windows. Your source disk is still usable.</value>
+  </data>
+  <data name="Result_Failed_Generic" xml:space="preserve">
+    <value>An error stopped the process before it could finish.</value>
+  </data>
+  <data name="Result_Failed_KeepOriginal" xml:space="preserve">
+    <value>Keep your source disk as it is and keep using it. Choose another destination disk and try again.</value>
+  </data>
+  <data name="Result_SourceRestored" xml:space="preserve">
+    <value>The Windows partition on the source disk went back to its original size.</value>
+  </data>
+  <data name="Result_SourceRestore_Failed" xml:space="preserve">
+    <value>The Windows partition on the source disk could not be restored to its original size. The clone is valid. To recover the space, open Disk Management, right-click C: and choose “Extend Volume.”</value>
+  </data>
+  <data name="Result_Cancelled_Body" xml:space="preserve">
+    <value>The target disk was left uninitialized and cannot be used to start Windows.</value>
+  </data>
+  <data name="Result_Cancelled_SourceUntouched" xml:space="preserve">
+    <value>Your source disk was not modified.</value>
+  </data>
+  <data name="Result_ExportLog" xml:space="preserve">
+    <value>Export log</value>
+  </data>
+  <data name="Result_Export_IncludeInventory" xml:space="preserve">
+    <value>Include the disk inventory (model, serial number and size)</value>
+  </data>
+  <data name="Result_OpenLogFolder" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="Result_Export_Done" xml:space="preserve">
+    <value>Log exported to: {0}</value>
+  </data>
+  <data name="Result_Export_Failed" xml:space="preserve">
+    <value>The log could not be exported: {0}</value>
+  </data>
+  <data name="Result_Export_FileFilter" xml:space="preserve">
+    <value>ZIP archive|*.zip</value>
+  </data>
+  <data name="Result_OpenFolder_Failed" xml:space="preserve">
+    <value>The log folder could not be opened: {0}</value>
+  </data>
+  <data name="Result_Failure_Detail" xml:space="preserve">
+    <value>Code: {0} · Phase: {1}</value>
+  </data>
+  <data name="Result_LogFile" xml:space="preserve">
+    <value>Log file: {0}</value>
+  </data>
+  <data name="Error_Unknown" xml:space="preserve">
+    <value>An unexpected error happened. Try again. If it happens again, export the log when it is available.</value>
+  </data>
+  <data name="Error_AccessDenied" xml:space="preserve">
+    <value>WinClonerX does not have permission to use a disk. Run WinClonerX as administrator and try again.</value>
+  </data>
+  <data name="Error_DeviceNotFound" xml:space="preserve">
+    <value>A disk could not be found. Check that it is still connected, then try again.</value>
+  </data>
+  <data name="Error_DeviceRemoved" xml:space="preserve">
+    <value>A disk was disconnected during the copy. Connect it again and start over.</value>
+  </data>
+  <data name="Error_SourceReadError" xml:space="preserve">
+    <value>The system disk could not be read. Check it for errors, then try again.</value>
+  </data>
+  <data name="Error_TargetWriteError" xml:space="preserve">
+    <value>The destination disk could not be written. Check its connection or use another disk.</value>
+  </data>
+  <data name="Error_SnapshotFailed" xml:space="preserve">
+    <value>The consistent copy of the system disk could not be created. Check that Volume Shadow Copy works, then try again.</value>
+  </data>
+  <data name="Error_ShrinkFailed" xml:space="preserve">
+    <value>Windows could not be shrunk on the source disk. Restart the computer and try again.</value>
+  </data>
+  <data name="Error_RestoreFailed" xml:space="preserve">
+    <value>The Windows partition on the source disk could not be restored to its original size. Do not change it, keep the log and ask for help.</value>
+  </data>
+  <data name="Error_ExtendFailed" xml:space="preserve">
+    <value>Windows could not use all the new space on the destination disk. Check the log and try again.</value>
+  </data>
+  <data name="Error_MountFailed" xml:space="preserve">
+    <value>A partition could not be opened for the copy. Close the programs that use the disks, then try again.</value>
+  </data>
+  <data name="Error_BootConfigFailed" xml:space="preserve">
+    <value>The boot settings of the clone could not be adjusted. Do not start from the clone. Try again.</value>
+  </data>
+  <data name="Error_RecoveryConfigFailed" xml:space="preserve">
+    <value>WinRE could not be configured on the clone. Windows will still start. After starting Windows from the clone, enable WinRE with reagentc /enable.</value>
+  </data>
+  <data name="Error_RegistryEditFailed" xml:space="preserve">
+    <value>The system settings of the clone could not be adjusted. Try again.</value>
+  </data>
+  <data name="Error_VerificationFailed" xml:space="preserve">
+    <value>The check of the clone found problems. Do not use the clone until the problems are fixed. Try again.</value>
+  </data>
+  <data name="Error_TargetInUse" xml:space="preserve">
+    <value>The destination disk is in use by Windows or another program. Close the programs that use it and try again.</value>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>The process was cancelled before it finished.</value>
+  </data>
+  <data name="Error_Unexpected" xml:space="preserve">
+    <value>An unexpected error stopped the process. Try again. If it happens again, keep the log file: it shows where the process stopped.</value>
+  </data>
+  <data name="Error_SourceDeviceRemoved" xml:space="preserve">
+    <value>The system disk was disconnected during the clone. Connect it again, then start over. Keep the log file.</value>
+  </data>
+  <data name="Error_TargetDeviceRemoved" xml:space="preserve">
+    <value>The destination disk was disconnected during the clone, so the clone is incomplete. Connect it again and start over.</value>
+  </data>
+  <data name="Error_DisksChanged" xml:space="preserve">
+    <value>The disks changed after the plan was made. Plan the clone again.</value>
+  </data>
+  <data name="Error_ShrinkInsufficient" xml:space="preserve">
+    <value>The Windows partition on the source disk cannot be shrunk enough to fit on the target disk. Free up space on the source disk or choose a larger target disk.</value>
+  </data>
+  <data name="Error_ShrinkJournalFailed" xml:space="preserve">
+    <value>WinClonerX could not save the record needed to restore the Windows disk, so it did not shrink it. The source disk was not changed. Restart WinClonerX and try again. If it happens again, keep the log file.</value>
+  </data>
+  <data name="Startup_SourceRestored" xml:space="preserve">
+    <value>The last clone was interrupted and your Windows disk had been shrunk. WinClonerX has restored it to its original size.</value>
+  </data>
+  <data name="Startup_SourceRestoreNeedsAttention" xml:space="preserve">
+    <value>The last clone was interrupted and your Windows disk had been shrunk. WinClonerX could not restore it automatically. To fix it, open Disk Management, right-click C: and choose Extend Volume.</value>
+  </data>
+  <data name="PartitionBar_AccessibleName" xml:space="preserve">
+    <value>Disk partition layout</value>
+  </data>
+  <data name="PartitionBar_Partition" xml:space="preserve">
+    <value>{0}, {1} total</value>
+  </data>
+  <data name="PartitionBar_PartitionUsed" xml:space="preserve">
+    <value>{0}, {1} used of {2}</value>
+  </data>
+  <data name="PartitionBar_Free" xml:space="preserve">
+    <value>Unallocated space: {0}</value>
+  </data>
+  <data name="Result_StartOver" xml:space="preserve">
+    <value>Start over</value>
+  </data>
+  <data name="Result_CloseApp" xml:space="preserve">
+    <value>Close WinClonerX</value>
+  </data>
+</root>

@@ -42,30 +42,30 @@ jobs:
           }
 
       - name: Restore
-        run: dotnet restore WinCopy.slnx
+        run: dotnet restore WinClonerX.slnx
 
-      # The Release solution build also builds the MSI (the installer is excluded from Debug builds in WinCopy.slnx).
-      # WinCopyVersion sets the MSI product version from the tag.
+      # The Release solution build also builds the MSI (the installer is excluded from Debug builds in WinClonerX.slnx).
+      # WinClonerXVersion sets the MSI product version from the tag.
       - name: Build (Release, includes the MSI)
-        run: dotnet build WinCopy.slnx -c Release --no-restore "-p:WinCopyVersion=$env:VERSION"
+        run: dotnet build WinClonerX.slnx -c Release --no-restore "-p:WinClonerXVersion=$env:VERSION"
 
       # Unit tests must pass before anything is published. Integration tests need administrator rights and virtual disks,
       # so they never run here.
       - name: Test (unit tests only)
-        run: dotnet test WinCopy.slnx -c Release --no-build --filter "Category!=Integration"
+        run: dotnet test WinClonerX.slnx -c Release --no-build --filter "Category!=Integration"
 
       - name: Copy MSI and compute SHA-256
         shell: bash
         run: |
           set -euo pipefail
           shopt -s nullglob
-          msi_files=(installer/WinCopy.Installer/bin/x64/Release/*.msi)
+          msi_files=(installer/WinClonerX.Installer/bin/x64/Release/*.msi)
           if [ "${#msi_files[@]}" -ne 1 ]; then
-            echo "Expected exactly one MSI in installer/WinCopy.Installer/bin/x64/Release, found ${#msi_files[@]}." >&2
+            echo "Expected exactly one MSI in installer/WinClonerX.Installer/bin/x64/Release, found ${#msi_files[@]}." >&2
             exit 1
           fi
           mkdir -p dist
-          msi="dist/WinCopy-${VERSION}.msi"
+          msi="dist/WinClonerX-${VERSION}.msi"
           cp "${msi_files[0]}" "$msi"
           sha=$(sha256sum "$msi" | cut -d ' ' -f 1)
           echo "MSI_PATH=$msi" >> "$GITHUB_ENV"
@@ -80,18 +80,18 @@ jobs:
         shell: bash
         run: |
           cat > "$RUNNER_TEMP/release-notes.md" <<EOF
-          ## WinCopy ${VERSION}
+          ## WinClonerX ${VERSION}
 
-          Instalador: WinCopy-${VERSION}.msi. No está firmado, así que Windows SmartScreen mostrará un aviso. El README explica cómo continuar.
+          Instalador: WinClonerX-${VERSION}.msi. No está firmado, así que Windows SmartScreen mostrará un aviso. El README explica cómo continuar.
 
           SHA-256 del instalador:
 
-              ${MSI_SHA256}  WinCopy-${VERSION}.msi
+              ${MSI_SHA256}  WinClonerX-${VERSION}.msi
 
           Comprobación con PowerShell:
 
-              Get-FileHash .\WinCopy-${VERSION}.msi -Algorithm SHA256
-              gh attestation verify .\WinCopy-${VERSION}.msi --repo ${{ github.repository }}
+              Get-FileHash .\WinClonerX-${VERSION}.msi -Algorithm SHA256
+              gh attestation verify .\WinClonerX-${VERSION}.msi --repo ${{ github.repository }}
 
           Las instrucciones de instalación están en la sección Instalación del README.
           EOF
@@ -102,6 +102,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" "$MSI_PATH" \
-            --title "WinCopy ${VERSION}" \
+            --title "WinClonerX ${VERSION}" \
             --notes-file "$RUNNER_TEMP/release-notes.md" \
             --verify-tag

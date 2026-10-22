@@ -1,10 +1,12 @@
-# WinCopy
+# WinClonerX
 
-> **In short (English):** WinCopy copies the Windows system disk to another disk, for example from an HDD to an SSD, so you can boot Windows from the new disk. It only does that. It works only on UEFI systems with a GPT disk, on Windows 10 22H2 and Windows 11 (x64). The project is in development. The installer is not signed, so Windows SmartScreen will show a warning. The installation section explains how to continue.
+Antes se llamaba WinCopy.
+
+> **In short (English):** WinClonerX copies the Windows system disk to another disk, for example from an HDD to an SSD, so you can boot Windows from the new disk. It only does that. It works only on UEFI systems with a GPT disk, on Windows 10 22H2 and Windows 11 (x64). The project is in development. The installer is not signed, so Windows SmartScreen will show a warning. The installation section explains how to continue.
 
 ## Qué es
 
-WinCopy copia el disco donde está instalado Windows a otro disco. Después, el disco nuevo puede arrancar Windows con los mismos usuarios, programas y archivos. El caso típico es pasar de un disco duro (HDD) a un SSD.
+WinClonerX copia el disco donde está instalado Windows a otro disco. Después, el disco nuevo puede arrancar Windows con los mismos usuarios, programas y archivos. El caso típico es pasar de un disco duro (HDD) a un SSD.
 
 La interfaz tiene cinco pasos y está en español e inglés. El idioma se elige según el idioma de Windows.
 
@@ -19,9 +21,9 @@ La interfaz tiene cinco pasos y está en español e inglés. El idioma se elige 
 ## Requisitos
 
 - Windows 10 versión 22H2 o Windows 11, de 64 bits (x64).
-- El equipo arranca en modo UEFI y el disco del sistema usa GPT. WinCopy comprueba esto antes de clonar. Si no se cumple, no clona.
+- El equipo arranca en modo UEFI y el disco del sistema usa GPT. WinClonerX comprueba esto antes de clonar. Si no se cumple, no clona.
 - Una sola instalación de Windows en el disco de origen. No puede haber arranque dual.
-- Cuenta de administrador. WinCopy pide permiso de administrador al abrirse.
+- Cuenta de administrador. WinClonerX pide permiso de administrador al abrirse.
 - Un disco de destino conectado, interno o por USB, sin volúmenes en uso.
 - El destino debe tener el mismo tamaño de sector lógico que el origen (512 o 4096 bytes).
 - El destino debe tener espacio para los datos usados más un margen. El margen es el 10 % de los datos usados, con un mínimo de 10 GiB.
@@ -31,23 +33,23 @@ La interfaz tiene cinco pasos y está en español e inglés. El idioma se elige 
 
 ## Qué pasa con BitLocker
 
-Si la partición de Windows está cifrada con BitLocker, WinCopy avisa. Para continuar, debes aceptar que el clon quedará sin cifrar. Después de clonar, activa BitLocker en el disco nuevo desde Windows.
+Si la partición de Windows está cifrada con BitLocker, WinClonerX avisa. Para continuar, debes aceptar que el clon quedará sin cifrar. Después de clonar, activa BitLocker en el disco nuevo desde Windows.
 
 ## Cambio temporal del tamaño de C
 
-Si el disco de destino es más pequeño que el origen, WinCopy reduce temporalmente la partición de Windows (C:) del origen. Usa la misma función de Windows que Administración de discos. WinCopy pide una confirmación aparte para esta reducción.
+Si el disco de destino es más pequeño que el origen, WinClonerX reduce temporalmente la partición de Windows (C:) del origen. Usa la misma función de Windows que Administración de discos. WinClonerX pide una confirmación aparte para esta reducción.
 
-Al terminar, WinCopy vuelve a ampliar C: a su tamaño original. Lo hace tanto si el clonado sale bien como si se cancela o falla.
+Al terminar, WinClonerX vuelve a ampliar C: a su tamaño original. Lo hace tanto si el clonado sale bien como si se cancela o falla.
 
-Si WinCopy se cierra o el equipo se apaga durante el clonado, WinCopy vuelve a ampliar C: al abrirse de nuevo. Para eso guarda un diario en `C:\ProgramData\WinCopy\pending-source-restore.json`. Esta restauración automática después de un cierre inesperado todavía no se ha probado en hardware real.
+Si WinClonerX se cierra o el equipo se apaga durante el clonado, WinClonerX vuelve a ampliar C: al abrirse de nuevo. Para eso guarda un diario en `C:\ProgramData\WinClonerX\pending-source-restore.json`. Esta restauración automática después de un cierre inesperado todavía no se ha probado en hardware real.
 
-Si WinCopy no consigue ampliar C:, lo indica en la pantalla de resultado. El espacio que quede sin asignar se puede recuperar en Administración de discos, con clic derecho en C: y la opción Extender volumen.
+Si WinClonerX no consigue ampliar C:, lo indica en la pantalla de resultado. El espacio que quede sin asignar se puede recuperar en Administración de discos, con clic derecho en C: y la opción Extender volumen.
 
 ## Instalación
 
 El instalador no está firmado. El proyecto no paga un certificado de firma. Por eso, Windows muestra avisos al instalarlo. Sigue los pasos en este orden.
 
-Descarga el archivo `WinCopy-X.Y.Z.msi` de la página de versiones del repositorio: https://github.com/CarlosSV923/WinCopy/releases
+Descarga el archivo `WinClonerX-X.Y.Z.msi` de la página de versiones del repositorio: https://github.com/CarlosSV923/WinClonerX/releases
 
 ### 1. Superar el aviso de SmartScreen
 
@@ -58,13 +60,13 @@ Al ejecutar el instalador, Windows SmartScreen puede mostrar el aviso "Windows p
 Cada versión publica la huella SHA-256 del instalador en sus notas. Compara la huella de tu archivo con la de las notas:
 
 ```powershell
-Get-FileHash .\WinCopy-X.Y.Z.msi -Algorithm SHA256
+Get-FileHash .\WinClonerX-X.Y.Z.msi -Algorithm SHA256
 ```
 
 Cada versión también tiene una atestación de procedencia de GitHub. Comprueba que el instalador se compiló en este repositorio. Para esto necesitas la CLI de GitHub (`gh`):
 
 ```powershell
-gh attestation verify .\WinCopy-X.Y.Z.msi --repo CarlosSV923/WinCopy
+gh attestation verify .\WinClonerX-X.Y.Z.msi --repo CarlosSV923/WinClonerX
 ```
 
 Si la huella no coincide o la atestación no se verifica, no instales el archivo.
@@ -79,15 +81,15 @@ Si prefieres no instalar un archivo ya compilado, puedes compilarlo tú mismo. N
 
 Para desactivarlo, abre **Seguridad de Windows**, entra en **Control de aplicaciones y navegador** y después en la configuración de Smart App Control. Elige **Desactivado**. Los nombres de los menús pueden cambiar según la versión de Windows.
 
-WinCopy no desactiva Smart App Control ni ninguna otra protección de Windows.
+WinClonerX no desactiva Smart App Control ni ninguna otra protección de Windows.
 
 ## Cómo se usa
 
-1. **Discos.** WinCopy detecta el disco del sistema y lo muestra como origen. No se puede cambiar. Elige el disco de destino entre los demás discos. Si un disco no sirve, la pantalla indica el motivo.
+1. **Discos.** WinClonerX detecta el disco del sistema y lo muestra como origen. No se puede cambiar. Elige el disco de destino entre los demás discos. Si un disco no sirve, la pantalla indica el motivo.
 2. **Revisión.** Revisa el plan. Muestra qué particiones se copian, qué tamaño tendrán en el destino, si se reduce C: y cuánto tiempo puede tardar. Acepta los avisos, como el de BitLocker, para continuar.
 3. **Confirmación.** Escribe los cuatro últimos caracteres del número de serie del disco de destino. Así confirmas que es el disco correcto. Si el plan reduce C:, confirma esa reducción aparte.
-4. **Progreso.** Ves la fase actual, el porcentaje, los datos copiados y el tiempo restante. Puedes pulsar **Cancelar**. WinCopy pide confirmación antes. Algunas fases no se pueden interrumpir. En ese caso, la cancelación espera a que la fase termine.
-5. **Resultado.** Muestra si la estructura del disco nuevo es correcta, cuánto tardó y qué pasos seguir. Si el clonado se cancela o falla, WinCopy explica qué pasó. El disco original sigue funcionando. El disco de destino queda sin inicializar y no sirve para arrancar Windows.
+4. **Progreso.** Ves la fase actual, el porcentaje, los datos copiados y el tiempo restante. Puedes pulsar **Cancelar**. WinClonerX pide confirmación antes. Algunas fases no se pueden interrumpir. En ese caso, la cancelación espera a que la fase termine.
+5. **Resultado.** Muestra si la estructura del disco nuevo es correcta, cuánto tardó y qué pasos seguir. Si el clonado se cancela o falla, WinClonerX explica qué pasó. El disco original sigue funcionando. El disco de destino queda sin inicializar y no sirve para arrancar Windows.
 
 La verificación completa de todos los datos todavía no está disponible en esta versión.
 
@@ -103,11 +105,11 @@ La verificación completa de todos los datos todavía no está disponible en est
 
    La línea de estado de Windows RE debe indicar que está habilitado (`Enabled`). Si aparece deshabilitado, ejecuta `reagentc /enable`.
 
-WinCopy no cambia el orden de arranque del firmware.
+WinClonerX no cambia el orden de arranque del firmware.
 
 ## Registros
 
-Los registros de cada ejecución están en la carpeta `C:\ProgramData\WinCopy\logs`. La carpeta `ProgramData` está oculta. Para abrirla, escribe la ruta en la barra de direcciones del Explorador de archivos. Cada ejecución crea un archivo `winCopy-AAAAMMDD-HHMMSS-<id>.clef`. Es texto con un evento por línea, en formato JSON.
+Los registros de cada ejecución están en la carpeta `C:\ProgramData\WinClonerX\logs`. La carpeta `ProgramData` está oculta. Para abrirla, escribe la ruta en la barra de direcciones del Explorador de archivos. Cada ejecución crea un archivo `winClonerX-AAAAMMDD-HHMMSS-<id>.clef`. Es texto con un evento por línea, en formato JSON. Los registros que quedaron en `C:\ProgramData\WinCopy\logs` de versiones antes del cambio de nombre se conservan allí; WinClonerX no los migra ni los borra.
 
 La pantalla de resultado tiene dos botones para los registros:
 
@@ -118,22 +120,22 @@ Si pides ayuda, adjunta ese `.zip`.
 
 ## Desinstalar
 
-Ve a **Configuración → Aplicaciones → Aplicaciones instaladas**, busca WinCopy y elige **Desinstalar**. También puedes usar Programas y características del Panel de control.
+Ve a **Configuración → Aplicaciones → Aplicaciones instaladas**, busca WinClonerX y elige **Desinstalar**. También puedes usar Programas y características del Panel de control.
 
-La desinstalación quita los archivos del programa y el acceso directo del menú Inicio. No borra los registros de `C:\ProgramData\WinCopy`. Si no los necesitas, bórralos a mano.
+La desinstalación quita los archivos del programa y el acceso directo del menú Inicio. No borra los registros de `C:\ProgramData\WinClonerX`. Si no los necesitas, bórralos a mano.
 
 ## Compilar desde el código
 
 Necesitas Windows 10 o 11 de 64 bits y el SDK de .NET 10 (10.0.x).
 
 ```powershell
-git clone https://github.com/CarlosSV923/WinCopy.git
-cd WinCopy
-dotnet restore WinCopy.slnx
-dotnet build WinCopy.slnx -c Release
+git clone https://github.com/CarlosSV923/WinClonerX.git
+cd WinClonerX
+dotnet restore WinClonerX.slnx
+dotnet build WinClonerX.slnx -c Release
 ```
 
-El MSI solo se genera en la configuración `Release`. Queda en `installer\WinCopy.Installer\bin\x64\Release\`. La compilación de Release también publica la aplicación como ejecutable independiente para win-x64.
+El MSI solo se genera en la configuración `Release`. Queda en `installer\WinClonerX.Installer\bin\x64\Release\`. La compilación de Release también publica la aplicación como ejecutable independiente para win-x64.
 
 Pruebas sin privilegios ni discos especiales:
 
@@ -141,7 +143,7 @@ Pruebas sin privilegios ni discos especiales:
 dotnet test --filter "Category!=Integration"
 ```
 
-Las pruebas de integración usan discos virtuales VHDX. Necesitan ejecutarse como administrador y crean sus archivos en `%TEMP%\WinCopyTests`:
+Las pruebas de integración usan discos virtuales VHDX. Necesitan ejecutarse como administrador y crean sus archivos en `%TEMP%\WinClonerXTests`:
 
 ```powershell
 dotnet test --filter "Category=Integration"
@@ -166,7 +168,7 @@ Estructura del repositorio:
 
 ## Estado del proyecto
 
-WinCopy está en desarrollo. La versión 1.0 todavía no está lista. Las tareas pendientes están en [docs/pendientes-1.0.md](docs/pendientes-1.0.md).
+WinClonerX está en desarrollo. La versión 1.0 todavía no está lista. Las tareas pendientes están en [docs/pendientes-1.0.md](docs/pendientes-1.0.md).
 
 El punto de control S2 se superó el 20 de octubre de 2026. Un clon arrancó en un mini PC real, con Windows en C: y WinRE habilitado. Consulta [docs/spikes/s2-arranque-hardware-real.md](docs/spikes/s2-arranque-hardware-real.md). Las validaciones manuales se registran en [docs/validacion-manual.md](docs/validacion-manual.md).
 

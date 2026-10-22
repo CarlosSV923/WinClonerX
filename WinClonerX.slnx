@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/installer/">
+    <Project Path="installer/WinClonerX.Installer/WinClonerX.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/WinClonerX.App/WinClonerX.App.csproj" />
+    <Project Path="src/WinClonerX.Application/WinClonerX.Application.csproj" />
+    <Project Path="src/WinClonerX.Domain/WinClonerX.Domain.csproj" />
+    <Project Path="src/WinClonerX.Infrastructure.Windows/WinClonerX.Infrastructure.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WinClonerX.App.Tests/WinClonerX.App.Tests.csproj" />
+    <Project Path="tests/WinClonerX.Application.Tests/WinClonerX.Application.Tests.csproj" />
+    <Project Path="tests/WinClonerX.ArchitectureTests/WinClonerX.ArchitectureTests.csproj" />
+    <Project Path="tests/WinClonerX.Domain.Tests/WinClonerX.Domain.Tests.csproj" />
+    <Project Path="tests/WinClonerX.Infrastructure.IntegrationTests/WinClonerX.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/WinClonerX.Infrastructure.Windows.Tests/WinClonerX.Infrastructure.Windows.Tests.csproj" />
+  </Folder>
+</Solution>

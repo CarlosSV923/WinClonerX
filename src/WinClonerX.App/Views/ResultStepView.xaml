@@ -1,0 +1,202 @@
+<UserControl x:Class="WinClonerX.App.Views.ResultStepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:WinClonerX.App.Localization"
+             xmlns:themes="clr-namespace:WinClonerX.App.Themes"
+             mc:Ignorable="d"
+             d:DesignHeight="560" d:DesignWidth="760">
+    <UserControl.Resources>
+        <Style x:Key="ResultStep.Heading" TargetType="TextBlock" BasedOn="{StaticResource Text.Subtitle}">
+            <Setter Property="Margin" Value="0,20,0,8" />
+        </Style>
+        <!-- Looks like Text.Caption, but it is a read-only box, so the text can be selected. -->
+        <Style x:Key="ResultStep.Technical" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="FontFamily" Value="{x:Static themes:WinClonerXFonts.Text}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource Text.Title}"
+                       AutomationProperties.LiveSetting="Polite"
+                       AutomationProperties.Name="{Binding Title}"
+                       Text="{Binding Title}" />
+            <TextBlock Style="{StaticResource Text.Body}"
+                       Margin="0,6,0,0"
+                       Foreground="{StaticResource Brush.TextSecondary}"
+                       Text="{Binding Body}" />
+            <TextBlock Style="{StaticResource Text.Caption}"
+                       Margin="0,6,0,0"
+                       Text="{Binding DurationLine}" />
+        </StackPanel>
+
+        <!-- Export and support, for every outcome (FR-026, FR-027). The inventory is off by default: it holds serial numbers. -->
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <CheckBox Content="{loc:Loc Result_Export_IncludeInventory}"
+                      AutomationProperties.Name="{loc:Loc Result_Export_IncludeInventory}"
+                      IsChecked="{Binding IncludeInventory}" />
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
+                <Button Style="{StaticResource Button.Primary}"
+                        MinWidth="140"
+                        MinHeight="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"
+                        Content="{loc:Loc Result_StartOver}"
+                        AutomationProperties.Name="{loc:Loc Result_StartOver}"
+                        Command="{Binding StartOverCommand}"
+                        Visibility="{Binding CanStartOver, Converter={StaticResource BoolToVisibility}}" />
+                <Button Style="{StaticResource Button.Primary}"
+                        MinWidth="140"
+                        MinHeight="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"
+                        Content="{loc:Loc Result_CloseApp}"
+                        AutomationProperties.Name="{loc:Loc Result_CloseApp}"
+                        Command="{Binding CloseAppCommand}"
+                        Visibility="{Binding CanCloseApp, Converter={StaticResource BoolToVisibility}}" />
+                <Button x:Name="ExportLogButton"
+                        Style="{StaticResource Button.Secondary}"
+                        MinWidth="120"
+                        MinHeight="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"
+                        Content="{loc:Loc Result_ExportLog}"
+                        AutomationProperties.Name="{loc:Loc Result_ExportLog}"
+                        Command="{Binding ExportLogCommand}" />
+                <Button Style="{StaticResource Button.Secondary}"
+                        MinWidth="120"
+                        MinHeight="36"
+                        VerticalAlignment="Center"
+                        Content="{loc:Loc Result_OpenLogFolder}"
+                        AutomationProperties.Name="{loc:Loc Result_OpenLogFolder}"
+                        Command="{Binding OpenLogFolderCommand}" />
+            </StackPanel>
+            <TextBlock Margin="0,8,0,0"
+                       TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Polite"
+                       AutomationProperties.Name="{Binding ExportStatusText}"
+                       Text="{Binding ExportStatusText}"
+                       Visibility="{Binding HasExportStatus, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+                        <Setter Property="Foreground" Value="{StaticResource Brush.TextSecondary}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsExportStatusError}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Brush.Danger}" />
+                                <Setter Property="AutomationProperties.LiveSetting" Value="Assertive" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,8,0,0">
+            <StackPanel>
+                <!-- Success: the structural verification. -->
+                <StackPanel Visibility="{Binding HasVerification, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_Verification_Heading}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.Name="{Binding VerificationSummary}"
+                               Text="{Binding VerificationSummary}" />
+                    <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding VerificationIssues}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Style="{StaticResource Text.Body}" Margin="0,2,0,0" Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Full data verification (FR-022a), when the option was on: for either outcome. -->
+                <StackPanel Visibility="{Binding HasFullVerification, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_FullVerification_Heading}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.Name="{Binding FullVerificationSummary}"
+                               Text="{Binding FullVerificationSummary}" />
+                    <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding FullVerificationIssues}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Style="{StaticResource Text.Body}" Margin="0,2,0,0" Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Success: WinRE. A warning explains what to do; Windows still starts. -->
+                <StackPanel Visibility="{Binding HasRecovery, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_Recovery_Heading}" />
+                    <Border Style="{StaticResource Card}">
+                        <TextBlock Style="{StaticResource Text.Body}"
+                                   AutomationProperties.Name="{Binding RecoveryText}"
+                                   Text="{Binding RecoveryText}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Failed or cancelled: why it stopped. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               AutomationProperties.LiveSetting="Assertive"
+                               AutomationProperties.Name="{Binding Reason}"
+                               Text="{Binding Reason}" />
+                </Border>
+
+                <!-- Failed or cancelled: the code and phase for support, and the log file. Read-only boxes, so the text can be selected and copied. -->
+                <StackPanel Margin="0,8,0,0"
+                            Visibility="{Binding IsFailure, Converter={StaticResource BoolToVisibility}}">
+                    <TextBox Style="{StaticResource ResultStep.Technical}"
+                             Text="{Binding FailureDetail, Mode=OneWay}"
+                             AutomationProperties.Name="{Binding FailureDetail}"
+                             Visibility="{Binding HasFailureDetail, Converter={StaticResource BoolToVisibility}}" />
+                    <TextBox Style="{StaticResource ResultStep.Technical}"
+                             Margin="0,4,0,0"
+                             Text="{Binding LogFileText, Mode=OneWay}"
+                             AutomationProperties.Name="{Binding LogFileText}"
+                             Visibility="{Binding HasLogFile, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+
+                <!-- Shrunk source (only when the plan shrank it): restored, or a prominent warning with the manual fix. -->
+                <Border Style="{StaticResource Card}"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding IsSourceRestored, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding SourceRestoreText}" />
+                </Border>
+                <Border Style="{StaticResource Card}"
+                        Margin="0,16,0,0"
+                        BorderBrush="{StaticResource Brush.Danger}"
+                        BorderThickness="2"
+                        AutomationProperties.Name="{Binding SourceRestoreText}"
+                        Visibility="{Binding IsSourceRestoreWarning, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource Brush.Danger}"
+                               AutomationProperties.LiveSetting="Assertive"
+                               AutomationProperties.Name="{Binding SourceRestoreText}"
+                               Text="{Binding SourceRestoreText}" />
+                </Border>
+
+                <!-- Next steps (success), or keeping the original disk (failed or cancelled). -->
+                <TextBlock Style="{StaticResource ResultStep.Heading}" Text="{loc:Loc Result_NextSteps_Heading}" />
+                <ItemsControl Focusable="False" ItemsSource="{Binding NextSteps}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Style="{StaticResource Text.Body}" Margin="0,4,0,0" Text="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

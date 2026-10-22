@@ -1,4 +1,4 @@
-# WinCopy — Decisiones iniciales
+# WinClonerX — Decisiones iniciales
 
 Fecha: 2026-10-13
 Estado: aprobadas
@@ -34,6 +34,7 @@ Aplicación de Windows instalable cuya **única funcionalidad** es clonar el dis
 | 7 | BitLocker | **Detectar y avisar** | Si el origen está cifrado, se advierte que el clon quedará sin cifrar y se explica cómo reactivar BitLocker. |
 | 8 | Idioma | **Español e inglés** | Textos en recursos `.resx` desde el inicio; el idioma se elige según el de Windows. |
 | 9 | Pruebas | **Discos VHDX y un segundo disco físico** | VHDX para desarrollo y pruebas automáticas. El segundo disco físico disponible se usa para la validación real, incluido arrancar desde el clon. |
+| 10 | Nombre del proyecto (2026-10-22) | **WinClonerX** | El proyecto personal y no comercial WinCopy se renombra a WinClonerX; existen nombres similares: Winclone (Twocanoes, Mac) y WinClon (Clonix). También se renombra el repositorio de GitHub y GitHub redirige la URL anterior. |
 
 ## Reglas de seguridad iniciales (para la especificación)
 

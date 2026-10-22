@@ -1,0 +1,29 @@
+<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <OutputName>WinClonerX</OutputName>
+    <Platform>x64</Platform>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <!-- MSI product version (major.minor.patch). Override from the command line: -p:WinClonerXVersion=0.2.0 -->
+    <WinClonerXVersion Condition="'$(WinClonerXVersion)' == ''">0.1.0</WinClonerXVersion>
+    <!-- Folder that receives the self-contained WinClonerX.App publish. Lives under obj so it is never committed. -->
+    <WinClonerXAppProject>$(MSBuildThisFileDirectory)..\..\src\WinClonerX.App\WinClonerX.App.csproj</WinClonerXAppProject>
+    <WinClonerXPublishDir>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)publish</WinClonerXPublishDir>
+    <DefineConstants>WinClonerXVersion=$(WinClonerXVersion);WinClonerXPublishDir=$(WinClonerXPublishDir)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Release builds run ICE validation (some ICEs may need an elevated process, WIX1105). Debug builds skip it
+       so the solution stays green locally; the CI step builds Release. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <SuppressValidation>true</SuppressValidation>
+  </PropertyGroup>
+
+  <!-- Publishes WinClonerX.App before the MSI is compiled. Always Release, self-contained, win-x64, and plain files
+       (no single-file, no ReadyToRun), so the Files element can copy the whole folder.
+       Why dotnet publish instead of a ProjectReference with Publish="true": WixToolset.Sdk 6.0.2 has no .NET
+       publish integration; its ProjectReference handling only covers .wixlib and .vcxproj projects.
+       dotnet publish also performs the win-x64 restore itself. -->
+  <Target Name="WinClonerXPublishApp" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet publish &quot;$(WinClonerXAppProject)&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:PublishReadyToRun=false -o &quot;$(WinClonerXPublishDir)&quot; -nologo" />
+  </Target>
+
+</Project>

@@ -1,6 +1,6 @@
 # Contrato: Puertos de la aplicación (arquitectura hexagonal)
 
-Interfaces que la capa `WinCopy.Application` define y que `WinCopy.Infrastructure.Windows` implementa.
+Interfaces que la capa `WinClonerX.Application` define y que `WinClonerX.Infrastructure.Windows` implementa.
 Los casos de uso solo dependen de estas firmas. En las pruebas se sustituyen por fakes, que pueden
 inyectar fallos. Las firmas son orientativas. La implementación puede ajustar detalles, pero no la
 semántica.
@@ -24,7 +24,7 @@ interface IDiskInventoryReader
 interface IPlatformFactsProvider
 {
     Task<PlatformFacts> GetAsync(DiskInventory inventory, CancellationToken ct);
-    // PlatformFacts es un objeto de valor del DOMINIO (WinCopy.Domain.Planning), para que el dominio no
+    // PlatformFacts es un objeto de valor del DOMINIO (WinClonerX.Domain.Planning), para que el dominio no
     // dependa de la capa de aplicación. Contiene BitLocker por volumen, batería, VSS disponible y espacio
     // de diferencias, el mínimo de reducción soportado (MSFT_Partition.GetSupportedSize) y, para cada
     // posible destino, si está en uso (si falta el dato, se considera en uso).

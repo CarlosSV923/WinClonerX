@@ -6,7 +6,7 @@
 
 ## Summary
 
-WinCopy clona el disco del sistema Windows (UEFI/GPT) a otro disco mientras Windows está en ejecución.
+WinClonerX clona el disco del sistema Windows (UEFI/GPT) a otro disco mientras Windows está en ejecución.
 Funcionamiento:
 
 1. Toma una instantánea VSS coherente de los volúmenes NTFS del origen.
@@ -39,7 +39,7 @@ y WMI) y una interfaz WPF MVVM tipo asistente. Detalles en [research.md](researc
   VSS, `virtdisk` y el registro.
 - WiX Toolset v6 (MS-RL) para el MSI.
 
-**Storage**: N/A. Solo archivos de registro en `%ProgramData%\WinCopy\logs` (CLEF). Sin base de datos ni
+**Storage**: N/A. Solo archivos de registro en `%ProgramData%\WinClonerX\logs` (CLEF). Sin base de datos ni
 configuración persistente.
 
 **Testing**:
@@ -87,7 +87,7 @@ Evaluado contra la constitución **v1.1.1**.
 |-----------|--------------------------|--------|
 | **I. Seguridad de los datos (NO NEGOCIABLE)** | Invariante de dominio "destino ≠ sistema", repetida en `ITargetDiskFactory` y en los adaptadores (defensa en profundidad). Confirmación con los últimos caracteres del número de serie (R13). Reducción del origen con confirmación propia. Comprobaciones previas bloqueantes ante cualquier duda. "Compromiso" GPT al final y compensaciones (R4). Verificación estructural siempre. | ✅ PASS |
 | **II. Planificar antes de actuar** | `ClonePlan` inmutable, calculado sin tocar discos. Se muestra en el paso 2 y se confirma en el 3. La huella del inventario invalida el plan si algo cambia (FR-011). | ✅ PASS |
-| **III. Dominio aislado (DDD + hexagonal)** | `WinCopy.Domain` sin referencias a Windows ni WPF (lo comprueba un test de arquitectura). Cuatro contextos delimitados. Los puertos están en `WinCopy.Application` y los adaptadores en `WinCopy.Infrastructure.Windows`. Glosario en `docs/glosario.md`. | ✅ PASS |
+| **III. Dominio aislado (DDD + hexagonal)** | `WinClonerX.Domain` sin referencias a Windows ni WPF (lo comprueba un test de arquitectura). Cuatro contextos delimitados. Los puertos están en `WinClonerX.Application` y los adaptadores en `WinClonerX.Infrastructure.Windows`. Glosario en `docs/glosario.md`. | ✅ PASS |
 | **IV. Pruebas primero, con discos virtuales** | TDD en el dominio y los casos de uso. Integración solo sobre VHDX creados por el fixture. Protección por `BusType` y ruta del VHDX. Lista de validación manual en disco físico. | ✅ PASS |
 | **V. Solo APIs públicas (sala limpia)** | VSS, IOCTL y FSCTL documentados, Storage Management API, `bcdboot` y `reagentc`, `RegLoadKey` y `virtdisk`. Sin ingeniería inversa, sin código GPL y sin drivers. Dependencias con licencias MIT, Apache-2.0, BSD o MS-RL (justificadas en R11, R14, R15 y R16). | ✅ PASS |
 | **VI. Alcance mínimo** | Solo clonar el disco del sistema en UEFI/GPT. BIOS/MBR, discos dinámicos y Espacios de almacenamiento se rechazan de forma explícita. Sin funciones adicionales. | ✅ PASS |
@@ -121,23 +121,23 @@ specs/001-system-disk-clone/
 ### Source Code (repository root)
 
 ```text
-WinCopy.slnx
+WinClonerX.slnx
 Directory.Build.props            # Nullable, TreatWarningsAsErrors, analizadores, x64
 Directory.Packages.props         # Gestión centralizada de versiones de paquetes
 
 src/
-├── WinCopy.Domain/              # Sin dependencias externas
+├── WinClonerX.Domain/              # Sin dependencias externas
 │   ├── Shared/                  # ByteSize, Extent, DiskId, GUID, Result
 │   ├── Inventory/               # DiskInventory, Disk, Partition, Volume
 │   ├── Planning/                # ClonePlan, PartitionMapping, PreflightEvaluator,
 │   │                            # TargetLayoutCalculator, ClonePlanner, CapacityPolicy
 │   ├── Execution/               # CloneExecution, fases, estados, eventos, CloneResultReport
 │   └── BootRepair/              # BootRepairSpec, MountedDevicesRewrite
-├── WinCopy.Application/         # Casos de uso y puertos (contracts/ports.md)
+├── WinClonerX.Application/         # Casos de uso y puertos (contracts/ports.md)
 │   ├── Ports/
 │   └── UseCases/                # GetInventoryAndEligibility, BuildClonePlan, ConfirmClonePlan,
 │                                # ExecuteClone (orquestador + compensaciones), CancelExecution, ExportLog
-├── WinCopy.Infrastructure.Windows/
+├── WinClonerX.Infrastructure.Windows/
 │   ├── Interop/                 # LibraryImport/GeneratedComInterface: kernel32, vssapi, advapi32, virtdisk
 │   ├── Storage/                 # Inventario y redimensionado (System.Management, MSFT_*)
 │   ├── Snapshots/               # VSS
@@ -146,7 +146,7 @@ src/
 │   ├── Boot/                    # bcdboot, reagentc, registro fuera de línea, montajes temporales
 │   ├── Platform/                # Firmware, energía, BitLocker, monitor de dispositivos
 │   └── Logging/                 # IExecutionLog con Serilog
-└── WinCopy.App/                 # WPF (único proyecto con UI)
+└── WinClonerX.App/                 # WPF (único proyecto con UI)
     ├── app.manifest             # requireAdministrator
     ├── Views/  ViewModels/      # Pasos del asistente
     ├── Controls/                # DiskCard, PartitionBar, StepRail
@@ -154,15 +154,15 @@ src/
     └── Resources/               # Strings.resx, Strings.es.resx
 
 tests/
-├── WinCopy.Domain.Tests/
-├── WinCopy.Application.Tests/           # Orquestador con fakes e inyección de fallos
-├── WinCopy.Infrastructure.Windows.Tests/ # Partes puras: GPT/CRC32, parseo del mapa de clústeres, formato del registro
-├── WinCopy.Infrastructure.IntegrationTests/ # VHDX (administrador), protección contra discos físicos, spikes
-├── WinCopy.App.Tests/                   # ViewModels, paridad de recursos, sin literales en XAML
-└── WinCopy.ArchitectureTests/           # El dominio no referencia Windows/WPF; dependencias permitidas
+├── WinClonerX.Domain.Tests/
+├── WinClonerX.Application.Tests/           # Orquestador con fakes e inyección de fallos
+├── WinClonerX.Infrastructure.Windows.Tests/ # Partes puras: GPT/CRC32, parseo del mapa de clústeres, formato del registro
+├── WinClonerX.Infrastructure.IntegrationTests/ # VHDX (administrador), protección contra discos físicos, spikes
+├── WinClonerX.App.Tests/                   # ViewModels, paridad de recursos, sin literales en XAML
+└── WinClonerX.ArchitectureTests/           # El dominio no referencia Windows/WPF; dependencias permitidas
 
 installer/
-└── WinCopy.Installer/           # Proyecto WiX v6 (MSI x64 por máquina)
+└── WinClonerX.Installer/           # Proyecto WiX v6 (MSI x64 por máquina)
 
 docs/
 ├── decisiones-iniciales.md
@@ -172,7 +172,7 @@ docs/
 
 **Structure Decision**: aplicación de escritorio con cuatro proyectos de producción que materializan la
 arquitectura hexagonal: Domain → Application → Infrastructure.Windows / App, con dependencias solo hacia
-dentro. `WinCopy.App` es la raíz de composición (DI). Hay un proyecto de tests por proyecto de producción,
+dentro. `WinClonerX.App` es la raíz de composición (DI). Hay un proyecto de tests por proyecto de producción,
 más integración y arquitectura. El instalador queda aparte, en `installer/`.
 
 ## Fases de entrega (orientativas para /speckit-tasks)

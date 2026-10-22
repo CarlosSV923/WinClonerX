@@ -10,7 +10,7 @@ Sync Impact Report
 - TODO pendientes: ninguno
 -->
 
-# WinCopy Constitution
+# WinClonerX Constitution
 
 ## Core Principles
 

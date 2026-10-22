@@ -20,7 +20,7 @@
 
 ### User Story 1 - Clonar el sistema a un disco de igual o mayor tamaño (Priority: P1)
 
-Una persona quiere pasar su Windows a un disco nuevo, igual o más grande que el actual. Abre WinCopy y la aplicación detecta automáticamente el disco del sistema. La persona elige el disco de destino entre los disponibles y revisa un resumen de lo que va a ocurrir: qué particiones se copiarán, cómo quedarán en el disco nuevo y qué disco se borrará. Confirma y sigue el progreso hasta el final. El disco nuevo queda listo para arrancar Windows tal como estaba, con sus programas, archivos y configuración. Si el destino es más grande, el espacio adicional se asigna a la partición de Windows.
+Una persona quiere pasar su Windows a un disco nuevo, igual o más grande que el actual. Abre WinClonerX y la aplicación detecta automáticamente el disco del sistema. La persona elige el disco de destino entre los disponibles y revisa un resumen de lo que va a ocurrir: qué particiones se copiarán, cómo quedarán en el disco nuevo y qué disco se borrará. Confirma y sigue el progreso hasta el final. El disco nuevo queda listo para arrancar Windows tal como estaba, con sus programas, archivos y configuración. Si el destino es más grande, el espacio adicional se asigna a la partición de Windows.
 
 **Why this priority**: es el núcleo del producto. Por sí sola ya entrega el valor principal (migrar el sistema sin reinstalar) y es la base de todas las demás historias.
 
@@ -28,7 +28,7 @@ Una persona quiere pasar su Windows a un disco nuevo, igual o más grande que el
 
 **Acceptance Scenarios**:
 
-1. **Given** un equipo con Windows en UEFI/GPT y un segundo disco de mayor capacidad conectado, **When** la persona abre WinCopy, **Then** la aplicación muestra el disco del sistema como origen (no editable) y el segundo disco como destino seleccionable, con su modelo, número de serie, capacidad y contenido actual.
+1. **Given** un equipo con Windows en UEFI/GPT y un segundo disco de mayor capacidad conectado, **When** la persona abre WinClonerX, **Then** la aplicación muestra el disco del sistema como origen (no editable) y el segundo disco como destino seleccionable, con su modelo, número de serie, capacidad y contenido actual.
 2. **Given** que la persona eligió un destino, **When** pasa a la revisión, **Then** ve el plan completo: particiones de origen, cómo quedarán en el destino con sus tamaños, aviso de que el destino se borrará por completo y tiempo estimado.
 3. **Given** que la persona revisa el plan, **When** confirma explícitamente el borrado del disco identificado, **Then** comienza el clonado y se muestra el progreso real (porcentaje, datos copiados respecto al total y tiempo restante).
 4. **Given** que el clonado terminó, **When** la aplicación verifica el resultado, **Then** informa del éxito e indica los pasos para empezar a usar el disco nuevo (por ejemplo, intercambiar los discos o elegir el arranque).
@@ -39,7 +39,7 @@ Una persona quiere pasar su Windows a un disco nuevo, igual o más grande que el
 
 ### User Story 2 - Clonar a un disco más pequeño que el origen (Priority: P2)
 
-Una persona tiene un HDD grande con poco espacio ocupado y quiere pasar a un SSD más pequeño, pero con capacidad suficiente para los datos. WinCopy detecta que el destino es más pequeño que el origen y calcula si los datos caben. Si caben, explica que antes de clonar hay que reducir la partición de Windows del disco original y pide una confirmación específica para esa modificación. Después clona igual que en la historia 1.
+Una persona tiene un HDD grande con poco espacio ocupado y quiere pasar a un SSD más pequeño, pero con capacidad suficiente para los datos. WinClonerX detecta que el destino es más pequeño que el origen y calcula si los datos caben. Si caben, explica que antes de clonar hay que reducir la partición de Windows del disco original y pide una confirmación específica para esa modificación. Después clona igual que en la historia 1.
 
 **Why this priority**: es el caso más habitual de migración de HDD a SSD, pero es más arriesgado porque modifica el disco de origen. Depende de que la historia 1 funcione.
 
