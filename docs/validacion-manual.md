@@ -160,6 +160,12 @@ Los colores se leen de `WinClonerXTheme.xaml`. El texto normal requiere 4.5:1; l
 
 Queda pendiente la comprobación manual con Accessibility Insights y Narrator en un equipo Windows real. Hay que comprobar el foco, la navegación completa, los nombres anunciados, los cambios de progreso y los avisos en pantalla.
 
+### Comprobación en hardware real (2026-10-22)
+
+- **Teclado:** recorrido de los pasos 1 a 3 solo con el teclado (Tab, Espacio, Intro): correcto. Foco inicial en la tarjeta del disco y en la caja de confirmación, con el foco siempre visible.
+- **Colores:** bordes de las tarjetas, botones desactivados, rojo, verde y círculos de los pasos: correctos y legibles.
+- **Pendiente:** Accessibility Insights y Narrator.
+
 ## Revisión editorial (T110)
 
 Propuesta de Codex (gpt-6-luna) revisada y aplicada el 2026-10-21. Una primera reescritura de 140 textos se descartó porque tenía errores gramaticales, perdía datos útiles (UEFI, GPT, tamaño de sector) y daba un consejo equivocado. En esta segunda pasada se cambiaron 20 claves en cada idioma. Tres textos tenían un significado incorrecto o engañoso:

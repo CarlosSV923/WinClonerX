@@ -37,7 +37,7 @@ La historia 3 está implementada: cancelación con confirmación, exportación d
 
 ## 5. Accesibilidad, textos y uso
 
-- [ ] **Revisión manual de accesibilidad** con Accessibility Insights y Narrator en un equipo Windows real. **Estado:** pendiente; T109 está completada a nivel de código.
+- [ ] **Revisión manual de accesibilidad** con Accessibility Insights y Narrator en un equipo Windows real. **Estado:** parcial. El 2026-10-22 la persona usuaria comprobó en hardware real la navegación con teclado y los colores nuevos: correctos. Falta la revisión con Accessibility Insights y Narrator.
 - [ ] **T120:** prueba de uso con al menos 5 personas sin perfil técnico. Cada una debe identificar el disco que se borrará antes de confirmar (SC-007, al menos 90 % de aciertos). **Estado:** pendiente. Hace falta el protocolo y los resultados en [validación manual](validacion-manual.md).
 
 ## 6. Distribución y firma
