@@ -69,17 +69,23 @@
     </Style>
 
     <!-- Buttons -->
-    <Style x:Key="Button.Primary" TargetType="Button">
+    <Style x:Key="Button.Base" TargetType="Button">
         <Setter Property="FontFamily" Value="{x:Static themes:WinCopyFonts.Text}" />
         <Setter Property="FontSize" Value="14" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Padding" Value="18,6" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    </Style>
+
+    <Style x:Key="Button.Primary" TargetType="Button" BasedOn="{StaticResource Button.Base}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="Background" Value="{StaticResource Brush.Accent}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="MinHeight" Value="36" />
-        <Setter Property="Padding" Value="18,6" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -87,8 +93,8 @@
                             Background="{TemplateBinding Background}"
                             CornerRadius="6"
                             Padding="{TemplateBinding Padding}"
-                            BorderThickness="2"
-                            BorderBrush="Transparent">
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           RecognizesAccessKey="True" />
@@ -113,17 +119,10 @@
         </Setter>
     </Style>
 
-    <Style x:Key="Button.Secondary" TargetType="Button">
-        <Setter Property="FontFamily" Value="{x:Static themes:WinCopyFonts.Text}" />
-        <Setter Property="FontSize" Value="14" />
+    <Style x:Key="Button.Secondary" TargetType="Button" BasedOn="{StaticResource Button.Base}">
         <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}" />
         <Setter Property="Background" Value="{StaticResource Brush.Surface}" />
         <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="MinHeight" Value="36" />
-        <Setter Property="Padding" Value="18,6" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -159,17 +158,11 @@
         </Setter>
     </Style>
 
-    <Style x:Key="Button.Danger" TargetType="Button">
-        <Setter Property="FontFamily" Value="{x:Static themes:WinCopyFonts.Text}" />
-        <Setter Property="FontSize" Value="14" />
+    <Style x:Key="Button.Danger" TargetType="Button" BasedOn="{StaticResource Button.Base}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="Background" Value="{StaticResource Brush.Danger}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="MinHeight" Value="36" />
-        <Setter Property="Padding" Value="18,6" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -177,8 +170,8 @@
                             Background="{TemplateBinding Background}"
                             CornerRadius="6"
                             Padding="{TemplateBinding Padding}"
-                            BorderThickness="2"
-                            BorderBrush="Transparent">
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           RecognizesAccessKey="True" />
