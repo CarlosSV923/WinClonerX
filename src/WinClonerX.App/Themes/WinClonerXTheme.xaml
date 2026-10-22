@@ -158,6 +158,36 @@
         </Setter>
     </Style>
 
+    <Style x:Key="Button.Link" TargetType="Button" BasedOn="{StaticResource Button.Base}">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="2,2" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Accent}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="FocusChrome" BorderBrush="Transparent" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                        <TextBlock x:Name="LinkText" Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LinkText" Property="TextDecorations" Value="Underline" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusChrome" Property="BorderBrush" Value="{StaticResource Brush.Focus}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource Brush.TextDisabled}" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="Button.Danger" TargetType="Button" BasedOn="{StaticResource Button.Base}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="#FFFFFF" />

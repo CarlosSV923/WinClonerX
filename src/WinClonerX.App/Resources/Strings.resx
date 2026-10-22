@@ -688,4 +688,49 @@
   <data name="Result_CloseApp" xml:space="preserve">
     <value>Close WinClonerX</value>
   </data>
+  <data name="Review_VerifyAll_Hint" xml:space="preserve">
+    <value>Compares the clone with the source disk byte by byte. It catches copy errors that would otherwise go unnoticed.</value>
+  </data>
+  <data name="Review_VerifyAll_InfoLink" xml:space="preserve">
+    <value>What is it for?</value>
+  </data>
+  <data name="VerifyAllInfo_Title" xml:space="preserve">
+    <value>Verify all data</value>
+  </data>
+  <data name="VerifyAllInfo_Intro" xml:space="preserve">
+    <value>WinClonerX always checks that the clone is well formed and can start. With this option, it also reads back everything it copied and compares it byte by byte with the source disk.</value>
+  </data>
+  <data name="VerifyAllInfo_DetectsHeading" xml:space="preserve">
+    <value>It catches errors the disk does not report:</value>
+  </data>
+  <data name="VerifyAllInfo_Detects1" xml:space="preserve">
+    <value>Counterfeit disks that report more capacity than they have.</value>
+  </data>
+  <data name="VerifyAllInfo_Detects2" xml:space="preserve">
+    <value>Bad sectors on used disks.</value>
+  </data>
+  <data name="VerifyAllInfo_Detects3" xml:space="preserve">
+    <value>USB adapters or cables that corrupt data.</value>
+  </data>
+  <data name="VerifyAllInfo_Cost" xml:space="preserve">
+    <value>Cloning takes about twice as long.</value>
+  </data>
+  <data name="VerifyAllInfo_WhenHeading" xml:space="preserve">
+    <value>We recommend it if:</value>
+  </data>
+  <data name="VerifyAllInfo_When1" xml:space="preserve">
+    <value>The target disk is new, cheap or from a brand you do not know.</value>
+  </data>
+  <data name="VerifyAllInfo_When2" xml:space="preserve">
+    <value>You connect it through USB.</value>
+  </data>
+  <data name="VerifyAllInfo_When3" xml:space="preserve">
+    <value>You will erase or reuse the source disk soon.</value>
+  </data>
+  <data name="VerifyAllInfo_Note" xml:space="preserve">
+    <value>If it finds a difference, cloning stops and the target disk is left unused. Verification confirms that the copy matches the original, not that the original is healthy.</value>
+  </data>
+  <data name="VerifyAllInfo_Close" xml:space="preserve">
+    <value>Got it</value>
+  </data>
 </root>

@@ -144,7 +144,7 @@ public sealed class StartupSourceRestoreTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var disks = new DisksStepViewModel(new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory)), recovery);
-        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
 
         return (new WizardViewModel(disks, review), disks);
     }

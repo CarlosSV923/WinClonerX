@@ -72,7 +72,7 @@ public sealed class WizardStepWiringTests
         var inventory = new FakeGetInventoryAndEligibility(
             AppFixtures.Overview(AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk())));
         var disks = new DisksStepViewModel(inventory);
-        var review = new ReviewStepViewModel(builder);
+        var review = new ReviewStepViewModel(builder, new FakeInfoDialogService());
         var wizard = new WizardViewModel(disks, review);
         await disks.LoadAsync(TestContext.Current.CancellationToken);
         disks.SelectTargetCommand.Execute(disks.Targets.Single());
@@ -331,7 +331,7 @@ public sealed class WizardStepWiringTests
         var inventoryFake = new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory));
         inventoryFake.OnCall = () => order?.Add("inventory");
         var disks = new DisksStepViewModel(inventoryFake, recovery);
-        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
         var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value;
         var confirmPlan = new FakeConfirmClonePlan(plan);
         var confirm = new ConfirmStepViewModel(confirmPlan);
@@ -350,7 +350,7 @@ public sealed class WizardStepWiringTests
     private static (WizardViewModel Wizard, DisksStepViewModel Disks, ReviewStepViewModel Review) Create(DiskInventory inventory)
     {
         var disks = new DisksStepViewModel(new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory)));
-        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
         return (new WizardViewModel(disks, review), disks, review);
     }
 }

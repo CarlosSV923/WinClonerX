@@ -7,6 +7,8 @@ using WinClonerX.Application.UseCases;
 using WinClonerX.Application.UseCases.Execution;
 using WinClonerX.Application.UseCases.Planning;
 using WinClonerX.Application.UseCases.Recovery;
+using WinClonerX.App.Composition;
+using WinClonerX.App.Services;
 using WinClonerX.Infrastructure.Windows;
 using Xunit;
 
@@ -89,6 +91,16 @@ public sealed class CompositionTests : IDisposable
         provider.GetRequiredService<IClonePlanStore>().ShouldNotBeNull();
         provider.GetRequiredService<IRecoverPendingSourceRestore>().ShouldNotBeNull();
         provider.GetRequiredService<IExportLog>().ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void InfoDialogServiceResolvesFromAppComposition()
+    {
+        var services = new ServiceCollection();
+        ServiceRegistration.Register(services);
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IInfoDialogService>().ShouldBeOfType<WpfInfoDialogService>();
     }
 
     [Fact]

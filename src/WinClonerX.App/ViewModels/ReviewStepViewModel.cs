@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using WinClonerX.App.Localization;
 using WinClonerX.App.Presentation;
+using WinClonerX.App.Services;
 using WinClonerX.Application.UseCases.Planning;
 using WinClonerX.Domain.Inventory;
 using WinClonerX.Domain.Planning;
@@ -17,15 +19,30 @@ namespace WinClonerX.App.ViewModels;
 public sealed partial class ReviewStepViewModel : ObservableObject
 {
     private readonly IBuildClonePlan _buildPlan;
+    private readonly IInfoDialogService _infoDialogService;
     private long _buildVersion;
 
     /// <summary>Destination of the plan on screen. Null after <see cref="Clear"/>, so a change of the option builds nothing.</summary>
     private DiskId? _target;
 
-    public ReviewStepViewModel(IBuildClonePlan buildPlan)
+    public ReviewStepViewModel(IBuildClonePlan buildPlan, IInfoDialogService infoDialogService)
     {
         _buildPlan = buildPlan ?? throw new ArgumentNullException(nameof(buildPlan));
+        _infoDialogService = infoDialogService ?? throw new ArgumentNullException(nameof(infoDialogService));
     }
+
+    /// <summary>Shows the explanation of full data verification.</summary>
+    [RelayCommand]
+    private void ShowVerifyAllInfo() => _infoDialogService.Show(new InfoDialogRequest(
+        Loc.Get("VerifyAllInfo_Title"),
+        Loc.Get("VerifyAllInfo_Intro"),
+        Loc.Get("VerifyAllInfo_DetectsHeading"),
+        [Loc.Get("VerifyAllInfo_Detects1"), Loc.Get("VerifyAllInfo_Detects2"), Loc.Get("VerifyAllInfo_Detects3")],
+        Loc.Get("VerifyAllInfo_Cost"),
+        Loc.Get("VerifyAllInfo_WhenHeading"),
+        [Loc.Get("VerifyAllInfo_When1"), Loc.Get("VerifyAllInfo_When2"), Loc.Get("VerifyAllInfo_When3")],
+        Loc.Get("VerifyAllInfo_Note"),
+        Loc.Get("VerifyAllInfo_Close")));
 
     /// <summary>The draft plan, when it could be built.</summary>
     [ObservableProperty]

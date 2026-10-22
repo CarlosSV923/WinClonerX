@@ -13,6 +13,28 @@ namespace WinClonerX.App.Tests.ViewModels;
 public sealed class ReviewStepViewModelTests
 {
     [Fact]
+    public void ShowVerifyAllInfoCommandShowsTheLocalizedExplanationOnce()
+    {
+        using var _ = new EnglishCulture();
+        var info = new FakeInfoDialogService();
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => throw new InvalidOperationException()), info);
+
+        vm.ShowVerifyAllInfoCommand.Execute(null);
+
+        var request = info.Requests.ShouldHaveSingleItem();
+        request.Title.ShouldBe(Loc.Get("VerifyAllInfo_Title"));
+        request.Intro.ShouldBe(Loc.Get("VerifyAllInfo_Intro"));
+        request.DetectsHeading.ShouldBe(Loc.Get("VerifyAllInfo_DetectsHeading"));
+        request.Detects.ShouldBe([Loc.Get("VerifyAllInfo_Detects1"), Loc.Get("VerifyAllInfo_Detects2"), Loc.Get("VerifyAllInfo_Detects3")]);
+        request.Cost.ShouldBe(Loc.Get("VerifyAllInfo_Cost"));
+        request.WhenHeading.ShouldBe(Loc.Get("VerifyAllInfo_WhenHeading"));
+        request.When.ShouldBe([Loc.Get("VerifyAllInfo_When1"), Loc.Get("VerifyAllInfo_When2"), Loc.Get("VerifyAllInfo_When3")]);
+        request.Note.ShouldBe(Loc.Get("VerifyAllInfo_Note"));
+        request.CloseText.ShouldBe(Loc.Get("VerifyAllInfo_Close"));
+        info.Requests.Count.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task NextIsDisabledUntilEveryWarningIsAccepted()
     {
         using var _ = new EnglishCulture();
@@ -20,7 +42,7 @@ public sealed class ReviewStepViewModelTests
             AppFixtures.SystemDisk(windowsEncryption: EncryptionState.BitLockerOn),
             AppFixtures.TargetDisk());
         var builder = new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target, AppFixtures.Facts(onBattery: true)));
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -41,7 +63,7 @@ public sealed class ReviewStepViewModelTests
     public async Task ThePlanIsValidWhenItHasNoWarnings()
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -57,7 +79,7 @@ public sealed class ReviewStepViewModelTests
         var inventory = AppFixtures.InventoryOf(
             AppFixtures.SystemDisk(windowsEncryption: EncryptionState.BitLockerOn),
             AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
         vm.AcceptedWarnings.ShouldBeEmpty();
@@ -72,7 +94,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value;
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -95,7 +117,7 @@ public sealed class ReviewStepViewModelTests
     {
         using var _ = new EnglishCulture();
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -112,7 +134,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value;
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(_ => AppFixtures.PlanFor(inventory, AppFixtures.TargetId)), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -127,7 +149,7 @@ public sealed class ReviewStepViewModelTests
         using var _ = new EnglishCulture();
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var vm = new ReviewStepViewModel(new FakeBuildClonePlan(
-            target => AppFixtures.PlanFor(inventory, target, AppFixtures.Facts(targetInUse: true))));
+            target => AppFixtures.PlanFor(inventory, target, AppFixtures.Facts(targetInUse: true))), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -145,7 +167,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var builder = new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target));
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -159,7 +181,7 @@ public sealed class ReviewStepViewModelTests
     public async Task VerifyAllDataIsOffByDefaultAndTheDraftPlanIsStructural()
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)), new FakeInfoDialogService());
 
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
@@ -172,7 +194,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
         var structural = vm.Plan!;
 
@@ -205,7 +227,7 @@ public sealed class ReviewStepViewModelTests
 
             return AppFixtures.PlanFor(inventory, target, mode: mode);
         });
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
         vm.VerifyAllData = true;
@@ -232,7 +254,7 @@ public sealed class ReviewStepViewModelTests
 
             return AppFixtures.PlanFor(inventory, target, mode: mode);
         });
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
         vm.VerifyAllData = true;
@@ -261,7 +283,7 @@ public sealed class ReviewStepViewModelTests
         var inventory = AppFixtures.InventoryOf(
             AppFixtures.SystemDisk(windowsEncryption: EncryptionState.BitLockerOn),
             AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode)), new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
         vm.Warnings.Count.ShouldBeGreaterThan(0);
         foreach (var warning in vm.Warnings)
@@ -280,7 +302,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
 
         vm.VerifyAllData = true;
 
@@ -293,7 +315,7 @@ public sealed class ReviewStepViewModelTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var builder = new FakeBuildClonePlan((target, mode) => AppFixtures.PlanFor(inventory, target, mode: mode));
-        var vm = new ReviewStepViewModel(builder);
+        var vm = new ReviewStepViewModel(builder, new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
 
         vm.Clear();
@@ -318,7 +340,7 @@ public sealed class ReviewStepViewModelTests
         var inventory = AppFixtures.InventoryOf(
             AppFixtures.SystemDisk(windowsEncryption: EncryptionState.BitLockerOn),
             AppFixtures.TargetDisk());
-        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var vm = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
         await vm.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
         vm.Warnings.Single().IsAccepted = true;
         vm.IsValid.ShouldBeTrue();

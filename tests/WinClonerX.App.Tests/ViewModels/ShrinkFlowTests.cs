@@ -238,7 +238,7 @@ public sealed class ShrinkFlowTests
 
     private static async Task<ReviewStepViewModel> LoadReview(DiskInventory inventory, PlatformFacts facts)
     {
-        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target, facts)));
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target, facts)), new FakeInfoDialogService());
         await review.LoadAsync(AppFixtures.TargetId, TestContext.Current.CancellationToken);
         return review;
     }

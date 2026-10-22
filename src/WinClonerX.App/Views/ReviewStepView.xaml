@@ -130,6 +130,15 @@
                               Content="{loc:Loc Review_VerifyAll}"
                               AutomationProperties.Name="{loc:Loc Review_VerifyAll}"
                               IsChecked="{Binding VerifyAllData}" />
+                    <TextBlock Style="{StaticResource Text.Caption}"
+                               Margin="24,4,0,0"
+                               Text="{loc:Loc Review_VerifyAll_Hint}" />
+                    <Button Style="{StaticResource Button.Link}"
+                            Margin="24,2,0,0"
+                            HorizontalAlignment="Left"
+                            Content="{loc:Loc Review_VerifyAll_InfoLink}"
+                            AutomationProperties.Name="{loc:Loc Review_VerifyAll_InfoLink}"
+                            Command="{Binding ShowVerifyAllInfoCommand}" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

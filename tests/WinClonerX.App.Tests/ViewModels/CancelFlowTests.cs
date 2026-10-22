@@ -259,7 +259,7 @@ public sealed class CancelFlowTests
     {
         var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
         var disks = new DisksStepViewModel(new FakeGetInventoryAndEligibility(AppFixtures.Overview(inventory)));
-        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)));
+        var review = new ReviewStepViewModel(new FakeBuildClonePlan(target => AppFixtures.PlanFor(inventory, target)), new FakeInfoDialogService());
         var confirm = new ConfirmStepViewModel(new FakeConfirmClonePlan(AppFixtures.PlanFor(inventory, AppFixtures.TargetId).Value));
         var execute = new FakeExecuteClone();
         var confirmation = new FakeConfirmationService();

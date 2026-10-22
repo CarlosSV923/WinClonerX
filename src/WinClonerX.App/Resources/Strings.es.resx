@@ -688,4 +688,49 @@
   <data name="Result_CloseApp" xml:space="preserve">
     <value>Cerrar WinClonerX</value>
   </data>
+  <data name="Review_VerifyAll_Hint" xml:space="preserve">
+    <value>Compara byte a byte el clon con el disco de origen. Detecta errores de copia que, si no, pasarían desapercibidos.</value>
+  </data>
+  <data name="Review_VerifyAll_InfoLink" xml:space="preserve">
+    <value>¿Para qué sirve?</value>
+  </data>
+  <data name="VerifyAllInfo_Title" xml:space="preserve">
+    <value>Verificar todos los datos</value>
+  </data>
+  <data name="VerifyAllInfo_Intro" xml:space="preserve">
+    <value>WinClonerX siempre comprueba que el clon esté bien armado y pueda arrancar. Con esta opción, además, vuelve a leer todo lo copiado y lo compara byte a byte con el disco de origen.</value>
+  </data>
+  <data name="VerifyAllInfo_DetectsHeading" xml:space="preserve">
+    <value>Detecta errores que el disco no avisa:</value>
+  </data>
+  <data name="VerifyAllInfo_Detects1" xml:space="preserve">
+    <value>Discos falsificados que anuncian más capacidad de la real.</value>
+  </data>
+  <data name="VerifyAllInfo_Detects2" xml:space="preserve">
+    <value>Sectores defectuosos en discos usados.</value>
+  </data>
+  <data name="VerifyAllInfo_Detects3" xml:space="preserve">
+    <value>Adaptadores o cables USB que corrompen datos.</value>
+  </data>
+  <data name="VerifyAllInfo_Cost" xml:space="preserve">
+    <value>El clonado tarda aproximadamente el doble.</value>
+  </data>
+  <data name="VerifyAllInfo_WhenHeading" xml:space="preserve">
+    <value>Te recomendamos marcarla si:</value>
+  </data>
+  <data name="VerifyAllInfo_When1" xml:space="preserve">
+    <value>El disco de destino es nuevo, barato o de una marca que no conoces.</value>
+  </data>
+  <data name="VerifyAllInfo_When2" xml:space="preserve">
+    <value>Lo conectas por USB.</value>
+  </data>
+  <data name="VerifyAllInfo_When3" xml:space="preserve">
+    <value>Vas a borrar o reutilizar el disco de origen pronto.</value>
+  </data>
+  <data name="VerifyAllInfo_Note" xml:space="preserve">
+    <value>Si encuentra una diferencia, el clonado se detiene y el disco de destino queda sin usar. La verificación confirma que la copia es fiel al original, no que el original esté sano.</value>
+  </data>
+  <data name="VerifyAllInfo_Close" xml:space="preserve">
+    <value>Entendido</value>
+  </data>
 </root>

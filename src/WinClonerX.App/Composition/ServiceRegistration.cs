@@ -23,6 +23,7 @@ internal static class ServiceRegistration
 
         services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
         services.AddSingleton<IConfirmationService, WpfConfirmationService>();
+        services.AddSingleton<IInfoDialogService, WpfInfoDialogService>();
         services.AddSingleton<IFileDialogService, WpfFileDialogService>();
         services.AddSingleton<IFolderOpener, ExplorerFolderOpener>();
         services.AddSingleton<IAppLifetime, WpfAppLifetime>();
