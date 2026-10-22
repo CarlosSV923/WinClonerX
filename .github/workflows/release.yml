@@ -59,9 +59,9 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          msi_files=(installer/WinClonerX.Installer/bin/x64/Release/*.msi)
+          msi_files=(installer/WinClonerX.Installer/bin/Release/*.msi)
           if [ "${#msi_files[@]}" -ne 1 ]; then
-            echo "Expected exactly one MSI in installer/WinClonerX.Installer/bin/x64/Release, found ${#msi_files[@]}." >&2
+            echo "Expected exactly one MSI in installer/WinClonerX.Installer/bin/Release, found ${#msi_files[@]}." >&2
             exit 1
           fi
           mkdir -p dist

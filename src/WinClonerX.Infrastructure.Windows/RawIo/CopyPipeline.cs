@@ -107,10 +107,14 @@ internal sealed class CopyPipeline : IVolumeCopier
                 FullMode = BoundedChannelFullMode.Wait,
             });
 
-            Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, state, cts.Token), cts.Token);
+            // The token goes only to the bodies, never to Task.Run. A failure in one side cancels cts; if the other side had not
+            // started yet, Task.Run(…, cts.Token) would return a cancelled task, WhenAll would throw TaskCanceledException, and
+            // the real error kept in state (e.g. SourceReadError) would be lost. The bodies record every exception in state, so
+            // these tasks never fault and Rethrow below reports the first real error.
+            Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, state, cts.Token), CancellationToken.None);
             Task writer = Task.Run(
                 () => WriteChunksAsync(target, plans.Count, total, channel.Reader, pool, bytesWritten, state, cts.Token),
-                cts.Token);
+                CancellationToken.None);
 
             await Task.WhenAll(reader, writer).ConfigureAwait(false);
 
