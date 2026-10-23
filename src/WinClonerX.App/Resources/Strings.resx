@@ -329,7 +329,7 @@
     <value>I understand</value>
   </data>
   <data name="Review_VerifyAll" xml:space="preserve">
-    <value>Verify all data (roughly doubles the duration)</value>
+    <value>Verify all data (about 50% more time)</value>
   </data>
   <data name="Common_ComingSoon" xml:space="preserve">
     <value>Coming soon</value>
@@ -542,7 +542,7 @@
     <value>Some data did not match the original.</value>
   </data>
   <data name="Result_FullVerification_PartitionMismatch" xml:space="preserve">
-    <value>{0}: {1} differ out of {2} compared</value>
+    <value>{0}: {1} differ across {2} chunks, out of {3} verified</value>
   </data>
   <data name="Result_FullVerification_UsbHint" xml:space="preserve">
     <value>If the target disk is connected through USB, try connecting it internally (SATA) or with another adapter, then try again: some USB adapters return wrong data when reading.</value>
@@ -710,7 +710,7 @@
     <value>Close WinClonerX</value>
   </data>
   <data name="Review_VerifyAll_Hint" xml:space="preserve">
-    <value>Compares the clone with the source disk byte by byte. It catches copy errors that would otherwise go unnoticed.</value>
+    <value>Reads the target disk again to check that it holds exactly the copied data. It catches write errors that would otherwise go unnoticed.</value>
   </data>
   <data name="Review_VerifyAll_InfoLink" xml:space="preserve">
     <value>What is it for?</value>
@@ -719,7 +719,7 @@
     <value>Verify all data</value>
   </data>
   <data name="VerifyAllInfo_Intro" xml:space="preserve">
-    <value>WinClonerX always checks that the clone is well formed and can start. With this option, it also reads back everything it copied and compares it byte by byte with the source disk.</value>
+    <value>WinClonerX always checks that the clone is well formed and can start. With this option, it also reads back everything it wrote to the target disk and checks that it matches exactly what it copied.</value>
   </data>
   <data name="VerifyAllInfo_DetectsHeading" xml:space="preserve">
     <value>It catches errors the disk does not report:</value>
@@ -734,7 +734,7 @@
     <value>USB adapters or cables that corrupt data.</value>
   </data>
   <data name="VerifyAllInfo_Cost" xml:space="preserve">
-    <value>Cloning takes about twice as long.</value>
+    <value>Cloning takes about 50% longer.</value>
   </data>
   <data name="VerifyAllInfo_WhenHeading" xml:space="preserve">
     <value>We recommend it if:</value>

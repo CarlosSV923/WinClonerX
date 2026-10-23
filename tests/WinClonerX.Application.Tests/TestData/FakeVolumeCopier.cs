@@ -1,6 +1,7 @@
 using WinClonerX.Application.Ports;
 using WinClonerX.Application.Ports.Models;
 using WinClonerX.Application.Tests.Fakes;
+using System.Security.Cryptography;
 
 namespace WinClonerX.Application.Tests.TestData;
 
@@ -17,6 +18,8 @@ internal sealed class FakeVolumeCopier : FakeBase, IVolumeCopier
     /// <summary>Acción que se ejecuta después de escribir cada fragmento.</summary>
     public Action? OnChunk { get; set; }
 
+    public int DigestSinkCalls { get; private set; }
+
     /// <summary>Copia los tramos ocupados del origen al destino en el desplazamiento indicado.</summary>
     public async Task CopyAsync(
         IBlockSource source,
@@ -24,10 +27,15 @@ internal sealed class FakeVolumeCopier : FakeBase, IVolumeCopier
         ITargetDisk target,
         long targetOffset,
         IProgress<long> bytesWritten,
-        CancellationToken ct)
+        CancellationToken ct,
+        ICopyDigestSink? digests = null)
     {
         Calls.Add(nameof(CopyAsync));
         Copies.Add((source, target, targetOffset));
+        if (digests is not null)
+        {
+            DigestSinkCalls++;
+        }
 
         if (FailOn.TryGetValue(nameof(CopyAsync), out var failure))
         {
@@ -45,6 +53,7 @@ internal sealed class FakeVolumeCopier : FakeBase, IVolumeCopier
                 var length = (int)Math.Min(ExecuteCloneTestData.ChunkSize, range.End - position);
                 var read = await source.ReadAsync(position, buffer.AsMemory(0, length), ct);
                 await target.WriteAsync(targetOffset + position, buffer.AsMemory(0, read), ct);
+                digests?.Add(new ChunkDigest(targetOffset + position, read, Sha256Digest.FromBytes(SHA256.HashData(buffer.AsSpan(0, read)))));
 
                 written += read;
                 bytesWritten.Report(written);

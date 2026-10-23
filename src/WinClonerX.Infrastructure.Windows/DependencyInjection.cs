@@ -143,7 +143,7 @@ public static class DependencyInjection
             "target"));
 
         // La verificación completa compara con el mismo destino. Sin volúmenes montados la lectura es estable (R18).
-        services.AddSingleton<IVolumeComparer>(sp => new VolumeComparer(
+        services.AddSingleton<ITargetVerifier>(sp => new TargetVerifier(
             sp.GetRequiredService<DiskOperationRecorder>(),
             "target"));
 

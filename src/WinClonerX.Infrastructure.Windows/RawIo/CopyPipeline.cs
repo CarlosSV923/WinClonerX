@@ -1,4 +1,5 @@
 using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
 using System.Threading.Channels;
 using WinClonerX.Application.Errors;
 using WinClonerX.Application.Ports;
@@ -74,7 +75,8 @@ internal sealed class CopyPipeline : IVolumeCopier
         ITargetDisk target,
         long targetOffset,
         IProgress<long> bytesWritten,
-        CancellationToken ct)
+        CancellationToken ct,
+        ICopyDigestSink? digests = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(allocation);
@@ -111,7 +113,7 @@ internal sealed class CopyPipeline : IVolumeCopier
             // started yet, Task.Run(…, cts.Token) would return a cancelled task, WhenAll would throw TaskCanceledException, and
             // the real error kept in state (e.g. SourceReadError) would be lost. The bodies record every exception in state, so
             // these tasks never fault and Rethrow below reports the first real error.
-            Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, state, cts.Token), CancellationToken.None);
+            Task reader = Task.Run(() => ReadChunksAsync(source, plans, pool, channel.Writer, digests, state, cts.Token), CancellationToken.None);
             Task writer = Task.Run(
                 () => WriteChunksAsync(target, plans.Count, total, channel.Reader, pool, bytesWritten, state, cts.Token),
                 CancellationToken.None);
@@ -146,6 +148,7 @@ internal sealed class CopyPipeline : IVolumeCopier
         IReadOnlyList<ChunkPlan> plans,
         AlignedBufferPool pool,
         ChannelWriter<ChunkWork> output,
+        ICopyDigestSink? digests,
         PipelineState state,
         CancellationToken token)
     {
@@ -161,6 +164,14 @@ internal sealed class CopyPipeline : IVolumeCopier
                 {
                     await ReadChunkAsync(source, plan, buffer, token).ConfigureAwait(false);
                     state.AddRead(plan.Length);
+
+                    // The digest of the exact bytes that the writer will write: the buffer is not changed after the read.
+                    // It is computed here, on the reader, because the source is faster than the target and the writer is
+                    // the bottleneck. SHA-256 with hardware support is far faster than either disk. Only for full verification.
+                    digests?.Add(new ChunkDigest(
+                        plan.TargetOffset,
+                        plan.Length,
+                        Sha256Digest.FromBytes(SHA256.HashData(buffer.Span[..plan.Length]))));
                     await output.WriteAsync(new ChunkWork(plan, buffer), token).ConfigureAwait(false);
                     handedOff = true;
                 }

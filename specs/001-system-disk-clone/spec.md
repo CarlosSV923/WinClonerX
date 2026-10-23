@@ -133,7 +133,7 @@ Una persona cancela el clonado a mitad, o se produce un fallo (se desconecta el 
 **Resultado y verificación**
 
 - **FR-022**: Al terminar, el sistema MUST hacer siempre una verificación estructural del destino y mostrar su resultado. La verificación comprueba que la tabla de particiones coincide con el plan, que cada volumen se puede leer y que la configuración de arranque está presente.
-- **FR-022a**: El sistema MUST ofrecer antes de iniciar una opción, desactivada por defecto, para verificar todos los datos. Esa verificación compara el contenido copiado en el destino con el de la copia coherente del origen e informa de cualquier diferencia. La interfaz MUST indicar que esta opción aproximadamente duplica la duración.
+- **FR-022a**: El sistema MUST ofrecer antes de iniciar una opción, desactivada por defecto, para verificar todos los datos. Durante la copia calcula una huella SHA-256 de cada bloque copiado y, después, relee el disco de destino para detectar cualquier bloque distinto. La interfaz MUST indicar que esta opción tarda aproximadamente un 50 % más.
 - **FR-023**: Tras un clonado correcto, el sistema MUST mostrar los pasos para empezar a usar el disco nuevo.
 - **FR-024**: Si la operación se cancela o falla, el sistema MUST dejar el origen utilizable, marcar el destino como incompleto y explicar lo ocurrido en lenguaje claro.
 

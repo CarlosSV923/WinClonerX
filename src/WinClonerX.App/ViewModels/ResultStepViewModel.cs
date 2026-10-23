@@ -285,6 +285,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
                     "Result_FullVerification_PartitionMismatch",
                     Labels.Role(partition.Role),
                     SizeText.Format(new ByteSize(partition.DifferingBytes)),
+                    partition.DifferingChunks,
                     SizeText.Format(new ByteSize(partition.BytesCompared))));
             }
         }

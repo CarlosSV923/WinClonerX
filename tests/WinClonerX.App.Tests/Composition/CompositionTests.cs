@@ -29,6 +29,8 @@ public sealed class CompositionTests : IDisposable
         typeof(ISnapshotSet),
         // Lo produce ITargetDiskFactory.Open con un plan confirmado.
         typeof(ITargetDisk),
+        // The orchestrator creates a sink only for a full-verification copy.
+        typeof(ICopyDigestSink),
     ];
 
     /// <summary>Puertos sin adaptador real todavía. Se quitan de esta lista cuando exista su implementación.</summary>

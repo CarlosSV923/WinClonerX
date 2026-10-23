@@ -20,5 +20,6 @@ public interface IVolumeCopier
         ITargetDisk target,
         long targetOffset,
         IProgress<long> bytesWritten,
-        CancellationToken ct);
+        CancellationToken ct,
+        ICopyDigestSink? digests = null);
 }

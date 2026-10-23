@@ -51,7 +51,7 @@ public sealed class CloneEstimateTests
     }
 
     [Fact]
-    public void FullVerificationRoughlyDoublesTheDurationAndKeepsTheCopyDurationApart()
+    public void FullVerificationAddsHalfTheCopyDurationAndKeepsTheCopyDurationApart()
     {
         var mappings = new[] { Mapping(Partition(1, 1_000_000_000L, GptPartitionType.MicrosoftReserved, null), CopyMethod.RawFull) };
 
@@ -60,7 +60,7 @@ public sealed class CloneEstimateTests
 
         full.BytesToCopy.ShouldBe(structural.BytesToCopy);
         full.EstimatedCopyDuration.ShouldBe(structural.EstimatedDuration);
-        full.EstimatedDuration.ShouldBe(structural.EstimatedDuration + structural.EstimatedDuration);
+        full.EstimatedDuration.ShouldBe(structural.EstimatedDuration + TimeSpan.FromTicks(structural.EstimatedDuration.Ticks / 2));
         structural.EstimatedDuration.ShouldBe(structural.EstimatedCopyDuration);
     }
 

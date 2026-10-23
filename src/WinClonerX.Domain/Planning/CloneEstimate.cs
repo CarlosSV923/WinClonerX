@@ -11,8 +11,8 @@ public sealed record CloneEstimate(ByteSize BytesToCopy, TimeSpan EstimatedDurat
 {
     /// <summary>
     /// Calcula la estimación: los clústeres ocupados en las particiones NTFS y el tramo completo en el resto.
-    /// La velocidad es la del bus más lento entre origen y destino. La verificación completa lee de nuevo ambos lados, así que
-    /// se estima como otra copia completa (aprox. duplica la duración, FR-022a).
+    /// La velocidad es la del bus más lento entre origen y destino. La verificación completa relee solo el destino, así que
+    /// añade aproximadamente media duración de copia (FR-022a).
     /// </summary>
     public static CloneEstimate Calculate(
         IEnumerable<PartitionMapping> mappings,
@@ -32,7 +32,7 @@ public sealed record CloneEstimate(ByteSize BytesToCopy, TimeSpan EstimatedDurat
 
         var megabytesPerSecond = Math.Min(MegabytesPerSecond(sourceBus), MegabytesPerSecond(targetBus));
         var copy = TimeSpan.FromSeconds(bytes / (megabytesPerSecond * 1_000_000.0));
-        var total = mode == VerificationMode.StructuralAndFull ? copy + copy : copy;
+        var total = mode == VerificationMode.StructuralAndFull ? copy + TimeSpan.FromTicks(copy.Ticks / 2) : copy;
 
         return new CloneEstimate(new ByteSize(bytes), total, copy);
     }

@@ -380,27 +380,11 @@ Fuentes de Microsoft consultadas el 2026-10-13:
 
 ## R18. Verificación completa de los datos (FR-022a)
 
-- **Decisión (2026-10-21)**: la comparación byte a byte es la fase `FullVerification`, después de `CopyData` y **antes de
-  `CommitLayout`**, con el destino todavía fuera de línea y bloqueado. La tarea pedía tras `CommitLayout`; se cambia por lo
-  que sigue.
-- **Por qué antes de `CommitLayout`**: `CommitLayout` también pone el disco en línea (`BringOnline`) y libera los bloqueos.
-  Con los volúmenes montados, NTFS puede escribir en ellos al montarlos (por ejemplo, el estado de `$Volume` y el registro
-  de NTFS), y esas escrituras aparecerían como diferencias que no son del clonado. Mientras el disco está fuera de línea,
-  ninguna escritura de Windows llega al destino. Además, si la comparación falla no hay diseño escrito que borrar.
-- **Por qué antes de la ampliación y del arranque**: `ExpandFileSystem` reescribe el sector de arranque (`NumberSectors`), el
-  mapa de bits de NTFS y el sector de arranque de respaldo al final del volumen. `RepairBoot` cambia `MountedDevices`, el BCD
-  de la ESP y `ReAgent.xml`. Si la comparación fuera después, esos cambios aparecerían como diferencias esperables. Antes, el
-  destino es exactamente lo que escribió la copia.
-- **Qué se compara**: los mismos tramos ocupados que copió la copia (`CopiedRange`), leídos de nuevo de la misma instantánea
-  (sigue abierta hasta `Cleanup`) y del destino con `ITargetDisk.ReadAsync` en su desplazamiento. Las particiones copiadas en
-  bruto (EFI, MSR) se comparan completas, porque su asignación es el tramo entero.
-- **Lectura y memoria**: `VolumeComparer` usa dos búferes alineados de 4 MiB por comparación, en fragmentos. Los errores se
-  clasifican como la copia: origen con `SourceReadError` o la desconexión; destino con `IoErrorClassifier.ForTargetIo`.
-- **Resultado**: `VerificationResult` con los bytes distintos totales y los primeros 10 desplazamientos del disco de destino.
-  El detalle por partición (número de bytes y desplazamientos) va en `Issues`. Un byte distinto falla la ejecución con
-  `VerificationFailed` y las compensaciones habituales; el informe lleva el resultado completo en `Full`.
-- **Registro**: un `DiskOperation` `Read` por partición sobre el destino, y `FullVerificationCompleted` al terminar.
-- **Estimación**: con la verificación completa, la duración estimada es la de la copia más una segunda pasada igual (aprox.
-  el doble, FR-022a). El rendimiento inicial de la copia usa solo la duración de la copia.
-- **Pendiente de comprobar en hardware real**: que el destino fuera de línea devuelve los mismos bytes que escribió la copia,
-  y que la comparación de un clon real con BitLocker y con el origen en instantánea no da diferencias espurias.
+- **Decisión (2026-10-22)**: `FullVerification` verifica el destino contra digests SHA-256 calculados durante la copia. Se ejecuta después de `CopyData` y antes de `CommitLayout`, con el destino fuera de línea.
+- **Hallazgo de hardware real**: el destino fue estable en las muestras observadas, pero VSS no congela los archivos excluidos mediante `FilesNotToSnapshot` (pagefile.sys, hiberfil.sys y swapfile.sys); el origen devolvió datos distintos en lecturas consecutivas. La partición ESP también se copia desde el disco vivo y Windows puede actualizarla durante el proceso.
+- **Decisión anterior (2026-10-21), sustituida**: se releía el origen y el destino y se comparaban byte a byte. Esa comparación no es válida porque el origen no permanece estable durante la copia.
+- **Qué se verifica ahora**: durante `CopyData`, el escritor calcula SHA-256 sobre el mismo búfer que escribe y guarda `(TargetOffset, Length, Hash)` por chunk. Solo se guardan digests si está activada la verificación completa. La fase relee cada chunk del destino y compara su hash; no vuelve a abrir ni leer el origen.
+- **Coste y alcance**: se verifica que el destino contiene exactamente los bytes escritos. No se comprueba la salud del origen. Se elimina una lectura del disco, reduciendo aproximadamente a la mitad el tiempo de verificación. Para 128 GB y chunks de 4 MiB se guardan unas 32 mil entradas de 32 bytes de hash, más metadatos.
+- **Lectura y resultado**: el verificador usa búfer alineado, se ejecuta en el thread pool y registra un `DiskOperation` `Read` por partición. Cuenta chunks distintos y sus bytes completos, conserva hasta diez offsets absolutos y vuelve a leer los tres primeros chunks distintos para diagnosticar estabilidad del destino. Los errores se clasifican con `IoErrorClassifier.ForTargetIo`.
+- **Fallo y compensaciones**: una diferencia produce `VerificationFailed`, conserva `VerificationResult` en `Full` y ejecuta las compensaciones habituales antes de `CommitLayout`.
+- **Estimación**: la duración con verificación completa es la copia más media copia (aprox. un 50 % más); el rendimiento inicial usa solo la duración de copia.

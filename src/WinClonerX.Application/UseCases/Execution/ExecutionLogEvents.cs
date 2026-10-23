@@ -177,17 +177,9 @@ internal static class ExecutionLogEvents
         LogLevelKind.Warning,
         ("PartitionRole", partitionRole),
         ("NewPartitionGuid", newPartitionGuid),
-        ("SourceOffset", sample.SourceOffset),
+        ("TargetOffset", sample.TargetOffset),
         ("Length", sample.Length),
-        ("DifferingBytes", sample.DifferingBytes),
-        ("SourceStable", sample.SourceStable),
-        ("TargetStable", sample.TargetStable),
-        ("SecondReadDiffering", sample.SecondReadDiffering),
-        ("TargetAllZero", sample.TargetAllZero),
-        ("SourceAllZero", sample.SourceAllZero),
-        ("Shift", sample.Shift),
-        ("SourceSample", sample.SourceSample),
-        ("TargetSample", sample.TargetSample));
+        ("TargetStable", sample.TargetStable));
 
     /// <summary>
     /// No se pudo activar la vigilancia de la desconexión de los discos. El clonado sigue: una desconexión se detecta igualmente

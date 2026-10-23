@@ -657,7 +657,7 @@ public sealed class ExecuteCloneTests
             MountFaults = new ReleaseFaultMounter(Mounter);
             Journal = new FakeSourceRestoreJournal(Resizer);
             Orchestrator = new ExecuteClone(
-                Store, Inventory, Snapshots, Raw, Targets, Copier, Comparer, Expander, MountFaults, Registry, Boot, Recovery,
+                Store, Inventory, Snapshots, Raw, Targets, Copier, TargetVerifier, Expander, MountFaults, Registry, Boot, Recovery,
                 Verifier, Resizer, Journal, Power, RemovalMonitor, Log, Clock);
             Orchestrator.Events.Subscribe(new EventCollector(Events, e => OnEvent(e)));
         }
@@ -678,7 +678,7 @@ public sealed class ExecuteCloneTests
 
         public FakeVolumeCopier Copier { get; } = new();
 
-        public FakeVolumeComparer Comparer { get; } = new();
+        public FakeTargetVerifier TargetVerifier { get; } = new();
 
         public FakeFileSystemExpander Expander { get; } = new();
 

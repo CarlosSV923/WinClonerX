@@ -329,7 +329,7 @@
     <value>Entiendo</value>
   </data>
   <data name="Review_VerifyAll" xml:space="preserve">
-    <value>Verificar todos los datos (aprox. duplica la duración)</value>
+    <value>Verificar todos los datos (aprox. un 50 % más de tiempo)</value>
   </data>
   <data name="Common_ComingSoon" xml:space="preserve">
     <value>Disponible próximamente</value>
@@ -542,7 +542,7 @@
     <value>Algunos datos no coinciden con el original.</value>
   </data>
   <data name="Result_FullVerification_PartitionMismatch" xml:space="preserve">
-    <value>{0}: {1} distintos de {2} comparados</value>
+    <value>{0}: {1} distintos en {2} bloques, de {3} verificados</value>
   </data>
   <data name="Result_FullVerification_UsbHint" xml:space="preserve">
     <value>Si el disco de destino está conectado por USB, prueba a conectarlo por dentro (SATA) o con otro adaptador y vuelve a intentarlo: algunos adaptadores USB devuelven datos erróneos al leer.</value>
@@ -710,7 +710,7 @@
     <value>Cerrar WinClonerX</value>
   </data>
   <data name="Review_VerifyAll_Hint" xml:space="preserve">
-    <value>Compara byte a byte el clon con el disco de origen. Detecta errores de copia que, si no, pasarían desapercibidos.</value>
+    <value>Comprueba, leyendo de nuevo el disco de destino, que guarda exactamente los datos copiados. Detecta errores de escritura que, si no, pasarían desapercibidos.</value>
   </data>
   <data name="Review_VerifyAll_InfoLink" xml:space="preserve">
     <value>¿Para qué sirve?</value>
@@ -719,7 +719,7 @@
     <value>Verificar todos los datos</value>
   </data>
   <data name="VerifyAllInfo_Intro" xml:space="preserve">
-    <value>WinClonerX siempre comprueba que el clon esté bien armado y pueda arrancar. Con esta opción, además, vuelve a leer todo lo copiado y lo compara byte a byte con el disco de origen.</value>
+    <value>WinClonerX siempre comprueba que el clon esté bien armado y pueda arrancar. Con esta opción, además, vuelve a leer todo lo que escribió en el disco de destino y comprueba que coincide exactamente con lo que copió.</value>
   </data>
   <data name="VerifyAllInfo_DetectsHeading" xml:space="preserve">
     <value>Detecta errores que el disco no avisa:</value>
@@ -734,7 +734,7 @@
     <value>Adaptadores o cables USB que corrompen datos.</value>
   </data>
   <data name="VerifyAllInfo_Cost" xml:space="preserve">
-    <value>El clonado tarda aproximadamente el doble.</value>
+    <value>El clonado tarda aproximadamente un 50 % más.</value>
   </data>
   <data name="VerifyAllInfo_WhenHeading" xml:space="preserve">
     <value>Te recomendamos marcarla si:</value>

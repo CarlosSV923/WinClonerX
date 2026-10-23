@@ -61,7 +61,7 @@ public sealed class FullVerificationTests
         report.Failure!.Code.ShouldBe("VerificationFailed");
         VerificationResult full = report.Full.ShouldNotBeNull("failed full verification must be reported");
         full.Passed.ShouldBeFalse();
-        full.DifferingBytes.ShouldBe(1);
+        full.DifferingBytes.ShouldNotBe(0L);
         long? recordedOffset = harness.DataTamperingFactory!.FlippedOffset;
         recordedOffset.ShouldNotBeNull();
         long flippedOffset = recordedOffset.Value;

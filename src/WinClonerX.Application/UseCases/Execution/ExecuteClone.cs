@@ -25,7 +25,7 @@ public sealed class ExecuteClone(
     IRawPartitionReader rawReader,
     ITargetDiskFactory targetFactory,
     IVolumeCopier copier,
-    IVolumeComparer comparer,
+    ITargetVerifier targetVerifier,
     IFileSystemExpander expander,
     ITemporaryMounter mounter,
     IOfflineRegistryEditor registry,
@@ -446,18 +446,22 @@ public sealed class ExecuteClone(
             var total = items.Sum(item => item.Allocation.TotalUsed.Bytes);
             var estimator = new ProgressEstimator(total, clock, InitialBytesPerSecond(run.Plan));
 
-            // La verificación completa compara exactamente estos tramos, leídos de la misma instantánea.
-            run.Copied = items.Select(item => new CopiedRange(item.Mapping, item.Allocation)).ToArray();
+            // La verificación completa conserva los digests de los chunks escritos por cada correspondencia.
+            bool captureDigests = run.Plan.Verification == VerificationMode.StructuralAndFull;
+            var copied = items.Select(item => new CopiedRange(item.Mapping, [])).ToArray();
+            run.Copied = copied;
 
             long completed = 0;
-            foreach (var item in items)
+            for (int index = 0; index < items.Count; index++)
             {
+                var item = items[index];
                 ct.ThrowIfCancellationRequested();
 
                 var before = completed;
                 var progress = new CallbackProgress(bytes => ReportTransferProgress(run, estimator, before + bytes));
 
-                await copier.CopyAsync(item.Source, item.Allocation, target, item.Mapping.TargetExtent.Offset, progress, ct);
+                await copier.CopyAsync(item.Source, item.Allocation, target, item.Mapping.TargetExtent.Offset, progress, ct,
+                    captureDigests ? new ListDigestSink(copied[index].Digests) : null);
 
                 completed += item.Allocation.TotalUsed.Bytes;
                 item.Source.Dispose();
@@ -483,9 +487,8 @@ public sealed class ExecuteClone(
     }
 
     /// <summary>
-    /// Compara byte a byte cada tramo copiado con el origen: los mismos tramos ocupados que copió <see cref="CopyDataAsync"/>,
-    /// leídos de la misma instantánea, y los bytes del destino en su desplazamiento. Corre con el destino fuera de línea y sin
-    /// volúmenes montados, antes del diseño (R18). Es interrumpible: una cancelación se atiende entre fragmentos.
+    /// Comprueba cada chunk del destino contra el SHA-256 capturado durante <see cref="CopyDataAsync"/>. Corre con el destino
+    /// fuera de línea y sin volúmenes montados, antes del diseño (R18). Es interrumpible entre chunks.
     /// <para>
     /// Un byte distinto no es un error de lectura: la fase falla con <see cref="PlatformErrorCode.VerificationFailed"/> y el
     /// informe lleva el número de bytes distintos y los primeros desplazamientos del disco de destino (diez como mucho). Los
@@ -495,9 +498,9 @@ public sealed class ExecuteClone(
     private async Task FullVerificationAsync(ExecutionRun run, CancellationToken ct)
     {
         var target = RequireTarget(run);
-        var copied = run.Copied ?? throw new InvalidOperationException("No hay tramos copiados que comparar.");
+        var copied = run.Copied ?? throw new InvalidOperationException("No hay digests de copia que verificar.");
 
-        var total = copied.Sum(item => item.Allocation.TotalUsed.Bytes);
+        var total = copied.Sum(item => item.Digests.Sum(digest => (long)digest.Length));
         var estimator = new ProgressEstimator(total, clock, InitialBytesPerSecond(run.Plan));
 
         var partitions = new List<PartitionComparison>(copied.Count);
@@ -509,17 +512,13 @@ public sealed class ExecuteClone(
             var before = completed;
             var progress = new CallbackProgress(bytes => ReportTransferProgress(run, estimator, before + bytes));
 
-            // Se abre de nuevo el mismo origen: la instantánea sigue viva hasta la limpieza.
-            using IBlockSource source = OpenSource(run, item.Mapping);
-            RangeComparison comparison = await comparer.CompareAsync(
-                source,
-                item.Allocation,
+            RangeComparison comparison = await targetVerifier.VerifyAsync(
                 target,
-                item.Mapping.TargetExtent.Offset,
+                item.Digests,
                 progress,
                 ct);
 
-            completed += item.Allocation.TotalUsed.Bytes;
+            completed += comparison.BytesCompared;
             partitions.Add(new PartitionComparison(item.Mapping, comparison));
             foreach (ChunkMismatchSample sample in comparison.MismatchSamples ?? Array.Empty<ChunkMismatchSample>())
             {
@@ -562,8 +561,7 @@ public sealed class ExecuteClone(
         }
 
         var offsets = partitions
-            .SelectMany(partition => partition.Comparison.FirstDifferenceOffsets
-                .Select(offset => checked(partition.Mapping.TargetExtent.Offset + offset)))
+            .SelectMany(partition => partition.Comparison.FirstDifferenceOffsets)
             .Take(MaxRecordedDifferenceOffsets)
             .ToArray();
 
@@ -573,7 +571,7 @@ public sealed class ExecuteClone(
                 $"Partition {partition.Mapping.NewUniqueId.Value.ToString("D", System.Globalization.CultureInfo.InvariantCulture)} ({partition.Mapping.Source.Role}): {partition.Comparison.DifferingBytes} bytes differ; "
                 + "first at target disk offsets "
                 + string.Join(", ", partition.Comparison.FirstDifferenceOffsets.Select(offset =>
-                    (partition.Mapping.TargetExtent.Offset + offset).ToString(System.Globalization.CultureInfo.InvariantCulture))))
+                    offset.ToString(System.Globalization.CultureInfo.InvariantCulture))))
             .ToArray();
 
         var summaries = partitions
@@ -581,7 +579,8 @@ public sealed class ExecuteClone(
             .Select(partition => new VerificationPartitionSummary(
                 partition.Mapping.Source.Role,
                 partition.Comparison.BytesCompared,
-                partition.Comparison.DifferingBytes))
+                partition.Comparison.DifferingBytes,
+                partition.Comparison.DifferingChunks))
             .ToArray();
 
         return new VerificationResult(false, issues, differing, offsets, summaries);
@@ -1119,7 +1118,7 @@ public sealed class ExecuteClone(
         /// <summary>Resultado de la verificación completa, o null si no se hizo.</summary>
         public VerificationResult? Full { get; set; }
 
-        /// <summary>Tramos copiados, con su correspondencia, para compararlos después. Null hasta que empieza la copia.</summary>
+        /// <summary>Digests de copia, agrupados por correspondencia. Null hasta que empieza la copia.</summary>
         public IReadOnlyList<CopiedRange>? Copied { get; set; }
 
         public RecoveryEnvironmentState? Recovery { get; set; }
@@ -1151,8 +1150,13 @@ public sealed class ExecuteClone(
     /// <summary>Tramo de origen abierto para copiar: la correspondencia, el origen y su asignación de bytes ocupados.</summary>
     private sealed record CopyItem(PartitionMapping Mapping, IBlockSource Source, VolumeAllocation Allocation);
 
-    /// <summary>Correspondencia copiada y sus tramos ocupados: lo que compara la verificación completa.</summary>
-    private sealed record CopiedRange(PartitionMapping Mapping, VolumeAllocation Allocation);
+    /// <summary>Correspondencia copiada y digests de sus chunks escritos.</summary>
+    private sealed record CopiedRange(PartitionMapping Mapping, List<ChunkDigest> Digests);
+
+    private sealed class ListDigestSink(List<ChunkDigest> digests) : ICopyDigestSink
+    {
+        public void Add(ChunkDigest digest) => digests.Add(digest);
+    }
 
     /// <summary>Resultado de comparar una correspondencia con el destino.</summary>
     private sealed record PartitionComparison(PartitionMapping Mapping, RangeComparison Comparison);

@@ -34,7 +34,7 @@ El disco del sistema **nunca** aparece en la lista de destinos.
 | Comparativa | Dos barras alineadas, "Antes (origen)" y "Después (destino)", con cada partición, su tamaño y su cambio (+/−) | FR-007 |
 | Resumen | Datos a copiar, duración estimada y si se reducirá el origen | FR-007 |
 | Avisos | Uno por aviso (BitLocker, batería, cambios después de iniciar…), con una casilla "Entiendo" obligatoria | FR-014, edge cases |
-| Opción | Casilla "Verificar todos los datos (aprox. duplica la duración)", desactivada por defecto | FR-022a |
+| Opción | Casilla "Verificar todos los datos (aprox. un 50 % más de tiempo)", desactivada por defecto | FR-022a |
 
 ## Paso 3: Confirmación
 

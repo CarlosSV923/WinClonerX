@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using System.Security.Cryptography;
 using Shouldly;
 using WinClonerX.Application.Errors;
 using WinClonerX.Application.Ports;
@@ -38,6 +39,38 @@ public sealed class CopyPipelineTests
         }
 
         target.Image.AsSpan().SequenceEqual(expected).ShouldBeTrue("the target must hold each range at targetBase + range.Offset, and zeros elsewhere");
+    }
+
+    [Fact]
+    public async Task RecordsSha256ForEachWrittenChunkWhenSinkIsProvided()
+    {
+        byte[] sourceBytes = Pattern(8 * Mib);
+        Extent[] ranges = [new(0, 8 * Mib)];
+        const long targetBase = Mib;
+        var target = new MemoryTargetDisk(10 * Mib);
+        var sink = new RecordingDigestSink();
+
+        await NewPipeline().CopyAsync(new MemoryBlockSource(sourceBytes, Allocation(ranges)), Allocation(ranges), target,
+            targetBase, new RecordingProgress(), CancellationToken.None, sink);
+
+        sink.Digests.Count.ShouldBe(2);
+        foreach (ChunkDigest digest in sink.Digests)
+        {
+            digest.Hash.Matches(SHA256.HashData(target.Image.AsSpan((int)digest.TargetOffset, digest.Length))).ShouldBeTrue();
+        }
+        sink.Digests.Select(digest => digest.TargetOffset).ShouldBe([targetBase, targetBase + 4 * Mib]);
+    }
+
+    [Fact]
+    public async Task CopyWithoutDigestSinkCompletesNormally()
+    {
+        Extent[] ranges = [new(0, 4096)];
+        var target = new MemoryTargetDisk(8192);
+
+        await NewPipeline().CopyAsync(new MemoryBlockSource(Pattern(4096), Allocation(ranges)), Allocation(ranges), target,
+            0, new RecordingProgress(), CancellationToken.None);
+
+        target.Attempts.Count.ShouldBe(1);
     }
 
     [Fact]
@@ -343,6 +376,12 @@ public sealed class CopyPipelineTests
         public List<long> Values { get; } = [];
 
         public void Report(long value) => Values.Add(value);
+    }
+
+    private sealed class RecordingDigestSink : ICopyDigestSink
+    {
+        public List<ChunkDigest> Digests { get; } = [];
+        public void Add(ChunkDigest digest) => Digests.Add(digest);
     }
 
     /// <summary>Serves reads from an in-memory array. It fails on the read with the given index, if asked to.</summary>

@@ -203,7 +203,8 @@ public sealed class ReviewStepViewModelTests
         builder.CallCount.ShouldBe(2);
         builder.LastMode.ShouldBe(VerificationMode.StructuralAndFull);
         vm.Plan!.Verification.ShouldBe(VerificationMode.StructuralAndFull);
-        vm.Plan.Estimate.EstimatedDuration.ShouldBe(structural.Estimate.EstimatedDuration + structural.Estimate.EstimatedDuration);
+        vm.Plan.Estimate.EstimatedDuration.ShouldBe(
+            structural.Estimate.EstimatedDuration + TimeSpan.FromTicks(structural.Estimate.EstimatedDuration.Ticks / 2));
         vm.Summary!.EstimatedDuration.ShouldBe(Loc.Format("Review_Summary_Duration", DurationText.Format(vm.Plan.Estimate.EstimatedDuration)));
 
         vm.VerifyAllData = false;

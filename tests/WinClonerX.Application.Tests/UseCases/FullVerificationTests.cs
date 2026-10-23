@@ -12,8 +12,8 @@ using static WinClonerX.Application.Tests.TestData.ExecuteCloneTestData;
 namespace WinClonerX.Application.Tests.UseCases;
 
 /// <summary>
-/// Verificación completa (FR-022a) en el orquestador: la fase, su lugar en el orden, el informe y sus fallos. La comparación en sí
-/// la hace el adaptador (<see cref="IVolumeComparer"/>); aquí se usa un fake que no lee datos y que devuelve lo que se le indica.
+/// Verificación completa (FR-022a) en el orquestador: la fase, su lugar en el orden, el informe y sus fallos. La lectura del
+/// destino y la comprobación de digests corresponden al adaptador <see cref="ITargetVerifier"/>.
 /// </summary>
 public sealed class FullVerificationTests
 {
@@ -46,7 +46,8 @@ public sealed class FullVerificationTests
 
         report.Full.ShouldBeNull();
         h.Phases().ShouldNotContain(ExecutionPhase.FullVerification);
-        h.Comparer.Comparisons.ShouldBeEmpty();
+        h.TargetVerifier.Comparisons.ShouldBeEmpty();
+        h.Copier.DigestSinkCalls.ShouldBe(0);
     }
 
     [Fact]
@@ -57,6 +58,10 @@ public sealed class FullVerificationTests
         await h.RunAsync(Ct);
 
         h.Phases().ShouldBe(FullPhases);
+        h.Copier.DigestSinkCalls.ShouldBe(h.Plan.Mappings.Count);
+        h.TargetVerifier.Comparisons.ShouldAllBe(comparison => ReferenceEquals(comparison.Target, h.Target) && comparison.Digests.Count > 0);
+        h.Snapshots.CreatedSets.Single().Calls.Count(call => call == nameof(ISnapshotSet.OpenVolume))
+            .ShouldBe(h.Plan.Mappings.Count(mapping => mapping.CopyMethod == CopyMethod.UsedClustersFromSnapshot));
     }
 
     [Fact]
@@ -88,9 +93,9 @@ public sealed class FullVerificationTests
 
         await h.RunAsync(Ct);
 
-        h.Comparer.Comparisons.Select(comparison => comparison.TargetOffset)
+        h.TargetVerifier.Comparisons.Select(comparison => comparison.TargetOffset)
             .ShouldBe(h.Plan.Mappings.Select(mapping => mapping.TargetExtent.Offset).ToArray());
-        h.Comparer.Comparisons.All(comparison => ReferenceEquals(comparison.Target, h.Target)).ShouldBeTrue();
+        h.TargetVerifier.Comparisons.All(comparison => ReferenceEquals(comparison.Target, h.Target)).ShouldBeTrue();
     }
 
     [Fact]
@@ -98,21 +103,22 @@ public sealed class FullVerificationTests
     {
         var h = new ExecuteCloneTests.Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
         var windowsOffset = h.Plan.Mappings.Single(mapping => mapping.Source.Role == PartitionRole.Windows).TargetExtent.Offset;
-        h.Comparer.Overrides[windowsOffset] = new RangeComparison(
+        h.TargetVerifier.Overrides[windowsOffset] = new RangeComparison(
             1000,
-            3,
-            [5, 4096, 8192],
-            [new ChunkMismatchSample(0, 4096, 3, true, true, 3, false, false, 4096, "AB", "CD")]);
+            4096,
+            [windowsOffset],
+            1,
+            [new ChunkMismatchSample(windowsOffset, 4096, true)]);
 
         var report = await h.RunAsync(Ct);
 
         report.Outcome.ShouldBe(CloneOutcome.Failed);
         report.Full.ShouldNotBeNull();
         report.Full.Passed.ShouldBeFalse();
-        report.Full.DifferingBytes.ShouldBe(3L);
-        report.Full.FirstDifferenceOffsets!.ShouldBe(new[] { windowsOffset + 5, windowsOffset + 4096, windowsOffset + 8192 });
+        report.Full.DifferingBytes.ShouldBe(4096L);
+        report.Full.FirstDifferenceOffsets!.ShouldBe(new[] { windowsOffset });
         report.Full.Issues.Count.ShouldBe(1);
-        report.Full.Issues[0].ShouldContain("3 bytes differ");
+        report.Full.Issues[0].ShouldContain("4096 bytes differ");
         var newGuid = h.Plan.Mappings.Single(mapping => mapping.Source.Role == PartitionRole.Windows).NewUniqueId.Value.ToString("D");
         report.Full.Issues[0].ShouldContain(newGuid);
         report.Full.Issues[0].ShouldNotContain("PartitionGuid");
@@ -130,17 +136,9 @@ public sealed class FullVerificationTests
         var sampleLog = h.Log.Events.Single(e => e.Event == "FullVerificationMismatchSample");
         sampleLog.Properties["PartitionRole"].ShouldBe("Windows");
         sampleLog.Properties["NewPartitionGuid"].ShouldBe(newGuid);
-        sampleLog.Properties["SourceOffset"].ShouldBe(0L);
+        sampleLog.Properties["TargetOffset"].ShouldBe(windowsOffset);
         sampleLog.Properties["Length"].ShouldBe(4096);
-        sampleLog.Properties["DifferingBytes"].ShouldBe(3L);
-        sampleLog.Properties["SourceStable"].ShouldBe(true);
         sampleLog.Properties["TargetStable"].ShouldBe(true);
-        sampleLog.Properties["SecondReadDiffering"].ShouldBe(3L);
-        sampleLog.Properties["TargetAllZero"].ShouldBe(false);
-        sampleLog.Properties["SourceAllZero"].ShouldBe(false);
-        sampleLog.Properties["Shift"].ShouldBe(4096L);
-        sampleLog.Properties["SourceSample"].ShouldBe("AB");
-        sampleLog.Properties["TargetSample"].ShouldBe("CD");
     }
 
     [Fact]
@@ -149,16 +147,15 @@ public sealed class FullVerificationTests
         var h = new ExecuteCloneTests.Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
         long first = h.Plan.Mappings[0].TargetExtent.Offset;
         long second = h.Plan.Mappings[1].TargetExtent.Offset;
-        h.Comparer.Overrides[first] = new RangeComparison(4096, 8, Enumerable.Range(0, 8).Select(i => (long)i).ToArray());
-        h.Comparer.Overrides[second] = new RangeComparison(4096, 8, Enumerable.Range(100, 8).Select(i => (long)i).ToArray());
+        h.TargetVerifier.Overrides[first] = new RangeComparison(4096, 4096, [first], 1);
+        h.TargetVerifier.Overrides[second] = new RangeComparison(4096, 4096, [second], 1);
 
         var report = await h.RunAsync(Ct);
 
         report.Full.ShouldNotBeNull();
-        report.Full.DifferingBytes.ShouldBe(16L);
-        report.Full.FirstDifferenceOffsets!.Count.ShouldBe(10);
-        report.Full.FirstDifferenceOffsets.Take(8).ShouldBe(Enumerable.Range(0, 8).Select(i => first + i).ToArray());
-        report.Full.FirstDifferenceOffsets.Skip(8).ShouldBe(new[] { second + 100, second + 101 });
+        report.Full.DifferingBytes.ShouldBe(8192L);
+        report.Full.FirstDifferenceOffsets!.Count.ShouldBe(2);
+        report.Full.FirstDifferenceOffsets.ShouldBe([first, second]);
     }
 
     [Fact]
@@ -166,13 +163,7 @@ public sealed class FullVerificationTests
     {
         using var cts = new CancellationTokenSource();
         var h = new ExecuteCloneTests.Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
-        h.OnEvent = e =>
-        {
-            if (e is PhaseStarted { Phase: ExecutionPhase.FullVerification })
-            {
-                cts.Cancel();
-            }
-        };
+        h.TargetVerifier.OnChunk = cts.Cancel;
 
         var report = await h.RunAsync(cts.Token);
 
@@ -187,16 +178,16 @@ public sealed class FullVerificationTests
     }
 
     [Fact]
-    public async Task ASourceReadErrorDuringTheComparisonFailsWithItsCodeAndNeverCommits()
+    public async Task ATargetReadErrorDuringVerificationFailsWithItsCodeAndNeverCommits()
     {
         var h = new ExecuteCloneTests.Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
-        h.Comparer.FailOn[nameof(IVolumeComparer.CompareAsync)] = new PlatformException(PlatformErrorCode.SourceReadError, "read");
+        h.TargetVerifier.FailOn[nameof(ITargetVerifier.VerifyAsync)] = new PlatformException(PlatformErrorCode.TargetWriteError, "read");
 
         var report = await h.RunAsync(Ct);
 
         report.Outcome.ShouldBe(CloneOutcome.Failed);
         report.Failure.ShouldNotBeNull();
-        report.Failure.Code.ShouldBe(PlatformErrorCode.SourceReadError.ToString());
+        report.Failure.Code.ShouldBe(PlatformErrorCode.TargetWriteError.ToString());
         report.Failure.Phase.ShouldBe(ExecutionPhase.FullVerification);
         report.Full.ShouldBeNull();
         h.Compensations().ShouldBe(NoLayoutCompensations);

@@ -213,7 +213,7 @@ Pending ──Start──▶ Running ──(todas las fases OK)──▶ Complet
 ### `CloneResultReport` (objeto de valor)
 - `Outcome: Completed | Cancelled | Failed`
 - `Structural: VerificationResult` (tabla de particiones = plan, volúmenes legibles, BCD presente)
-- `Full: VerificationResult?` (número de bytes distintos y primeros desplazamientos)
+- `Full: VerificationResult?` (chunks y bytes distintos, primeros diez offsets absolutos y resumen por partición en bytes y chunks)
 - `SourceRestored: bool?`, `RecoveryEnvironment: Configured | Warning`
 - `Duration`, `LogFile: string`, `NextSteps: IReadOnlyList<NextStepCode>`
 
@@ -227,3 +227,6 @@ Pending ──Start──▶ Running ──(todas las fases OK)──▶ Complet
 - `MountedDevicesRewrite`: `\DosDevices\C:` → `DMIO:ID:` + nuevo GUID; se eliminan las entradas con GUID
   antiguos (R5)
 - `Steps`: `RewriteMountedDevices`, `RebuildBcd`, `ReconfigureWinRe`
+
+
+En StructuralAndFull, la copia captura un digest SHA-256 por chunk escrito. FullVerification relee únicamente el destino y compara cada chunk con esos digests; no vuelve a leer el origen.

@@ -162,3 +162,9 @@ interface IClock { DateTimeOffset UtcNow { get; } }
 | `CancelExecution` | `ExecutionId` → aceptado o en espera (fase no cancelable) | US3 |
 | `ExportLog` | ruta e inventario sí/no → archivo | FR-026 |
 | `RecoverPendingSourceRestore` | — → `Nothing`, `Restored`, `AlreadyRestored` o `NeedsAttention` (con su motivo) | FR-021a. Al iniciarse, antes del inventario; valida la entrada del diario contra el disco y nunca reduce ni restaura nada inesperado |
+
+## Copia y verificación completa
+
+`IVolumeCopier.CopyAsync` acepta un `ICopyDigestSink?` opcional. Cuando se solicita verificación completa, el adaptador calcula SHA-256 del búfer de cada chunk escrito y entrega `(TargetOffset, Length, Hash)` al sink. Sin sink no se calculan ni guardan digests.
+
+`ITargetVerifier.VerifyAsync` recibe únicamente `ITargetDisk`, los digests y el progreso de bytes verificados. Relee cada chunk del destino y compara SHA-256; no recibe ni abre el origen.
