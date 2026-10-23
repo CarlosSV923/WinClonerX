@@ -40,6 +40,19 @@ public sealed class CloneExecutionTests
         execution.Events[0].ShouldBeOfType<ExecutionStarted>();
     }
 
+    [Theory]
+    [InlineData(256L, VerificationMode.Structural)]
+    [InlineData(512L, VerificationMode.Structural)]
+    [InlineData(256L, VerificationMode.StructuralAndFull)]
+    [InlineData(512L, VerificationMode.StructuralAndFull)]
+    public void PlannedPhasesForMatchesTheStartedExecution(long targetGiB, VerificationMode verification)
+    {
+        var plan = Confirmed(targetSize: targetGiB * Gib, mode: verification);
+        var execution = CloneExecution.Start(Id, plan, T0);
+
+        CloneExecution.PlannedPhasesFor(plan).ShouldBe(execution.PlannedPhases);
+    }
+
     [Fact]
     public void PlannedPhasesNeverIncludeTheUs2SourcePhases()
     {

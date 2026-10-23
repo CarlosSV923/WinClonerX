@@ -60,7 +60,7 @@ public sealed class ProgressStepViewModelTests
 
         vm.Percent.ShouldBe(25.0);
         vm.PercentText.ShouldBe("25%");
-        vm.BytesText.ShouldBe("25 GiB of 100 GiB");
+        vm.BytesText.ShouldBe("25 GiB of 100 GiB copied");
         vm.ThroughputText.ShouldBe("50 MiB/s");
 
         execute.Completion.SetResult(Report());
@@ -76,9 +76,55 @@ public sealed class ProgressStepViewModelTests
 
         execute.Publish(Progress(bytesDone: 25 * Gib, bytesTotal: 100 * Gib, throughput: 50 * Mib, eta: null));
 
-        vm.BytesText.ShouldBe("25 GiB de 100 GiB");
+        vm.BytesText.ShouldBe("25 GiB de 100 GiB copiados");
 
         execute.Completion.SetResult(Report());
+        await run;
+    }
+
+    [Fact]
+    public async Task TransferLabelAndBytesTemplateSwitchForFullVerification()
+    {
+        using var _ = new EnglishCulture();
+        var (vm, execute, _) = Create();
+        var run = vm.StartAsync(Plan, TestContext.Current.CancellationToken);
+
+        execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.CopyData));
+        execute.Publish(Progress(bytesDone: 45 * Gib, bytesTotal: 100 * Gib, throughput: 50 * Mib, eta: null));
+        vm.TransferLabelText.ShouldBe("Copying data: 45%");
+        vm.BytesText.ShouldBe("45 GiB of 100 GiB copied");
+
+        execute.Publish(new PhaseCompleted(Run, Now, ExecutionPhase.CopyData, TimeSpan.FromMinutes(1)));
+        execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.FullVerification));
+        vm.Percent.ShouldBe(0);
+        vm.TransferLabelText.ShouldBe("Comparing all data with the original: 0%");
+        execute.Publish(Progress(bytesDone: 12 * Gib, bytesTotal: 100 * Gib, throughput: 50 * Mib, eta: null));
+        vm.TransferLabelText.ShouldBe("Comparing all data with the original: 12%");
+        vm.BytesText.ShouldBe("12 GiB of 100 GiB compared");
+
+        execute.Completion.SetResult(Report());
+        await run;
+    }
+
+    [Fact]
+    public async Task PlannedPhasesStartPendingAndAFailureLeavesLaterPhasesPending()
+    {
+        using var _ = new EnglishCulture();
+        var (vm, execute, _) = Create();
+        var inventory = AppFixtures.InventoryOf(AppFixtures.SystemDisk(), AppFixtures.TargetDisk());
+        var plan = AppFixtures.PlanFor(inventory, AppFixtures.TargetId, mode: VerificationMode.StructuralAndFull).Value;
+        var run = vm.StartAsync(Plan, plan, TestContext.Current.CancellationToken);
+
+        vm.Phases.Select(phase => phase.Phase).ShouldBe(CloneExecution.PlannedPhasesFor(plan).ToArray());
+        vm.Phases.ShouldAllBe(phase => phase.State == PhaseState.Pending);
+
+        execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.Revalidate));
+        execute.Publish(new ExecutionFailed(Run, Now, new ExecutionFailure("TestFailure", ExecutionPhase.Revalidate, "failed")));
+
+        vm.Phases[0].State.ShouldBe(PhaseState.Failed);
+        vm.Phases.Skip(1).ShouldAllBe(phase => phase.State == PhaseState.Pending);
+
+        execute.Completion.SetResult(Report(CloneOutcome.Failed));
         await run;
     }
 

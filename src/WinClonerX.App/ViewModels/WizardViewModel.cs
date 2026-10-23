@@ -270,7 +270,7 @@ public sealed partial class WizardViewModel : ObservableObject
         CloneResultReport report;
         try
         {
-            report = await _progress.StartAsync(planId);
+            report = await _progress.StartAsync(planId, ReviewStep?.Plan);
         }
         catch (Exception ex)
         {

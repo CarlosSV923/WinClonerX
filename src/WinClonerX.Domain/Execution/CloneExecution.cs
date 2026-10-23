@@ -107,7 +107,7 @@ public sealed class CloneExecution
             throw new InvalidOperationException("Solo se puede ejecutar un plan confirmado.");
         }
 
-        var execution = new CloneExecution(id, plan, PlanPhases(plan))
+        var execution = new CloneExecution(id, plan, PlannedPhasesFor(plan))
         {
             State = ExecutionState.Running,
         };
@@ -119,6 +119,13 @@ public sealed class CloneExecution
     /// <summary>Indica si la fase puede modificar el disco de origen. Solo ShrinkSource y RestoreSource (FR-021).</summary>
     public static bool PhaseMayModifySource(ExecutionPhase phase) =>
         phase is ExecutionPhase.ShrinkSource or ExecutionPhase.RestoreSource;
+
+    /// <summary>Devuelve las fases planificadas para un plan, en el orden de ejecución.</summary>
+    public static IReadOnlyList<ExecutionPhase> PlannedPhasesFor(ClonePlan plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        return PlanPhases(plan);
+    }
 
     /// <summary>
     /// Indica si una cancelación puede interrumpir la fase. No pueden interrumpirse ShrinkSource (una reducción en curso debe

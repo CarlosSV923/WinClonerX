@@ -451,6 +451,18 @@
   <data name="Progress_State_Done" xml:space="preserve">
     <value>Hecha</value>
   </data>
+  <data name="Progress_State_Failed" xml:space="preserve">
+    <value>Fallida</value>
+  </data>
+  <data name="Progress_TransferLabel" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Progress_Bytes_Copied" xml:space="preserve">
+    <value>{0} de {1} copiados</value>
+  </data>
+  <data name="Progress_Bytes_Compared" xml:space="preserve">
+    <value>{0} de {1} comparados</value>
+  </data>
   <data name="Phase_Revalidate" xml:space="preserve">
     <value>Comprobando que los discos no han cambiado</value>
   </data>

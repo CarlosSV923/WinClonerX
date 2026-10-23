@@ -10,6 +10,7 @@ public enum PhaseState
     Pending,
     InProgress,
     Done,
+    Failed,
 }
 
 /// <summary>One phase of the clone in the progress list: its localized name and its state.</summary>
@@ -34,6 +35,7 @@ public sealed partial class PhaseItemViewModel : ObservableObject
     {
         PhaseState.InProgress => Loc.Get("Progress_State_InProgress"),
         PhaseState.Done => Loc.Get("Progress_State_Done"),
+        PhaseState.Failed => Loc.Get("Progress_State_Failed"),
         _ => Loc.Get("Progress_State_Pending"),
     };
 

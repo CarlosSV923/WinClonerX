@@ -147,8 +147,11 @@ public sealed class WizardStepWiringTests
         h.Execute.LastPlanId.ShouldBe(h.Review.Plan!.Id);
         h.ConfirmPlan.LastTypedSuffix.ShouldBe("0002");
 
+        h.Progress.Phases.Select(phase => phase.Phase).ShouldBe(CloneExecution.PlannedPhasesFor(h.Review.Plan!).ToArray());
+        h.Progress.Phases.ShouldAllBe(phase => phase.State == PhaseState.Pending);
         h.Execute.Publish(new PhaseStarted(Run, Now, ExecutionPhase.CopyData));
-        h.Progress.Phases.Count.ShouldBe(1);
+        h.Progress.Phases.Count(phase => phase.State == PhaseState.InProgress).ShouldBe(1);
+        h.Progress.Phases.First(phase => phase.Phase == ExecutionPhase.CopyData).State.ShouldBe(PhaseState.InProgress);
 
         var report = Report();
         h.Execute.Completion.SetResult(report);

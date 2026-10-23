@@ -40,6 +40,20 @@ public sealed class CloneExecutionShrinkTests
         execution.CurrentPhase.ShouldBe(ExecutionPhase.Revalidate);
     }
 
+    [Theory]
+    [InlineData(false, VerificationMode.Structural)]
+    [InlineData(true, VerificationMode.Structural)]
+    [InlineData(false, VerificationMode.StructuralAndFull)]
+    [InlineData(true, VerificationMode.StructuralAndFull)]
+    public void PlannedPhasesForMatchesStartedShrinkExecution(bool expands, VerificationMode verification)
+    {
+        var minimum = expands ? ByteSize.FromGiB(45) : new ByteSize(SmallTargetWindowsLength);
+        var plan = ConfirmedShrinkPlan(minimum, mode: verification);
+        var execution = CloneExecution.Start(Id, plan, T0);
+
+        CloneExecution.PlannedPhasesFor(plan).ShouldBe(execution.PlannedPhases);
+    }
+
     [Fact]
     public void AShrinkPlanWithoutFileSystemGrowthOmitsExpandFileSystem()
     {

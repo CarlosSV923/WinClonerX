@@ -25,6 +25,7 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     private readonly IConfirmationService _confirmation;
     private IDisposable? _subscription;
     private int _runGeneration;
+    private ExecutionPhase? _progressPhase;
 
     /// <summary>Phase in progress, from the events. Null between phases. Decides whether a requested cancel waits for it.</summary>
     private ExecutionPhase? _runningPhase;
@@ -37,7 +38,7 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Phases in the order they started. The execution events do not list the planned phases, so each one appears when it starts.
+    /// Phases in the confirmed plan's execution order. Phases that never run remain pending.
     /// </summary>
     public ObservableCollection<PhaseItemViewModel> Phases { get; } = [];
 
@@ -51,6 +52,9 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     /// <summary>Localized "X GiB of Y GiB" (in Spanish, "X GiB de Y GiB").</summary>
     [ObservableProperty]
     private string _bytesText = string.Empty;
+
+    [ObservableProperty]
+    private string _transferLabelText = string.Empty;
 
     /// <summary>Localized throughput in mebibytes per second.</summary>
     [ObservableProperty]
@@ -90,7 +94,14 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     /// <summary>True when <see cref="CancelStatusText"/> has text to show.</summary>
     public bool HasCancelStatus => CancelStatusText.Length > 0;
 
-    partial void OnPercentChanged(double value) => OnPropertyChanged(nameof(PercentText));
+    partial void OnPercentChanged(double value)
+    {
+        OnPropertyChanged(nameof(PercentText));
+        if (_progressPhase is { } phase)
+        {
+            TransferLabelText = Loc.Format("Progress_TransferLabel", Loc.Get("Phase_" + phase), PercentText);
+        }
+    }
 
     partial void OnCancelStatusTextChanged(string value) => OnPropertyChanged(nameof(HasCancelStatus));
 
@@ -99,8 +110,19 @@ public sealed partial class ProgressStepViewModel : ObservableObject
     /// when the run ends, so the result is handed to the caller without later events changing this step.
     /// </summary>
     public async Task<CloneResultReport> StartAsync(PlanId planId, CancellationToken cancellationToken = default)
+        => await StartAsync(planId, null, cancellationToken);
+
+    /// <summary>Runs the plan and initializes the phase list from the confirmed plan before execution events arrive.</summary>
+    public async Task<CloneResultReport> StartAsync(PlanId planId, ClonePlan? plan, CancellationToken cancellationToken = default)
     {
         Clear();
+        if (plan is not null)
+        {
+            foreach (var phase in CloneExecution.PlannedPhasesFor(plan))
+            {
+                Phases.Add(new PhaseItemViewModel(phase));
+            }
+        }
         var generation = ++_runGeneration;
         IsRunning = true;
         IsCancelAvailable = true;
@@ -159,12 +181,14 @@ public sealed partial class ProgressStepViewModel : ObservableObject
         Phases.Clear();
         Percent = 0;
         BytesText = string.Empty;
+        TransferLabelText = string.Empty;
         ThroughputText = string.Empty;
         EtaText = string.Empty;
         CurrentPhaseText = string.Empty;
         IsCancelRequested = false;
         CancelStatusText = string.Empty;
         _runningPhase = null;
+        _progressPhase = null;
     }
 
     /// <summary>
@@ -192,6 +216,15 @@ public sealed partial class ProgressStepViewModel : ObservableObject
                 var item = FindOrAddPhase(started.Phase);
                 item.State = PhaseState.InProgress;
                 CurrentPhaseText = Loc.Format("Progress_CurrentPhase", item.Name);
+                if (started.Phase is ExecutionPhase.CopyData or ExecutionPhase.FullVerification)
+                {
+                    _progressPhase = started.Phase;
+                    TransferLabelText = Loc.Format("Progress_TransferLabel", item.Name, PercentText);
+                    Percent = 0;
+                    BytesText = string.Empty;
+                    ThroughputText = string.Empty;
+                    EtaText = string.Empty;
+                }
                 _runningPhase = started.Phase;
                 RefreshCancelStatus();
                 break;
@@ -213,16 +246,20 @@ public sealed partial class ProgressStepViewModel : ObservableObject
                 break;
 
             case ProgressReported reported:
-                ApplyProgress(reported.Progress);
+                ApplyProgress(reported.Progress, _progressPhase);
+                break;
+
+            case ExecutionFailed failed:
+                FindOrAddPhase(failed.Failure.Phase).State = PhaseState.Failed;
                 break;
         }
     }
 
-    private void ApplyProgress(CloneProgress progress)
+    private void ApplyProgress(CloneProgress progress, ExecutionPhase? phase)
     {
         Percent = progress.Percent;
         BytesText = Loc.Format(
-            "Progress_Bytes",
+            phase == ExecutionPhase.FullVerification ? "Progress_Bytes_Compared" : "Progress_Bytes_Copied",
             SizeText.Format(new ByteSize(progress.BytesDone)),
             SizeText.Format(new ByteSize(progress.BytesTotal)));
         ThroughputText = Loc.Format(

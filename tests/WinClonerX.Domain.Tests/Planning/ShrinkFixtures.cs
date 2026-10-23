@@ -28,11 +28,12 @@ internal static class ShrinkFixtures
         ByteSize? minimum,
         long targetSize = SmallTargetSize,
         long windowsUsed = 40 * Gib,
-        CapacityPolicy? policy = null)
+        CapacityPolicy? policy = null,
+        VerificationMode mode = VerificationMode.Structural)
     {
         var target = TargetDisk(size: targetSize, serial: "SN-SHRINK01");
         var inventory = InventoryOf(SystemDisk(windowsUsed: windowsUsed), target);
-        var plan = PlanFor(inventory, facts: FactsWithMinimum(minimum), policy: policy).Value;
+        var plan = PlanFor(inventory, facts: FactsWithMinimum(minimum), policy: policy, mode: mode).Value;
 
         return (plan, target);
     }
@@ -45,9 +46,12 @@ internal static class ShrinkFixtures
     }
 
     /// <summary>Plan de reducción ya confirmado, con ambas confirmaciones.</summary>
-    public static ClonePlan ConfirmedShrinkPlan(ByteSize? minimum, long targetSize = SmallTargetSize)
+    public static ClonePlan ConfirmedShrinkPlan(
+        ByteSize? minimum,
+        long targetSize = SmallTargetSize,
+        VerificationMode mode = VerificationMode.Structural)
     {
-        var (plan, target) = ShrinkPlan(minimum, targetSize);
+        var (plan, target) = ShrinkPlan(minimum, targetSize, mode: mode);
         plan.Confirm(new TargetConfirmation(target.Id, TargetConfirmation.ExpectedSuffix(target), CapturedAt), target, ConfirmationOf(plan));
 
         return plan;
