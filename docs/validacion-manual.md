@@ -108,6 +108,27 @@ Incidencias de esta ejecución:
 
 Los hallazgos corregidos durante la validación (inicio colgado, mapa de bits de NTFS, letra automática y reapunte del BCD) están en el mismo registro del punto de control S2.
 
+### Ejecución: 1.0.0+05ae16c (2026-10-22), verificación completa
+
+| | |
+|---|---|
+| Equipo | Mini PC con Windows 11 (es-MX), UEFI + GPT |
+| Origen | Samsung SSD 990 EVO Plus 1 TB |
+| Destino | WD Green M.2 SATA de 960 GB (`WDS960G2G0C`) en un adaptador USB |
+| Plan | Reducción temporal del origen a 959 GB y verificación completa |
+| Resultado | **Correcto** (`ExecutionCompleted`, `FullVerificationCompleted` con `Passed: true` y 0 bytes distintos) |
+
+| Fase | Duración |
+|---|---|
+| ShrinkSource | 14,5 s |
+| CopyData | 8 min 53 s |
+| FullVerification | 4 min 7 s (un 46 % de la copia) |
+| RepairBoot (reapunte del BCD) | 1,8 s |
+| RestoreSource | 5,6 s |
+| **Total** | **13 min 25 s** |
+
+Antes de este resultado, la verificación fallaba siempre en el mismo equipo (2026-10-22, versiones f76edd6 y 429f55c). El diagnóstico de las diferencias mostró que el destino se leía siempre igual, pero el origen no: VSS no congela `pagefile.sys`, `hiberfil.sys` ni `swapfile.sys` (unos 18,9 GB), y la partición EFI se copia en vivo. La verificación se rediseñó para comparar el destino con huellas SHA-256 tomadas durante la copia (research R18).
+
 ## Revisión de accesibilidad (T109)
 
 Se revisaron los cinco pasos, el cambio de página mediante `CurrentPage`, los controles de `Views/`, los componentes de `Controls/` y los recursos del tema. El paso 1 enfoca la primera tarjeta apta cuando termina la lectura de discos; las tarjetas aceptan Tab, Mayús/Tab, Intro y Espacio y muestran un borde de foco. Los pasos 2 a 5 enfocan respectivamente el título, el campo de confirmación, Cancelar y Exportar registro al aparecer.
