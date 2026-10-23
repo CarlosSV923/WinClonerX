@@ -174,7 +174,7 @@ El punto de control S2 se superó el 20 de octubre de 2026. Un clon arrancó en 
 
 ## Licencia
 
-Pendiente. El repositorio todavía no tiene un archivo de licencia. Sin esa licencia, no hay permiso explícito para reutilizar el código. La licencia está en la lista de pendientes para la versión 1.0.
+[MIT](LICENSE). Puedes usar, modificar y redistribuir el código citando la autoría. El software se ofrece "tal cual", sin garantía de ningún tipo: clonar un disco borra el disco de destino, así que guarda antes lo que necesites.
 
 ## Documentación
 

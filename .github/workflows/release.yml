@@ -45,9 +45,10 @@ jobs:
         run: dotnet restore WinClonerX.slnx
 
       # The Release solution build also builds the MSI (the installer is excluded from Debug builds in WinClonerX.slnx).
-      # WinClonerXVersion sets the MSI product version from the tag.
+      # WinClonerXVersion sets the MSI product version from the tag, and Version stamps the same version on the app
+      # assemblies, so the app logs (AppVersion) and the installer agree.
       - name: Build (Release, includes the MSI)
-        run: dotnet build WinClonerX.slnx -c Release --no-restore "-p:WinClonerXVersion=$env:VERSION"
+        run: dotnet build WinClonerX.slnx -c Release --no-restore "-p:WinClonerXVersion=$env:VERSION" "-p:Version=$env:VERSION"
 
       # Unit tests must pass before anything is published. Integration tests need administrator rights and virtual disks,
       # so they never run here.
@@ -101,7 +102,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Versions before 1.0.0 are published as pre-releases.
+          prerelease=""
+          if [[ "$VERSION" == 0.* ]]; then prerelease="--prerelease"; fi
           gh release create "$GITHUB_REF_NAME" "$MSI_PATH" \
             --title "WinClonerX ${VERSION}" \
             --notes-file "$RUNNER_TEMP/release-notes.md" \
-            --verify-tag
+            --verify-tag \
+            $prerelease

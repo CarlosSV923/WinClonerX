@@ -36,8 +36,8 @@ La historia 3 está implementada y validada en hardware real: cancelación con c
 
 ## 5. Accesibilidad, textos y uso
 
-- [ ] **Revisión manual de accesibilidad** con Accessibility Insights y Narrator en un equipo Windows real. **Estado:** parcial. El 2026-10-22 la persona usuaria comprobó en hardware real la navegación con teclado y los colores nuevos: correctos. Falta la revisión con Accessibility Insights y Narrator.
-- [ ] **T120:** prueba de uso con al menos 5 personas sin perfil técnico. Cada una debe identificar el disco que se borrará antes de confirmar (SC-007, al menos 90 % de aciertos). **Estado:** pendiente. Hace falta el protocolo y los resultados en [validación manual](validacion-manual.md).
+- [x] **Revisión manual de accesibilidad** con Accessibility Insights y Narrator. **Estado:** descartada por decisión del autor (2026-10-22): la app es de uso personal. Se comprobaron en hardware real el teclado y los colores. Si la app pasa a ser pública, hay que hacerla.
+- [x] **T120:** prueba de uso con al menos 5 personas sin perfil técnico (SC-007). **Estado:** descartada por decisión del autor (2026-10-22): la app es de uso personal. Si la app pasa a ser pública, hay que hacerla.
 
 ## 6. Distribución y firma
 
@@ -47,5 +47,5 @@ La historia 3 está implementada y validada en hardware real: cancelación con c
 
 ## 7. Licencia y dependencias
 
-- [ ] **Licencia del proyecto.** El repositorio no tiene archivo LICENSE. Hay que decidir la licencia y añadir el archivo. **Estado:** pendiente. El README dice que la licencia está pendiente.
+- [x] **Licencia del proyecto.** **Estado:** MIT, añadida el 2026-10-22 (archivo LICENSE).
 - [ ] **Revisar las licencias de las dependencias.** Según el plan, las dependencias tienen licencias compatibles con un proyecto público (MIT, Apache-2.0, BSD o MS-RL). El instalador usa WiX (MS-RL). Hay que volver a revisar la tarifa de mantenimiento de WiX si el proyecto llega a tener ingresos (research R16). **Estado:** pendiente de confirmar al cerrar la versión.
