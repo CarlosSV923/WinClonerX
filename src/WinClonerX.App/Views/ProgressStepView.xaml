@@ -33,7 +33,8 @@
                 AutomationProperties.Name="{loc:Loc Common_Cancel}"
                 Command="{Binding CancelCommand}" />
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
+        <ScrollViewer Style="{StaticResource ScrollViewer.Page}"
+                      VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Margin="0,8,0,0">
             <StackPanel>

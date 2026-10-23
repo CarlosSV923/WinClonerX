@@ -37,6 +37,11 @@
     <!-- Overlay drawn over the used part of a partition segment. -->
     <SolidColorBrush x:Key="Brush.Partition.Used" Color="#66000000" />
 
+    <!-- Fluent scroll bars overlay their viewport, so reserve a permanent content inset to keep page content clear. -->
+    <Style x:Key="ScrollViewer.Page" TargetType="ScrollViewer">
+        <Setter Property="Padding" Value="0,0,16,0" />
+    </Style>
+
     <!-- Typography -->
     <Style x:Key="Text.Title" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{x:Static themes:WinClonerXFonts.Text}" />

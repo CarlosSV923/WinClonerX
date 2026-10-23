@@ -40,7 +40,7 @@
         </StackPanel>
 
         <!-- Export and support, for every outcome (FR-026, FR-027). The inventory is off by default: it holds serial numbers. -->
-        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,16,0">
             <CheckBox Content="{loc:Loc Result_Export_IncludeInventory}"
                       AutomationProperties.Name="{loc:Loc Result_Export_IncludeInventory}"
                       IsChecked="{Binding IncludeInventory}" />
@@ -100,7 +100,8 @@
             </TextBlock>
         </StackPanel>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
+        <ScrollViewer Style="{StaticResource ScrollViewer.Page}"
+                      VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Margin="0,8,0,0">
             <StackPanel>

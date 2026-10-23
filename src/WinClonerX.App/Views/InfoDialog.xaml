@@ -16,7 +16,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="0" MaxHeight="560" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Style="{StaticResource ScrollViewer.Page}" Grid.Row="0" MaxHeight="560" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock x:Name="TitleText" Style="{StaticResource Text.Title}" Margin="0,0,0,14" TextWrapping="Wrap" />
                 <TextBlock x:Name="IntroText" Style="{StaticResource Text.Body}" TextWrapping="Wrap" />
@@ -50,7 +50,7 @@
                 Grid.Row="1"
                 Style="{StaticResource Button.Primary}"
                 MinWidth="140"
-                Margin="0,20,0,0"
+                Margin="0,20,16,0"
                 HorizontalAlignment="Right"
                 IsDefault="True"
                 IsCancel="True"
