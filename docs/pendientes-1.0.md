@@ -8,6 +8,8 @@ Un punto se marca como hecho solo cuando tasks.md lo marca como hecho y se ha co
 
 **Motivo:** las pruebas que usan VHDX y VSS provocaron pantallas azules (BSOD) en el equipo de desarrollo. Por eso, las pruebas de disco administrativas se ejecutan solo en una máquina virtual de Hyper-V.
 
+**Decisión del autor (2026-10-22):** se aplazan mientras la app sea de uso personal. La validación se hace en hardware real (punto 4). Las pruebas siguen en el repositorio: si la app pasa a ser pública o se cambia el código de copia, tabla de particiones o arranque, conviene ejecutarlas (en una máquina virtual o en un equipo de pruebas, nunca en el equipo de desarrollo).
+
 - [ ] **T042 a T045:** inventario, instantánea VSS, clonado completo a un disco mayor y verificación estructural. **Estado:** escritas, pero no ejecutadas. Falta ejecutarlas en una máquina virtual.
 - [ ] **T087:** clonado a un disco más pequeño (origen de 40 GB con 8 GB de datos, destino de 25 GB). **Estado:** no escrita. La reducción temporal ya se validó en hardware real varias veces (2026-10-20 a 2026-10-22).
 - [ ] **T098:** cancelación al 50 % de la copia, que debe dejar el destino sin tabla de particiones y el origen sin cambios. **Estado:** no escrita. La cancelación ya se validó en hardware real (punto 4).
