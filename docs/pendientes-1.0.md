@@ -42,7 +42,7 @@ La historia 3 está implementada y validada en hardware real: cancelación con c
 ## 6. Distribución y firma
 
 - [ ] **Evaluar la firma gratuita para código abierto** (SignPath Foundation): requisitos, solicitud y decisión. La constitución exige hacerlo antes de la versión 1.0. **Estado:** pendiente.
-- [ ] **Probar el flujo de publicación** (`.github/workflows/release.yml`, T113) con una etiqueta de prueba. Hay que comprobar el MSI, el SHA-256, la atestación con `gh attestation verify` y las notas de la versión. **Estado:** el flujo está escrito, pero no se ha probado.
+- [x] **Probar el flujo de publicación** (`.github/workflows/release.yml`, T113). **Estado:** probado el 2026-10-22 con la etiqueta `v0.9.0`: pre-release con `WinClonerX-0.9.0.msi` (54 MB), el SHA-256 de las notas coincide con el archivo descargado y `gh attestation verify` es correcto.
 - [ ] **Revisar la sección de instalación del README** después de la primera versión publicada, con las pantallas reales de SmartScreen y las instrucciones de Smart App Control. **Estado:** pendiente.
 
 ## 7. Licencia y dependencias
