@@ -538,6 +538,15 @@
   <data name="Result_FullVerification_Failed" xml:space="preserve">
     <value>Se encontraron {0} bytes distintos del original. Primeros desplazamientos distintos en el disco nuevo: {1}.</value>
   </data>
+  <data name="Result_FullVerification_FailedSummary" xml:space="preserve">
+    <value>Algunos datos no coinciden con el original.</value>
+  </data>
+  <data name="Result_FullVerification_PartitionMismatch" xml:space="preserve">
+    <value>{0}: {1} distintos de {2} comparados</value>
+  </data>
+  <data name="Result_FullVerification_UsbHint" xml:space="preserve">
+    <value>Si el disco de destino está conectado por USB, prueba a conectarlo por dentro (SATA) o con otro adaptador y vuelve a intentarlo: algunos adaptadores USB devuelven datos erróneos al leer.</value>
+  </data>
   <data name="Result_Duration" xml:space="preserve">
     <value>Duración: {0}</value>
   </data>

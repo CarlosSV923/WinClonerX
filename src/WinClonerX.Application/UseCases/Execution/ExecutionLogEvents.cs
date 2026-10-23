@@ -168,6 +168,27 @@ internal static class ExecutionLogEvents
         ("FirstDifferenceOffsets", (result.FirstDifferenceOffsets ?? Array.Empty<long>()).ToArray()),
         ("Issues", result.Issues.ToArray()));
 
+    /// <summary>Registra una muestra de una lectura que produjo diferencias en una partición.</summary>
+    public static LogEvent FullVerificationMismatchSample(
+        string partitionRole,
+        string newPartitionGuid,
+        ChunkMismatchSample sample) => Create(
+        "FullVerificationMismatchSample",
+        LogLevelKind.Warning,
+        ("PartitionRole", partitionRole),
+        ("NewPartitionGuid", newPartitionGuid),
+        ("SourceOffset", sample.SourceOffset),
+        ("Length", sample.Length),
+        ("DifferingBytes", sample.DifferingBytes),
+        ("SourceStable", sample.SourceStable),
+        ("TargetStable", sample.TargetStable),
+        ("SecondReadDiffering", sample.SecondReadDiffering),
+        ("TargetAllZero", sample.TargetAllZero),
+        ("SourceAllZero", sample.SourceAllZero),
+        ("Shift", sample.Shift),
+        ("SourceSample", sample.SourceSample),
+        ("TargetSample", sample.TargetSample));
+
     /// <summary>
     /// No se pudo activar la vigilancia de la desconexión de los discos. El clonado sigue: una desconexión se detecta igualmente
     /// por el error de E/S que provoca.

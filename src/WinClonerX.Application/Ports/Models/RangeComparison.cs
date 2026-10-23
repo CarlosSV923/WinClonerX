@@ -5,4 +5,8 @@ namespace WinClonerX.Application.Ports.Models;
 /// <see cref="FirstDifferenceOffsets"/> son desplazamientos relativos al inicio del volumen o de la partición de origen, en orden,
 /// como mucho diez.
 /// </summary>
-public sealed record RangeComparison(long BytesCompared, long DifferingBytes, IReadOnlyList<long> FirstDifferenceOffsets);
+public sealed record RangeComparison(
+    long BytesCompared,
+    long DifferingBytes,
+    IReadOnlyList<long> FirstDifferenceOffsets,
+    IReadOnlyList<ChunkMismatchSample>? MismatchSamples = null);

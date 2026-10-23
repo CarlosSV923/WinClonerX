@@ -110,6 +110,98 @@ public sealed class VolumeComparerTests
     }
 
     [Fact]
+    public async Task MismatchSampleReportsAnUnstableTargetRead()
+    {
+        byte[] source = Pattern(64 * 1024);
+        int reads = 0;
+        var target = new MemoryTarget(new byte[TargetBase + source.Length], readOverride: (read, _, buffer) =>
+        {
+            source.AsMemory(0, buffer.Length).CopyTo(buffer);
+            if (read == 0)
+            {
+                buffer.Span[0] ^= 0xFF;
+            }
+
+            reads++;
+            return buffer.Length;
+        });
+
+        RangeComparison result = await NewComparer().CompareAsync(
+            new MemoryBlockSource(source), Allocation([new(0, Chunk)]), target, TargetBase,
+            new RecordingProgress(), CancellationToken.None);
+
+        result.DifferingBytes.ShouldBe(1);
+        var sample = result.MismatchSamples!.Single();
+        sample.TargetStable.ShouldBeFalse();
+        sample.SourceStable.ShouldBeTrue();
+        reads.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task MismatchSampleReportsAStableWrongTargetAndSecondReadDifferences()
+    {
+        byte[] source = Pattern(64 * 1024);
+        byte[] image = CopiedImage(source, [new(0, Chunk)]);
+        image[TargetBase + 12] ^= 0xFF;
+
+        RangeComparison result = await NewComparer().CompareAsync(
+            new MemoryBlockSource(source), Allocation([new(0, Chunk)]), new MemoryTarget(image), TargetBase,
+            new RecordingProgress(), CancellationToken.None);
+
+        var sample = result.MismatchSamples!.Single();
+        sample.TargetStable.ShouldBeTrue();
+        sample.SecondReadDiffering.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task MismatchSampleReportsZeroFilledTargetBytes()
+    {
+        byte[] source = Pattern(64 * 1024);
+
+        RangeComparison result = await NewComparer().CompareAsync(
+            new MemoryBlockSource(source), Allocation([new(0, Chunk)]), new MemoryTarget(new byte[TargetBase + source.Length]),
+            TargetBase, new RecordingProgress(), CancellationToken.None);
+
+        var sample = result.MismatchSamples!.Single();
+        sample.TargetAllZero.ShouldBeTrue();
+        sample.SourceAllZero.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task MismatchSampleFindsA4096ByteShift()
+    {
+        const int testChunk = 128 * 1024;
+        byte[] source = Pattern(256 * 1024);
+        new Random(42).NextBytes(source);
+        byte[] image = new byte[TargetBase + source.Length];
+        source.AsSpan(4096, testChunk).CopyTo(image.AsSpan((int)TargetBase, testChunk));
+
+        RangeComparison result = await new VolumeComparer(
+                new DiskOperationRecorder(new RecordingExecutionLog(), new ManualClock(DateTimeOffset.UnixEpoch)), "target", testChunk)
+            .CompareAsync(new MemoryBlockSource(source), Allocation([new(0, testChunk)]), new MemoryTarget(image), TargetBase,
+                new RecordingProgress(), CancellationToken.None);
+
+        result.MismatchSamples!.Single().Shift.ShouldBe(4096L);
+    }
+
+    [Fact]
+    public async Task AtMostThreeMismatchSamplesAreCreatedPerComparison()
+    {
+        byte[] source = Pattern(64 * 1024);
+        byte[] image = CopiedImage(source, [new(0, 5 * Chunk)]);
+        for (int i = 0; i < 5 * Chunk; i += Chunk)
+        {
+            image[TargetBase + i] ^= 0xFF;
+        }
+
+        RangeComparison result = await NewComparer().CompareAsync(
+            new MemoryBlockSource(source), Allocation([new(0, 5 * Chunk)]), new MemoryTarget(image), TargetBase,
+            new RecordingProgress(), CancellationToken.None);
+
+        result.MismatchSamples!.Count.ShouldBe(3);
+    }
+
+    [Fact]
     public async Task ProgressIsCumulativeAndEndsAtTheTotal()
     {
         byte[] source = Pattern(64 * 1024);
@@ -229,8 +321,8 @@ public sealed class VolumeComparerTests
             cts.Token));
     }
 
-    private static VolumeComparer NewComparer(RecordingExecutionLog? log = null) =>
-        new(new DiskOperationRecorder(log ?? new RecordingExecutionLog(), new ManualClock(DateTimeOffset.UnixEpoch)), "target", Chunk);
+    private static VolumeComparer NewComparer(RecordingExecutionLog? log = null, int chunkBytes = Chunk) =>
+        new(new DiskOperationRecorder(log ?? new RecordingExecutionLog(), new ManualClock(DateTimeOffset.UnixEpoch)), "target", chunkBytes);
 
     private static VolumeAllocation Allocation(Extent[] ranges) => new(new ByteSize(512), ranges);
 
@@ -294,13 +386,23 @@ public sealed class VolumeComparerTests
     }
 
     /// <summary>Reads from an in-memory image of the target disk. Only the read is supported.</summary>
-    private sealed class MemoryTarget(byte[] image, Exception? readFailure = null) : ITargetDisk
+    private sealed class MemoryTarget(
+        byte[] image,
+        Exception? readFailure = null,
+        Func<int, long, Memory<byte>, int>? readOverride = null) : ITargetDisk
     {
+        private int _readCount;
+
         public ValueTask<int> ReadAsync(long diskOffset, Memory<byte> alignedBuffer, CancellationToken ct)
         {
             if (readFailure is not null)
             {
                 return new ValueTask<int>(Task.FromException<int>(readFailure));
+            }
+
+            if (readOverride is not null)
+            {
+                return ValueTask.FromResult(readOverride(_readCount++, diskOffset, alignedBuffer));
             }
 
             int count = (int)Math.Min(alignedBuffer.Length, image.Length - diskOffset);

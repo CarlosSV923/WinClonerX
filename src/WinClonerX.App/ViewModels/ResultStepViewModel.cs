@@ -10,6 +10,7 @@ using WinClonerX.Application.Errors;
 using WinClonerX.Application.Ports;
 using WinClonerX.Application.UseCases;
 using WinClonerX.Domain.Execution;
+using WinClonerX.Domain.Shared;
 
 namespace WinClonerX.App.ViewModels;
 
@@ -73,6 +74,12 @@ public sealed partial class ResultStepViewModel : ObservableObject
     /// <summary>One line with the outcome of the full verification: all data matches, or how many bytes differ.</summary>
     [ObservableProperty]
     private string _fullVerificationSummary = string.Empty;
+
+    /// <summary>Localized hint shown when the full data verification finds differences.</summary>
+    [ObservableProperty]
+    private string _fullVerificationHint = string.Empty;
+
+    public bool HasFullVerificationHint => FullVerificationHint.Length > 0;
 
     /// <summary>Issues of the full verification, one per partition with differences. Empty when it passed.</summary>
     public ObservableCollection<string> FullVerificationIssues { get; } = [];
@@ -223,6 +230,11 @@ public sealed partial class ResultStepViewModel : ObservableObject
         OnPropertyChanged(nameof(HasExportStatus));
     }
 
+    partial void OnFullVerificationHintChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasFullVerificationHint));
+    }
+
     /// <summary>
     /// Shows the report of a run. The failure comes with the report, so the message does not depend on any event that may
     /// still be on its way to the UI. Replaces anything shown before.
@@ -250,8 +262,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
     }
 
     /// <summary>
-    /// The full data verification, when the run did it: all data matches, or the number of differing bytes and the first disk
-    /// offsets where they differ. Shown for every outcome, because a failed verification is what ends the run.
+    /// The full data verification, when the run did it: all data matches, or a localized summary of partitions with differences.
     /// </summary>
     private void ShowFullVerification(VerificationResult? full)
     {
@@ -263,14 +274,19 @@ public sealed partial class ResultStepViewModel : ObservableObject
         HasFullVerification = true;
         FullVerificationSummary = full.Passed
             ? Loc.Get("Result_FullVerification_Passed")
-            : Loc.Format(
-                "Result_FullVerification_Failed",
-                full.DifferingBytes ?? 0,
-                string.Join(", ", (full.FirstDifferenceOffsets ?? Array.Empty<long>()).Select(offset => offset.ToString(CultureInfo.InvariantCulture))));
+            : Loc.Get("Result_FullVerification_FailedSummary");
 
-        foreach (var issue in full.Issues)
+        if (!full.Passed)
         {
-            FullVerificationIssues.Add(issue);
+            FullVerificationHint = Loc.Get("Result_FullVerification_UsbHint");
+            foreach (var partition in full.PartitionSummaries ?? Array.Empty<VerificationPartitionSummary>())
+            {
+                FullVerificationIssues.Add(Loc.Format(
+                    "Result_FullVerification_PartitionMismatch",
+                    Labels.Role(partition.Role),
+                    SizeText.Format(new ByteSize(partition.DifferingBytes)),
+                    SizeText.Format(new ByteSize(partition.BytesCompared))));
+            }
         }
     }
 
@@ -394,6 +410,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
         VerificationIssues.Clear();
         HasFullVerification = false;
         FullVerificationSummary = string.Empty;
+        FullVerificationHint = string.Empty;
         FullVerificationIssues.Clear();
         HasRecovery = false;
         IsRecoveryWarning = false;

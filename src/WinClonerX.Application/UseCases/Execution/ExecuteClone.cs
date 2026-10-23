@@ -521,6 +521,13 @@ public sealed class ExecuteClone(
 
             completed += item.Allocation.TotalUsed.Bytes;
             partitions.Add(new PartitionComparison(item.Mapping, comparison));
+            foreach (ChunkMismatchSample sample in comparison.MismatchSamples ?? Array.Empty<ChunkMismatchSample>())
+            {
+                Record(ExecutionLogEvents.FullVerificationMismatchSample(
+                    item.Mapping.Source.Role.ToString(),
+                    item.Mapping.NewUniqueId.Value.ToString("D", System.Globalization.CultureInfo.InvariantCulture),
+                    sample));
+            }
         }
 
         // Avance final exacto, sin esperar al intervalo, como al terminar la copia.
@@ -563,13 +570,21 @@ public sealed class ExecuteClone(
         var issues = partitions
             .Where(partition => partition.Comparison.DifferingBytes > 0)
             .Select(partition =>
-                $"Partition {partition.Mapping.NewUniqueId:B} ({partition.Mapping.Source.Role}): {partition.Comparison.DifferingBytes} bytes differ; "
+                $"Partition {partition.Mapping.NewUniqueId.Value.ToString("D", System.Globalization.CultureInfo.InvariantCulture)} ({partition.Mapping.Source.Role}): {partition.Comparison.DifferingBytes} bytes differ; "
                 + "first at target disk offsets "
                 + string.Join(", ", partition.Comparison.FirstDifferenceOffsets.Select(offset =>
                     (partition.Mapping.TargetExtent.Offset + offset).ToString(System.Globalization.CultureInfo.InvariantCulture))))
             .ToArray();
 
-        return new VerificationResult(false, issues, differing, offsets);
+        var summaries = partitions
+            .Where(partition => partition.Comparison.DifferingBytes > 0)
+            .Select(partition => new VerificationPartitionSummary(
+                partition.Mapping.Source.Role,
+                partition.Comparison.BytesCompared,
+                partition.Comparison.DifferingBytes))
+            .ToArray();
+
+        return new VerificationResult(false, issues, differing, offsets, summaries);
     }
 
     /// <summary>

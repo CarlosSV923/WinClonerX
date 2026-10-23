@@ -538,6 +538,15 @@
   <data name="Result_FullVerification_Failed" xml:space="preserve">
     <value>{0} bytes differ from the original. First differing offsets on the new disk: {1}.</value>
   </data>
+  <data name="Result_FullVerification_FailedSummary" xml:space="preserve">
+    <value>Some data did not match the original.</value>
+  </data>
+  <data name="Result_FullVerification_PartitionMismatch" xml:space="preserve">
+    <value>{0}: {1} differ out of {2} compared</value>
+  </data>
+  <data name="Result_FullVerification_UsbHint" xml:space="preserve">
+    <value>If the target disk is connected through USB, try connecting it internally (SATA) or with another adapter, then try again: some USB adapters return wrong data when reading.</value>
+  </data>
   <data name="Result_Duration" xml:space="preserve">
     <value>Duration: {0}</value>
   </data>

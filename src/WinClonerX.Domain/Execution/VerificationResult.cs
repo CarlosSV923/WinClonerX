@@ -8,4 +8,5 @@ public sealed record VerificationResult(
     bool Passed,
     IReadOnlyList<string> Issues,
     long? DifferingBytes = null,
-    IReadOnlyList<long>? FirstDifferenceOffsets = null);
+    IReadOnlyList<long>? FirstDifferenceOffsets = null,
+    IReadOnlyList<VerificationPartitionSummary>? PartitionSummaries = null);

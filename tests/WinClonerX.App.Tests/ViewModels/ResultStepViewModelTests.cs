@@ -4,6 +4,8 @@ using WinClonerX.App.Presentation;
 using WinClonerX.App.Tests.Fakes;
 using WinClonerX.App.ViewModels;
 using WinClonerX.Domain.Execution;
+using WinClonerX.Domain.Inventory;
+using WinClonerX.Domain.Shared;
 using Xunit;
 
 namespace WinClonerX.App.Tests.ViewModels;
@@ -303,7 +305,7 @@ public sealed class ResultStepViewModelTests
     }
 
     [Fact]
-    public void AFailedFullVerificationShowsTheCountAndTheFirstOffsetsAndItsIssues()
+    public void AFailedFullVerificationShowsLocalizedPartitionSummariesAndUsbHint()
     {
         using var _ = new EnglishCulture();
         var vm = ResultStepFactory.Create();
@@ -311,16 +313,31 @@ public sealed class ResultStepViewModelTests
             false,
             ["Partition {1} (Windows): 3 bytes differ; first at target disk offsets 4096"],
             3,
-            [4096]);
+            [4096],
+            [new VerificationPartitionSummary(PartitionRole.Windows, 1024L * 1024 * 1024, 3L * 1024 * 1024)]);
 
         vm.Show(Failed(CloneOutcome.Failed, Failure("VerificationFailed", ExecutionPhase.FullVerification)) with { Full = full });
 
         vm.HasFullVerification.ShouldBeTrue();
-        vm.FullVerificationSummary.ShouldBe(Loc.Format("Result_FullVerification_Failed", 3L, "4096"));
-        vm.FullVerificationSummary.ShouldContain("3");
-        vm.FullVerificationSummary.ShouldContain("4096");
-        vm.FullVerificationIssues.ShouldBe(full.Issues);
+        vm.FullVerificationSummary.ShouldBe(Loc.Get("Result_FullVerification_FailedSummary"));
+        vm.FullVerificationIssues.ShouldBe([
+            Loc.Format("Result_FullVerification_PartitionMismatch", "Windows", SizeText.Format(new ByteSize(3L * 1024 * 1024)), SizeText.Format(new ByteSize(1024L * 1024 * 1024)))]);
+        vm.FullVerificationHint.ShouldBe(Loc.Get("Result_FullVerification_UsbHint"));
+        vm.HasFullVerificationHint.ShouldBeTrue();
         vm.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FailedFullVerificationSummaryIsLocalizedInSpanish()
+    {
+        using var _ = new CultureScope("es");
+        var vm = ResultStepFactory.Create();
+        var full = new VerificationResult(false, [], 1, [], [new VerificationPartitionSummary(PartitionRole.Windows, 1024, 1)]);
+
+        vm.Show(Failed(CloneOutcome.Failed, Failure("VerificationFailed", ExecutionPhase.FullVerification)) with { Full = full });
+
+        vm.FullVerificationIssues.Single().ShouldBe("Windows: 1 B distintos de 1 KiB comparados");
+        vm.FullVerificationHint.ShouldBe("Si el disco de destino está conectado por USB, prueba a conectarlo por dentro (SATA) o con otro adaptador y vuelve a intentarlo: algunos adaptadores USB devuelven datos erróneos al leer.");
     }
 
     [Fact]

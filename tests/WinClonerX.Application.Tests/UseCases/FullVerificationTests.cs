@@ -98,7 +98,11 @@ public sealed class FullVerificationTests
     {
         var h = new ExecuteCloneTests.Harness(ConfirmedPlan(mode: VerificationMode.StructuralAndFull));
         var windowsOffset = h.Plan.Mappings.Single(mapping => mapping.Source.Role == PartitionRole.Windows).TargetExtent.Offset;
-        h.Comparer.Overrides[windowsOffset] = new RangeComparison(1000, 3, [5, 4096, 8192]);
+        h.Comparer.Overrides[windowsOffset] = new RangeComparison(
+            1000,
+            3,
+            [5, 4096, 8192],
+            [new ChunkMismatchSample(0, 4096, 3, true, true, 3, false, false, 4096, "AB", "CD")]);
 
         var report = await h.RunAsync(Ct);
 
@@ -109,6 +113,9 @@ public sealed class FullVerificationTests
         report.Full.FirstDifferenceOffsets!.ShouldBe(new[] { windowsOffset + 5, windowsOffset + 4096, windowsOffset + 8192 });
         report.Full.Issues.Count.ShouldBe(1);
         report.Full.Issues[0].ShouldContain("3 bytes differ");
+        var newGuid = h.Plan.Mappings.Single(mapping => mapping.Source.Role == PartitionRole.Windows).NewUniqueId.Value.ToString("D");
+        report.Full.Issues[0].ShouldContain(newGuid);
+        report.Full.Issues[0].ShouldNotContain("PartitionGuid");
 
         report.Failure.ShouldNotBeNull();
         report.Failure.Code.ShouldBe(PlatformErrorCode.VerificationFailed.ToString());
@@ -120,6 +127,20 @@ public sealed class FullVerificationTests
         h.Power.IsSleepBlocked.ShouldBeFalse();
         h.Events.OfType<ExecutionFailed>().Count().ShouldBe(1);
         h.Log.Events.Single(e => e.Event == "FullVerificationCompleted").Level.ShouldBe(LogLevelKind.Error);
+        var sampleLog = h.Log.Events.Single(e => e.Event == "FullVerificationMismatchSample");
+        sampleLog.Properties["PartitionRole"].ShouldBe("Windows");
+        sampleLog.Properties["NewPartitionGuid"].ShouldBe(newGuid);
+        sampleLog.Properties["SourceOffset"].ShouldBe(0L);
+        sampleLog.Properties["Length"].ShouldBe(4096);
+        sampleLog.Properties["DifferingBytes"].ShouldBe(3L);
+        sampleLog.Properties["SourceStable"].ShouldBe(true);
+        sampleLog.Properties["TargetStable"].ShouldBe(true);
+        sampleLog.Properties["SecondReadDiffering"].ShouldBe(3L);
+        sampleLog.Properties["TargetAllZero"].ShouldBe(false);
+        sampleLog.Properties["SourceAllZero"].ShouldBe(false);
+        sampleLog.Properties["Shift"].ShouldBe(4096L);
+        sampleLog.Properties["SourceSample"].ShouldBe("AB");
+        sampleLog.Properties["TargetSample"].ShouldBe("CD");
     }
 
     [Fact]

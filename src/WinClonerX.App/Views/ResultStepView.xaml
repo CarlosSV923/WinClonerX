@@ -125,6 +125,10 @@
                     <TextBlock Style="{StaticResource Text.Body}"
                                AutomationProperties.Name="{Binding FullVerificationSummary}"
                                Text="{Binding FullVerificationSummary}" />
+                    <TextBlock Style="{StaticResource Text.Body}"
+                               Margin="0,4,0,0"
+                               Text="{Binding FullVerificationHint}"
+                               Visibility="{Binding HasFullVerificationHint, Converter={StaticResource BoolToVisibility}}" />
                     <ItemsControl Margin="0,4,0,0" Focusable="False" ItemsSource="{Binding FullVerificationIssues}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

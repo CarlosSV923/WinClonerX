@@ -31,6 +31,9 @@ internal sealed class VolumeComparer : IVolumeComparer
 {
     /// <summary>Número de desplazamientos distintos que se guardan por comparación.</summary>
     internal const int MaxRecordedOffsets = 10;
+    internal const int MaxMismatchSamples = 3;
+    private const int ShiftSearchBytes = 64 * 1024;
+    private const int SampleBytes = 16;
 
     private readonly DiskOperationRecorder _recorder;
     private readonly string _diskLabel;
@@ -100,10 +103,13 @@ internal sealed class VolumeComparer : IVolumeComparer
         {
             using var sourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
             using var targetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
+            using var secondSourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
+            using var secondTargetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
 
             long compared = 0;
             long differing = 0;
             var offsets = new List<long>(MaxRecordedOffsets);
+            var samples = new List<ChunkMismatchSample>(MaxMismatchSamples);
 
             foreach (Extent range in ranges)
             {
@@ -119,7 +125,23 @@ internal sealed class VolumeComparer : IVolumeComparer
                         .ConfigureAwait(false);
                     targetBytesRead += length;
 
-                    differing += CountDifferences(sourceBuffer.Span[..length], targetBuffer.Span[..length], sourceOffset, offsets);
+                    long chunkDiffering = CountDifferences(
+                        sourceBuffer.Span[..length], targetBuffer.Span[..length], sourceOffset, offsets);
+                    differing += chunkDiffering;
+                    if (chunkDiffering > 0 && samples.Count < MaxMismatchSamples)
+                    {
+                        await ReadSourceAsync(source, sourceOffset, secondSourceBuffer.Memory[..length], ct).ConfigureAwait(false);
+                        await ReadTargetAsync(target, checked(targetOffset + sourceOffset), secondTargetBuffer.Memory[..length], ct)
+                            .ConfigureAwait(false);
+                        targetBytesRead += length;
+                        samples.Add(CreateMismatchSample(
+                            sourceOffset,
+                            sourceBuffer.Span[..length],
+                            targetBuffer.Span[..length],
+                            secondSourceBuffer.Span[..length],
+                            secondTargetBuffer.Span[..length],
+                            chunkDiffering));
+                    }
 
                     compared += length;
                     bytesCompared.Report(compared);
@@ -127,7 +149,7 @@ internal sealed class VolumeComparer : IVolumeComparer
             }
 
             scope.Succeed();
-            return new RangeComparison(compared, differing, offsets);
+            return new RangeComparison(compared, differing, offsets, samples);
         }
         catch (Exception ex)
         {
@@ -168,6 +190,69 @@ internal sealed class VolumeComparer : IVolumeComparer
         }
 
         return count;
+    }
+
+    private static ChunkMismatchSample CreateMismatchSample(
+        long sourceOffset,
+        ReadOnlySpan<byte> source,
+        ReadOnlySpan<byte> target,
+        ReadOnlySpan<byte> secondSource,
+        ReadOnlySpan<byte> secondTarget,
+        long differingBytes)
+    {
+        int firstDifference = 0;
+        while (source[firstDifference] == target[firstDifference])
+        {
+            firstDifference++;
+        }
+
+        long secondDiffering = 0;
+        bool targetAllZero = true;
+        bool sourceAllZero = true;
+        for (int i = 0; i < source.Length; i++)
+        {
+            if (secondSource[i] != secondTarget[i])
+            {
+                secondDiffering++;
+            }
+
+            if (source[i] != target[i])
+            {
+                targetAllZero &= target[i] == 0;
+                sourceAllZero &= source[i] == 0;
+            }
+        }
+
+        int sampleLength = Math.Min(SampleBytes, source.Length - firstDifference);
+        var targetSample = target.Slice(firstDifference, sampleLength);
+        long? shift = null;
+        for (int candidate = -ShiftSearchBytes; candidate <= ShiftSearchBytes; candidate += CopyPipeline.MinimumSectorBytes)
+        {
+            int sourceIndex = firstDifference + candidate;
+            if (sourceIndex < 0 || sourceIndex + sampleLength > source.Length)
+            {
+                continue;
+            }
+
+            if (source.Slice(sourceIndex, sampleLength).SequenceEqual(targetSample))
+            {
+                shift = candidate;
+                break;
+            }
+        }
+
+        return new ChunkMismatchSample(
+            sourceOffset,
+            source.Length,
+            differingBytes,
+            source.SequenceEqual(secondSource),
+            target.SequenceEqual(secondTarget),
+            secondDiffering,
+            targetAllZero,
+            sourceAllZero,
+            shift,
+            Convert.ToHexString(source.Slice(firstDifference, sampleLength)),
+            Convert.ToHexString(targetSample));
     }
 
     private static async Task ReadSourceAsync(IBlockSource source, long offset, Memory<byte> buffer, CancellationToken ct)
