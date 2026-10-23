@@ -129,7 +129,8 @@ public sealed partial class ProgressStepViewModel : ObservableObject
         _subscription = _execute.Events.Subscribe(new EventObserver(this, generation));
         try
         {
-            return await _execute.ExecuteAsync(planId, cancellationToken);
+            // Keep synchronous work between async waits off the UI thread, including adapters whose reads complete synchronously.
+            return await Task.Run(() => _execute.ExecuteAsync(planId, cancellationToken));
         }
         finally
         {

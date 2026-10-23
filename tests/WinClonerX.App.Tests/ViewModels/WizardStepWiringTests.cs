@@ -139,6 +139,7 @@ public sealed class WizardStepWiringTests
         h.Confirm.TypedSuffix = "0002";
 
         await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+        await h.Execute.WaitForCallCountAsync(1, TestContext.Current.CancellationToken);
 
         h.Wizard.CurrentStep.Kind.ShouldBe(WizardStepKind.Progress);
         h.Wizard.CurrentPage.ShouldBeSameAs(h.Progress);
@@ -246,6 +247,7 @@ public sealed class WizardStepWiringTests
         await h.Wizard.NextCommand.ExecuteAsync(null);
         h.Confirm.TypedSuffix = "0002";
         await h.Confirm.CloneNowCommand.ExecuteAsync(null);
+        await h.Execute.WaitForCallCountAsync(2, TestContext.Current.CancellationToken);
         h.Execute.Completion.SetResult(Report() with { LogFile = "new-run.clef" });
         await h.Wizard.ExecutionCompletion;
 

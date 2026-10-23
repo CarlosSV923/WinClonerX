@@ -21,6 +21,36 @@ public sealed class VolumeComparerTests
     private const long TargetBase = 1024 * 1024;
 
     [Fact]
+    public async Task ComparisonReadsRunOffTheCallingThread()
+    {
+        byte[] source = Pattern(Chunk);
+        Extent[] ranges = [new(0, Chunk)];
+        int callerThreadId = 0;
+        int sourceReadThreadId = 0;
+        int targetReadThreadId = 0;
+        Task<RangeComparison>? comparison = null;
+
+        var caller = new Thread(() =>
+        {
+            callerThreadId = Environment.CurrentManagedThreadId;
+            comparison = NewComparer().CompareAsync(
+                new MemoryBlockSource(source, onRead: () => sourceReadThreadId = Environment.CurrentManagedThreadId),
+                Allocation(ranges),
+                new MemoryTarget(CopiedImage(source, ranges), onRead: () => targetReadThreadId = Environment.CurrentManagedThreadId),
+                TargetBase,
+                new RecordingProgress(),
+                CancellationToken.None);
+        });
+
+        caller.Start();
+        caller.Join();
+        (await comparison!).BytesCompared.ShouldBe(Chunk);
+
+        sourceReadThreadId.ShouldNotBe(callerThreadId);
+        targetReadThreadId.ShouldNotBe(callerThreadId);
+    }
+
+    [Fact]
     public async Task IdenticalRangesCompareEqualAndLogOneReadOfTheTarget()
     {
         byte[] source = Pattern(64 * 1024);
@@ -362,7 +392,7 @@ public sealed class VolumeComparerTests
         public void Report(long value) => cts.Cancel();
     }
 
-    private sealed class MemoryBlockSource(byte[] data, Exception? failure = null) : IBlockSource
+    private sealed class MemoryBlockSource(byte[] data, Exception? failure = null, Action? onRead = null) : IBlockSource
     {
         public ByteSize Length => new(data.Length);
 
@@ -370,6 +400,7 @@ public sealed class VolumeComparerTests
 
         public ValueTask<int> ReadAsync(long offset, Memory<byte> alignedBuffer, CancellationToken ct)
         {
+            onRead?.Invoke();
             if (failure is not null)
             {
                 return new ValueTask<int>(Task.FromException<int>(failure));
@@ -389,12 +420,14 @@ public sealed class VolumeComparerTests
     private sealed class MemoryTarget(
         byte[] image,
         Exception? readFailure = null,
-        Func<int, long, Memory<byte>, int>? readOverride = null) : ITargetDisk
+        Func<int, long, Memory<byte>, int>? readOverride = null,
+        Action? onRead = null) : ITargetDisk
     {
         private int _readCount;
 
         public ValueTask<int> ReadAsync(long diskOffset, Memory<byte> alignedBuffer, CancellationToken ct)
         {
+            onRead?.Invoke();
             if (readFailure is not null)
             {
                 return new ValueTask<int>(Task.FromException<int>(readFailure));

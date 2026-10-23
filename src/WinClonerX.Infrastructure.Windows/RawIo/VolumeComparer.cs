@@ -101,60 +101,66 @@ internal sealed class VolumeComparer : IVolumeComparer
 
         try
         {
-            using var sourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
-            using var targetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
-            using var secondSourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
-            using var secondTargetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
-
-            long compared = 0;
-            long differing = 0;
-            var offsets = new List<long>(MaxRecordedOffsets);
-            var samples = new List<ChunkMismatchSample>(MaxMismatchSamples);
-
-            foreach (Extent range in ranges)
+            return await Task.Run(async () =>
             {
-                for (long position = 0; position < range.Length; position += _chunkBytes)
+                try
                 {
-                    ct.ThrowIfCancellationRequested();
+                    using var sourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
+                    using var targetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
+                    using var secondSourceBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
+                    using var secondTargetBuffer = new AlignedBuffer(_chunkBytes, CopyPipeline.BufferAlignment);
 
-                    int length = (int)Math.Min(_chunkBytes, range.Length - position);
-                    long sourceOffset = range.Offset + position;
+                    long compared = 0;
+                    long differing = 0;
+                    var offsets = new List<long>(MaxRecordedOffsets);
+                    var samples = new List<ChunkMismatchSample>(MaxMismatchSamples);
 
-                    await ReadSourceAsync(source, sourceOffset, sourceBuffer.Memory[..length], ct).ConfigureAwait(false);
-                    await ReadTargetAsync(target, checked(targetOffset + sourceOffset), targetBuffer.Memory[..length], ct)
-                        .ConfigureAwait(false);
-                    targetBytesRead += length;
-
-                    long chunkDiffering = CountDifferences(
-                        sourceBuffer.Span[..length], targetBuffer.Span[..length], sourceOffset, offsets);
-                    differing += chunkDiffering;
-                    if (chunkDiffering > 0 && samples.Count < MaxMismatchSamples)
+                    foreach (Extent range in ranges)
                     {
-                        await ReadSourceAsync(source, sourceOffset, secondSourceBuffer.Memory[..length], ct).ConfigureAwait(false);
-                        await ReadTargetAsync(target, checked(targetOffset + sourceOffset), secondTargetBuffer.Memory[..length], ct)
-                            .ConfigureAwait(false);
-                        targetBytesRead += length;
-                        samples.Add(CreateMismatchSample(
-                            sourceOffset,
-                            sourceBuffer.Span[..length],
-                            targetBuffer.Span[..length],
-                            secondSourceBuffer.Span[..length],
-                            secondTargetBuffer.Span[..length],
-                            chunkDiffering));
+                        for (long position = 0; position < range.Length; position += _chunkBytes)
+                        {
+                            ct.ThrowIfCancellationRequested();
+
+                            int length = (int)Math.Min(_chunkBytes, range.Length - position);
+                            long sourceOffset = range.Offset + position;
+
+                            await ReadSourceAsync(source, sourceOffset, sourceBuffer.Memory[..length], ct).ConfigureAwait(false);
+                            await ReadTargetAsync(target, checked(targetOffset + sourceOffset), targetBuffer.Memory[..length], ct)
+                                .ConfigureAwait(false);
+                            targetBytesRead += length;
+
+                            long chunkDiffering = CountDifferences(
+                                sourceBuffer.Span[..length], targetBuffer.Span[..length], sourceOffset, offsets);
+                            differing += chunkDiffering;
+                            if (chunkDiffering > 0 && samples.Count < MaxMismatchSamples)
+                            {
+                                await ReadSourceAsync(source, sourceOffset, secondSourceBuffer.Memory[..length], ct).ConfigureAwait(false);
+                                await ReadTargetAsync(target, checked(targetOffset + sourceOffset), secondTargetBuffer.Memory[..length], ct)
+                                    .ConfigureAwait(false);
+                                targetBytesRead += length;
+                                samples.Add(CreateMismatchSample(
+                                    sourceOffset,
+                                    sourceBuffer.Span[..length],
+                                    targetBuffer.Span[..length],
+                                    secondSourceBuffer.Span[..length],
+                                    secondTargetBuffer.Span[..length],
+                                    chunkDiffering));
+                            }
+
+                            compared += length;
+                            bytesCompared.Report(compared);
+                        }
                     }
 
-                    compared += length;
-                    bytesCompared.Report(compared);
+                    scope.Succeed();
+                    return new RangeComparison(compared, differing, offsets, samples);
                 }
-            }
-
-            scope.Succeed();
-            return new RangeComparison(compared, differing, offsets, samples);
-        }
-        catch (Exception ex)
-        {
-            scope.Fail(ex);
-            throw;
+                catch (Exception ex)
+                {
+                    scope.Fail(ex);
+                    throw;
+                }
+            }).ConfigureAwait(false);
         }
         finally
         {

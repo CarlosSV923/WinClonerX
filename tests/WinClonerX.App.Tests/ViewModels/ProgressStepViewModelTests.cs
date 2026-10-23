@@ -6,6 +6,7 @@ using WinClonerX.App.ViewModels;
 using WinClonerX.Domain.Execution;
 using WinClonerX.Domain.Planning;
 using WinClonerX.Domain.Shared;
+using WinClonerX.Application.UseCases.Execution;
 using Xunit;
 
 namespace WinClonerX.App.Tests.ViewModels;
@@ -212,6 +213,36 @@ public sealed class ProgressStepViewModelTests
     }
 
     [Fact]
+    public async Task SynchronousExecutionWorkDoesNotBlockStartAsyncAndTheReportIsReturned()
+    {
+        using var execute = new BlockingExecuteClone(Report());
+        var vm = new ProgressStepViewModel(execute, new TestUiDispatcher(), new FakeConfirmationService());
+
+        Task<CloneResultReport> run = vm.StartAsync(Plan, TestContext.Current.CancellationToken);
+
+        run.IsCompleted.ShouldBeFalse();
+        execute.Entered.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken).ShouldBeTrue();
+        execute.Release.Set();
+
+        (await run).ShouldBeSameAs(execute.Report);
+        vm.IsRunning.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task SynchronousExecutionExceptionReachesTheStartAsyncAwaiter()
+    {
+        var expected = new InvalidOperationException("execution failed synchronously");
+        var execute = new ThrowingExecuteClone(expected);
+        var vm = new ProgressStepViewModel(execute, new TestUiDispatcher(), new FakeConfirmationService());
+
+        InvalidOperationException actual = await Should.ThrowAsync<InvalidOperationException>(
+            () => vm.StartAsync(Plan, TestContext.Current.CancellationToken));
+
+        actual.ShouldBeSameAs(expected);
+        vm.IsRunning.ShouldBeFalse();
+    }
+
+    [Fact]
     public void CancelIsNotAvailableBeforeTheRunStarts()
     {
         var (vm, _, _) = Create();
@@ -241,4 +272,63 @@ public sealed class ProgressStepViewModelTests
         TimeSpan.FromMinutes(30),
         "log.clef",
         []);
+
+    private sealed class BlockingExecuteClone(CloneResultReport report) : IExecuteClone, IDisposable
+    {
+        public ManualResetEventSlim Entered { get; } = new();
+
+        public ManualResetEventSlim Release { get; } = new();
+
+        public CloneResultReport Report => report;
+
+        public IObservable<ExecutionEvent> Events => EmptyExecutionEvents.Instance;
+
+        public void RequestCancel()
+        {
+        }
+
+        public Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct)
+        {
+            Entered.Set();
+            if (!Release.Wait(TimeSpan.FromSeconds(5), ct))
+            {
+                throw new TimeoutException("The test did not release execution.");
+            }
+
+            return Task.FromResult(report);
+        }
+
+        public void Dispose()
+        {
+            Release.Dispose();
+            Entered.Dispose();
+        }
+    }
+
+    private sealed class ThrowingExecuteClone(Exception exception) : IExecuteClone
+    {
+        public IObservable<ExecutionEvent> Events => EmptyExecutionEvents.Instance;
+
+        public void RequestCancel()
+        {
+        }
+
+        public Task<CloneResultReport> ExecuteAsync(PlanId planId, CancellationToken ct) => throw exception;
+    }
+
+    private sealed class EmptyExecutionEvents : IObservable<ExecutionEvent>
+    {
+        public static EmptyExecutionEvents Instance { get; } = new();
+
+        public IDisposable Subscribe(IObserver<ExecutionEvent> observer) => EmptyDisposable.Instance;
+    }
+
+    private sealed class EmptyDisposable : IDisposable
+    {
+        public static EmptyDisposable Instance { get; } = new();
+
+        public void Dispose()
+        {
+        }
+    }
 }
