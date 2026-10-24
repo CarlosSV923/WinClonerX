@@ -1,138 +1,150 @@
 # WinClonerX
 
-<p align="center"><img src="assets/icon/winclonerx-256.png" width="96" alt="Icono de WinClonerX"></p>
+<p align="center"><img src="assets/icon/winclonerx-256.png" width="96" alt="WinClonerX icon"></p>
 
-Antes se llamaba WinCopy.
+**English** · [Español](README.es.md)
 
-> **In short (English):** WinClonerX copies the Windows system disk to another disk, for example from an HDD to an SSD, so you can boot Windows from the new disk. It only does that. It works only on UEFI systems with a GPT disk, on Windows 10 22H2 and Windows 11 (x64). The project is in development. The installer is not signed, so Windows SmartScreen will show a warning. The installation section explains how to continue.
+Formerly WinCopy.
 
-## Arquitectura
+## Architecture
 
-Explora los [diagramas interactivos](https://carlossv923.github.io/WinClonerX/) o consulta los [candidatos y la guía](docs/architecture/).
+**Interactive diagrams:** [carlossv923.github.io/WinClonerX](https://carlossv923.github.io/WinClonerX/) — explorable versions of the diagrams below, generated with [Archify](https://github.com/tt-a1i/archify) from [`docs/architecture/`](docs/architecture/).
 
-## Qué es
+### System architecture
 
-WinClonerX copia el disco donde está instalado Windows a otro disco. Después, el disco nuevo puede arrancar Windows con los mismos usuarios, programas y archivos. El caso típico es pasar de un disco duro (HDD) a un SSD.
+<p align="center"><a href="https://carlossv923.github.io/WinClonerX/architecture.html"><img src="docs/architecture/images/en/architecture.svg" alt="WinClonerX architecture: the user moves through the WPF wizard and the Application, Domain, and Infrastructure.Windows layers, which use Windows services to read the source disk through VSS and write to the target only through DiskWriteGuard, which blocks the system disk." width="100%"></a></p>
 
-La interfaz tiene cinco pasos y está en español e inglés. El idioma se elige según el idioma de Windows.
+### Clone workflow
 
-## Qué no es
+<p align="center"><a href="https://carlossv923.github.io/WinClonerX/clone-workflow.html"><img src="docs/architecture/images/en/clone-workflow.svg" alt="Clone workflow: revalidate disks and plan, optionally shrink the source, prepare the VSS snapshot and target, copy and verify used clusters with SHA-256, write GPT and configure BCD and WinRE, then check the structure and restore the source. Failure or cancellation triggers compensation in a fixed order, including source restoration." width="100%"></a></p>
 
-- No es un programa de copias de seguridad. No crea archivos de copia ni imágenes. Copia un disco a otro disco.
-- No es un gestor de particiones. Solo prepara el disco de destino para el clon y, si hace falta, reduce temporalmente la partición de Windows del origen.
-- No convierte discos ni sistemas. No funciona con BIOS/MBR ni con discos MBR.
-- No clona otros discos que no sean el del sistema. Tampoco admite discos dinámicos, RAID ni Espacios de almacenamiento.
-- No envía datos a internet. No tiene telemetría.
+### Execution lifecycle
 
-## Requisitos
+<p align="center"><a href="https://carlossv923.github.io/WinClonerX/execution-lifecycle.html"><img src="docs/architecture/images/en/execution-lifecycle.svg" alt="CloneExecution lifecycle: Pending moves to Running and can end as Completed after structural verification, Cancelled after compensation finishes, or Failed. Cancellation and failures trigger compensation; cancellation is deferred during ShrinkSource, CommitLayout, RepairBoot, Cleanup, and RestoreSource, and removing a watched device causes failure." width="100%"></a></p>
 
-- Windows 10 versión 22H2 o Windows 11, de 64 bits (x64).
-- El equipo arranca en modo UEFI y el disco del sistema usa GPT. WinClonerX comprueba esto antes de clonar. Si no se cumple, no clona.
-- Una sola instalación de Windows en el disco de origen. No puede haber arranque dual.
-- Cuenta de administrador. WinClonerX pide permiso de administrador al abrirse.
-- Un disco de destino conectado, interno o por USB, sin volúmenes en uso.
-- El destino debe tener el mismo tamaño de sector lógico que el origen (512 o 4096 bytes).
-- El destino debe tener espacio para los datos usados más un margen. El margen es el 10 % de los datos usados, con un mínimo de 10 GiB.
-- En un portátil, conecta el cargador antes de empezar.
+## What it is
 
-**Atención:** el disco de destino se borra por completo. Antes de empezar, guarda lo que necesites de ese disco.
+WinClonerX copies the disk where Windows is installed to another disk. The new disk can then boot Windows with the same users, programs, and files. A typical use is moving from a hard disk drive (HDD) to an SSD.
 
-## Qué pasa con BitLocker
+The interface has five steps and is available in Spanish and English. It uses the Windows language to choose which one to show.
 
-Si la partición de Windows está cifrada con BitLocker, WinClonerX avisa. Para continuar, debes aceptar que el clon quedará sin cifrar. Después de clonar, activa BitLocker en el disco nuevo desde Windows.
+## What it is not
 
-## Cambio temporal del tamaño de C
+- It is not a backup program. It does not create backup files or images. It copies one disk to another disk.
+- It is not a partition manager. It only prepares the target disk for the clone and, if needed, temporarily shrinks the source Windows partition.
+- It does not convert disks or systems. It does not work with BIOS/MBR or MBR disks.
+- It does not clone disks other than the system disk. It also does not support dynamic disks, RAID, or Storage Spaces.
+- It does not send data to the internet. It has no telemetry.
 
-Si el disco de destino es más pequeño que el origen, WinClonerX reduce temporalmente la partición de Windows (C:) del origen. Usa la misma función de Windows que Administración de discos. WinClonerX pide una confirmación aparte para esta reducción.
+## Requirements
 
-Al terminar, WinClonerX vuelve a ampliar C: a su tamaño original. Lo hace tanto si el clonado sale bien como si se cancela o falla.
+- Windows 10 version 22H2 or Windows 11, 64-bit (x64).
+- The computer boots in UEFI mode and the system disk uses GPT. WinClonerX checks this before cloning. If these requirements are not met, it will not clone.
+- A single Windows installation on the source disk. Dual boot is not supported.
+- An administrator account. WinClonerX requests administrator permission when it starts.
+- A connected target disk, internal or USB, with no volumes in use.
+- The target must have the same logical sector size as the source (512 or 4096 bytes).
+- The target must have room for the used data plus a margin. The margin is 10% of the used data, with a minimum of 10 GiB.
+- On a laptop, connect the charger before starting.
 
-Si WinClonerX se cierra o el equipo se apaga durante el clonado, WinClonerX vuelve a ampliar C: al abrirse de nuevo. Para eso guarda un diario en `C:\ProgramData\WinClonerX\pending-source-restore.json`. Esta restauración automática después de un cierre inesperado todavía no se ha probado en hardware real.
+**Warning:** the target disk is erased completely. Save anything you need from it before starting.
 
-Si WinClonerX no consigue ampliar C:, lo indica en la pantalla de resultado. El espacio que quede sin asignar se puede recuperar en Administración de discos, con clic derecho en C: y la opción Extender volumen.
+## What happens to BitLocker
 
-## Instalación
+If the Windows partition is encrypted with BitLocker, WinClonerX warns you. To continue, you must accept that the clone will be unencrypted. After cloning, enable BitLocker on the new disk from Windows.
 
-El instalador no está firmado. El proyecto no paga un certificado de firma. Por eso, Windows muestra avisos al instalarlo. Sigue los pasos en este orden.
+## Temporarily changing the size of C:
 
-Descarga el archivo `WinClonerX-X.Y.Z.msi` de la página de versiones del repositorio: https://github.com/CarlosSV923/WinClonerX/releases
+If the target disk is smaller than the source, WinClonerX temporarily shrinks the source Windows partition (C:). It uses the same Windows function as Disk Management. WinClonerX asks for separate confirmation before shrinking it.
 
-### 1. Superar el aviso de SmartScreen
+When finished, WinClonerX expands C: back to its original size. It does this whether cloning succeeds, is cancelled, or fails.
 
-Al ejecutar el instalador, Windows SmartScreen puede mostrar el aviso "Windows protegió su PC". Pulsa **Más información** y después **Ejecutar de todas formas**.
+If WinClonerX closes or the computer shuts down during cloning, WinClonerX expands C: again when it is next opened. To do this, it saves a journal at `C:\ProgramData\WinClonerX\pending-source-restore.json`. This automatic recovery has been tested on real hardware by force-closing WinClonerX during cloning.
 
-### 2. Verificar la huella SHA-256 y la atestación
+If WinClonerX cannot expand C:, it reports this on the result screen. You can recover any unallocated space in Disk Management by right-clicking C: and choosing Extend Volume.
 
-Cada versión publica la huella SHA-256 del instalador en sus notas. Compara la huella de tu archivo con la de las notas:
+## Installation
+
+The installer is unsigned. The project does not pay for a signing certificate. Windows therefore shows warnings during installation. Follow these steps in order.
+
+Download `WinClonerX-X.Y.Z.msi` from the repository releases page: https://github.com/CarlosSV923/WinClonerX/releases
+
+### 1. Get past the SmartScreen warning
+
+When you run the installer, Windows SmartScreen may show the “Windows protected your PC” warning. Click **More info** and then **Run anyway**.
+
+### 2. Verify the SHA-256 hash and attestation
+
+Each release publishes the installer’s SHA-256 hash in its notes. Compare your file’s hash with the one in the notes:
 
 ```powershell
 Get-FileHash .\WinClonerX-X.Y.Z.msi -Algorithm SHA256
 ```
 
-Cada versión también tiene una atestación de procedencia de GitHub. Comprueba que el instalador se compiló en este repositorio. Para esto necesitas la CLI de GitHub (`gh`):
+Each release also has a GitHub provenance attestation. Verify that the installer was built in this repository. You need the GitHub CLI (`gh`) for this:
 
 ```powershell
 gh attestation verify .\WinClonerX-X.Y.Z.msi --repo CarlosSV923/WinClonerX
 ```
 
-Si la huella no coincide o la atestación no se verifica, no instales el archivo.
+If the hash does not match or the attestation cannot be verified, do not install the file.
 
-### 3. Compilar desde el código
+### 3. Build from source
 
-Si prefieres no instalar un archivo ya compilado, puedes compilarlo tú mismo. Necesitas Windows 10 o 11 de 64 bits y el SDK de .NET 10. Consulta la sección [Compilar desde el código](#compilar-desde-el-código).
+If you prefer not to install a prebuilt file, you can build it yourself. You need 64-bit Windows 10 or 11 and the .NET 10 SDK. See [Build from source](#build-from-source).
 
-### 4. Solo como último recurso: desactivar Smart App Control
+### 4. Only as a last resort: disable Smart App Control
 
-> **Advertencia.** Smart App Control es una protección de Windows 11. En muchas versiones de Windows, no se puede volver a activar sin reinstalar Windows o restablecer el sistema. Desactívalo solo si los pasos anteriores no funcionan y entiendes el riesgo.
+> **Warning.** Smart App Control is a Windows 11 protection. On many Windows versions, you cannot turn it back on without reinstalling Windows or resetting the system. Disable it only if the previous steps do not work and you understand the risk.
 
-Para desactivarlo, abre **Seguridad de Windows**, entra en **Control de aplicaciones y navegador** y después en la configuración de Smart App Control. Elige **Desactivado**. Los nombres de los menús pueden cambiar según la versión de Windows.
+To disable it, open **Windows Security**, go to **App & browser control**, and then open Smart App Control settings. Choose **Off**. Menu names may vary by Windows version.
 
-WinClonerX no desactiva Smart App Control ni ninguna otra protección de Windows.
+WinClonerX does not disable Smart App Control or any other Windows protection.
 
-## Cómo se usa
+## How to use it
 
-1. **Discos.** WinClonerX detecta el disco del sistema y lo muestra como origen. No se puede cambiar. Elige el disco de destino entre los demás discos. Si un disco no sirve, la pantalla indica el motivo.
-2. **Revisión.** Revisa el plan. Muestra qué particiones se copian, qué tamaño tendrán en el destino, si se reduce C: y cuánto tiempo puede tardar. Acepta los avisos, como el de BitLocker, para continuar.
-3. **Confirmación.** Escribe los cuatro últimos caracteres del número de serie del disco de destino. Así confirmas que es el disco correcto. Si el plan reduce C:, confirma esa reducción aparte.
-4. **Progreso.** Ves la fase actual, el porcentaje, los datos copiados y el tiempo restante. Puedes pulsar **Cancelar**. WinClonerX pide confirmación antes. Algunas fases no se pueden interrumpir. En ese caso, la cancelación espera a que la fase termine.
-5. **Resultado.** Muestra si la estructura del disco nuevo es correcta, cuánto tardó y qué pasos seguir. Si el clonado se cancela o falla, WinClonerX explica qué pasó. El disco original sigue funcionando. El disco de destino queda sin inicializar y no sirve para arrancar Windows.
+1. **Disks.** WinClonerX detects the system disk and shows it as the source. You cannot change it. Choose the target disk from the other disks. If a disk cannot be used, the screen explains why.
+2. **Review.** Review the plan. It shows which partitions will be copied, their sizes on the target, whether C: will be shrunk, and how long the operation may take. Accept the warnings, such as the BitLocker warning, to continue.
+3. **Confirmation.** Enter the last four characters of the target disk’s serial number. This confirms that it is the right disk. If the plan shrinks C:, confirm that separately.
+4. **Progress.** See the current phase, percentage, data copied, and time remaining. You can click **Cancel**. WinClonerX asks you to confirm first. Some phases cannot be interrupted. In that case, cancellation waits for the phase to finish.
+5. **Result.** Shows whether the new disk structure is correct, how long it took, and what to do next. If cloning is cancelled or fails, WinClonerX explains what happened. The original disk keeps working. The target disk is left uninitialized and cannot boot Windows.
 
-La verificación completa de todos los datos todavía no está disponible en esta versión.
+On the review step you can check **Verify all data**. After copying, WinClonerX reads the target disk again and checks that it holds exactly the copied data, comparing SHA-256 digests taken during the copy. It takes about 50% more time.
 
-## Después de clonar
+## After cloning
 
-1. Apaga el equipo. Para arrancar desde el disco nuevo, puedes dejar los dos discos conectados y elegir el disco nuevo en el menú de arranque del firmware. La tecla para abrir ese menú depende del fabricante. Como alternativa, retira el disco original y arranca.
-2. Comprueba que Windows arranca y que C: es la partición de Windows.
-3. Abre el símbolo del sistema o PowerShell como administrador y ejecuta:
+1. Shut down the computer. To boot from the new disk, you can leave both disks connected and choose the new disk from the firmware boot menu. The key to open that menu depends on the manufacturer. Alternatively, remove the original disk and boot.
+2. Check that Windows boots and that C: is the Windows partition.
+3. Open Command Prompt or PowerShell as administrator and run:
 
    ```powershell
    reagentc /info
    ```
 
-   La línea de estado de Windows RE debe indicar que está habilitado (`Enabled`). Si aparece deshabilitado, ejecuta `reagentc /enable`.
+   The Windows RE status line should say it is enabled (`Enabled`). If it is disabled, run `reagentc /enable`.
 
-WinClonerX no cambia el orden de arranque del firmware.
+WinClonerX does not change the firmware boot order.
 
-## Registros
+## Logs
 
-Los registros de cada ejecución están en la carpeta `C:\ProgramData\WinClonerX\logs`. La carpeta `ProgramData` está oculta. Para abrirla, escribe la ruta en la barra de direcciones del Explorador de archivos. Cada ejecución crea un archivo `winClonerX-AAAAMMDD-HHMMSS-<id>.clef`. Es texto con un evento por línea, en formato JSON. Los registros que quedaron en `C:\ProgramData\WinCopy\logs` de versiones antes del cambio de nombre se conservan allí; WinClonerX no los migra ni los borra.
+Logs for each run are in `C:\ProgramData\WinClonerX\logs`. The `ProgramData` folder is hidden. To open it, enter the path in File Explorer’s address bar. Each run creates a `winClonerX-YYYYMMDD-HHMMSS-<id>.clef` file. It is text with one JSON event per line. Logs left in `C:\ProgramData\WinCopy\logs` by versions before the rename stay there; WinClonerX does not migrate or delete them.
 
-La pantalla de resultado tiene dos botones para los registros:
+The result screen has two buttons for logs:
 
-- **Abrir carpeta de registros** abre esa carpeta en el Explorador.
-- **Exportar registro** guarda un `.zip` con el registro de la ejecución. El inventario de discos (modelo, número de serie y tamaño) solo se incluye si marcas la casilla correspondiente, que está desmarcada por defecto.
+- **Open log folder** opens that folder in File Explorer.
+- **Export log** saves a `.zip` with the run’s log. The disk inventory (model, serial number, and size) is included only if you check the corresponding box, which is unchecked by default.
 
-Si pides ayuda, adjunta ese `.zip`.
+If you ask for help, attach that `.zip`.
 
-## Desinstalar
+## Uninstall
 
-Ve a **Configuración → Aplicaciones → Aplicaciones instaladas**, busca WinClonerX y elige **Desinstalar**. También puedes usar Programas y características del Panel de control.
+Go to **Settings → Apps → Installed apps**, find WinClonerX, and choose **Uninstall**. You can also use Programs and Features in Control Panel.
 
-La desinstalación quita los archivos del programa y el acceso directo del menú Inicio. No borra los registros de `C:\ProgramData\WinClonerX`. Si no los necesitas, bórralos a mano.
+Uninstalling removes the program files and Start menu shortcut. It does not delete logs from `C:\ProgramData\WinClonerX`. Delete them manually if you no longer need them.
 
-## Compilar desde el código
+## Build from source
 
-Necesitas Windows 10 o 11 de 64 bits y el SDK de .NET 10 (10.0.x).
+You need 64-bit Windows 10 or 11 and the .NET 10 SDK (10.0.x).
 
 ```powershell
 git clone https://github.com/CarlosSV923/WinClonerX.git
@@ -141,50 +153,50 @@ dotnet restore WinClonerX.slnx
 dotnet build WinClonerX.slnx -c Release
 ```
 
-El MSI solo se genera en la configuración `Release`. Queda en `installer\WinClonerX.Installer\bin\x64\Release\`. La compilación de Release también publica la aplicación como ejecutable independiente para win-x64.
+The MSI is generated only in the `Release` configuration. It is placed in `installer\WinClonerX.Installer\bin\Release\`. A Release build also publishes the app as a standalone executable for win-x64.
 
-Pruebas sin privilegios ni discos especiales:
+Tests without elevated privileges or special disks:
 
 ```powershell
 dotnet test --filter "Category!=Integration"
 ```
 
-Las pruebas de integración usan discos virtuales VHDX. Necesitan ejecutarse como administrador y crean sus archivos en `%TEMP%\WinClonerXTests`:
+Integration tests use VHDX virtual disks. They must run as administrator and create their files in `%TEMP%\WinClonerXTests`:
 
 ```powershell
 dotnet test --filter "Category=Integration"
 ```
 
-Ejecútalas en una máquina virtual, no en tu equipo principal. En el equipo de desarrollo del proyecto, estas pruebas provocaron pantallas azules.
+Run them in a virtual machine, not on your primary computer. On the project’s development computer, these tests caused blue screens.
 
-Estructura del repositorio:
+Repository structure:
 
-- `src/`: código de la aplicación (dominio, aplicación, adaptadores de Windows e interfaz WPF).
-- `tests/`: pruebas unitarias y de integración.
-- `installer/`: proyecto WiX del MSI.
-- `specs/`: especificación, plan y tareas.
-- `docs/`: glosario, decisiones, validaciones y pendientes.
+- `src/`: application code (domain, application, Windows adapters, and WPF interface).
+- `tests/`: unit and integration tests.
+- `installer/`: WiX MSI project.
+- `specs/`: specification, plan, and tasks.
+- `docs/`: glossary, decisions, validations, and pending work.
 
-## Cómo está hecho
+## How it is built
 
-- **Spec Kit.** El desarrollo sigue el flujo de GitHub Spec Kit: especificación, plan, tareas e implementación. La constitución del proyecto está en `.specify/memory/constitution.md`. La especificación está en `specs/001-system-disk-clone/`.
-- **DDD y arquitectura hexagonal.** El dominio no depende de Windows. Los casos de uso usan puertos. Los adaptadores de Windows implementan esos puertos. El glosario está en `docs/glosario.md`.
-- **Sala limpia.** Solo se usan APIs y herramientas documentadas por Microsoft. Entre ellas, VSS, la Storage Management API, `bcdboot`, `bcdedit` y `reagentc`. No se hace ingeniería inversa de software de terceros. No se usan drivers propios.
-- **Seguridad de los datos.** Las pruebas automáticas no abren discos físicos. Hay un único punto en el código por el que se abre un disco para escribir (`DiskWriteGuard`), y ese punto rechaza siempre el disco del sistema.
+- **Spec Kit.** Development follows the GitHub Spec Kit workflow: specification, plan, tasks, and implementation. The project constitution is in `.specify/memory/constitution.md`. The specification is in `specs/001-system-disk-clone/`.
+- **DDD and hexagonal architecture.** The domain does not depend on Windows. Use cases rely on ports. Windows adapters implement those ports. The glossary is in [docs/glosario.md](docs/glosario.md) (in Spanish).
+- **Clean room.** Only APIs and tools documented by Microsoft are used, including VSS, the Storage Management API, `bcdboot`, `bcdedit`, and `reagentc`. No reverse engineering of third-party software is performed. No custom drivers are used.
+- **Data safety.** Automated tests do not open physical disks. There is one point in the code that opens a disk for writing (`DiskWriteGuard`), and it always rejects the system disk.
 
-## Estado del proyecto
+## Project status
 
-WinClonerX está en desarrollo. La versión 1.0 todavía no está lista. Las tareas pendientes están en [docs/pendientes-1.0.md](docs/pendientes-1.0.md).
+WinClonerX is in development. Version 1.0 is not ready yet. Remaining tasks are listed in [docs/pendientes-1.0.md](docs/pendientes-1.0.md) (in Spanish).
 
-El punto de control S2 se superó el 20 de octubre de 2026. Un clon arrancó en un mini PC real, con Windows en C: y WinRE habilitado. Consulta [docs/spikes/s2-arranque-hardware-real.md](docs/spikes/s2-arranque-hardware-real.md). Las validaciones manuales se registran en [docs/validacion-manual.md](docs/validacion-manual.md).
+Checkpoint S2 was passed on October 20, 2026. A clone booted on a real mini PC, with Windows on C: and WinRE enabled. See [docs/spikes/s2-arranque-hardware-real.md](docs/spikes/s2-arranque-hardware-real.md) (in Spanish). Manual validations are recorded in [docs/validacion-manual.md](docs/validacion-manual.md) (in Spanish).
 
-## Licencia
+## License
 
-[MIT](LICENSE). Puedes usar, modificar y redistribuir el código citando la autoría. El software se ofrece "tal cual", sin garantía de ningún tipo: clonar un disco borra el disco de destino, así que guarda antes lo que necesites.
+[MIT](LICENSE). You may use, modify, and redistribute the code with attribution. The software is provided “as is,” without any warranty: cloning a disk erases the target disk, so save anything you need first.
 
-## Documentación
+## Documentation
 
-- [Decisiones iniciales](docs/decisiones-iniciales.md)
-- [Glosario](docs/glosario.md)
-- [Validación manual](docs/validacion-manual.md)
-- [Pendientes para la versión 1.0](docs/pendientes-1.0.md)
+- [Initial decisions](docs/decisiones-iniciales.md) (in Spanish)
+- [Glossary](docs/glosario.md) (in Spanish)
+- [Manual validation](docs/validacion-manual.md) (in Spanish)
+- [Version 1.0 pending work](docs/pendientes-1.0.md) (in Spanish)

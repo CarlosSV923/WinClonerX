@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" data-preset="blueprint">
+<html lang="es" data-theme="dark" data-preset="blueprint">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="archify 3.2.0">
   <meta name="archify-reader-contract" content="declared-wide-v1">
-  <title>WinClonerX Architecture Diagram</title>
+  <title>Ciclo de vida de CloneExecution · Diagrama</title>
   <script>
     // Resolve the theme before first paint so light-preference users don't
     // see a dark flash. The toolbar script below re-applies with UI state.
@@ -5088,98 +5088,98 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <!-- Toolbar: theme, live visual style, trace motion, presentation stage, and export.
        Motion appears only for trace-enabled artifacts and has no shortcut;
        Keyboard: T toggles theme, S cycles style, F toggles the stage, E opens export. -->
-  <div class="toolbar" role="toolbar" aria-label="Diagram actions">
+  <div class="toolbar" role="toolbar" aria-label="Acciones del diagrama">
     <div class="toolbar-group">
     <button id="btn-theme" type="button"
-            title="Toggle theme (T)"
-            aria-label="Toggle color theme"
+            title="Cambiar tema (T)"
+            aria-label="Cambiar tema de color"
             aria-pressed="false">
       <span id="theme-icon" class="toolbar-icon" aria-hidden="true"></span>
-      <span id="theme-label">Dark</span>
+      <span id="theme-label">Oscuro</span>
     </button>
     <div class="preset-wrap">
       <button id="btn-preset" type="button"
-              title="Choose visual style (S cycles)"
-              aria-label="Choose visual style"
+              title="Elegir estilo visual (S alterna)"
+              aria-label="Elegir estilo visual"
               aria-haspopup="menu"
               aria-expanded="false"
               aria-controls="preset-menu"
               aria-keyshortcuts="S">
         <span class="preset-control-mark" aria-hidden="true"></span>
-        <span id="preset-label">Style</span>
+        <span id="preset-label">Estilo</span>
         <span class="toolbar-icon toolbar-chevron" aria-hidden="true"></span>
       </button>
-      <div class="preset-menu" id="preset-menu" role="menu" aria-label="Visual style">
-        <div class="preset-menu-heading" role="presentation"><span>Visual identity</span><span class="preset-menu-shortcut"><kbd>S</kbd>to cycle</span></div>
+      <div class="preset-menu" id="preset-menu" role="menu" aria-label="Estilo visual">
+        <div class="preset-menu-heading" role="presentation"><span>Identidad visual</span><span class="preset-menu-shortcut"><kbd>S</kbd>alterna</span></div>
         <button class="preset-option" data-preset-value="classic" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
           <span class="preset-option-swatch classic" aria-hidden="true"></span>
-          <span class="preset-option-copy"><strong>Classic</strong><small>Stable technical default</small></span>
+          <span class="preset-option-copy"><strong>Clásico</strong><small>Predeterminado técnico estable</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
         <button class="preset-option" data-preset-value="signal-flow" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
           <span class="preset-option-swatch signal-flow" aria-hidden="true"></span>
-          <span class="preset-option-copy"><strong>Signal Flow</strong><small>Motion-forward presentation</small></span>
+          <span class="preset-option-copy"><strong>Flujo de señal</strong><small>Presentación con énfasis en el movimiento</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
         <button class="preset-option" data-preset-value="blueprint" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
           <span class="preset-option-swatch blueprint" aria-hidden="true"></span>
-          <span class="preset-option-copy"><strong>Blueprint</strong><small>Engineering review</small></span>
+          <span class="preset-option-copy"><strong>Plano</strong><small>Revisión de ingeniería</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
         <button class="preset-option" data-preset-value="editorial" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
           <span class="preset-option-swatch editorial" aria-hidden="true"></span>
-          <span class="preset-option-copy"><strong>Editorial</strong><small>Publication and launch notes</small></span>
+          <span class="preset-option-copy"><strong>Editorial</strong><small>Notas de publicación y lanzamiento</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
       </div>
     </div>
     <button id="btn-motion" type="button" hidden
-            title="Pause motion"
-            aria-label="Pause motion"
+            title="Pausar animación"
+            aria-label="Pausar animación"
             aria-pressed="true">
       <span class="motion-control-dot" aria-hidden="true"></span>
-      <span id="motion-label">Live</span>
+      <span id="motion-label">Activa</span>
     </button>
     <button id="btn-present" type="button"
-            title="Presentation stage (F)"
-            aria-label="Enter presentation stage"
+            title="Modo presentación (F)"
+            aria-label="Entrar al modo presentación"
             aria-pressed="false">
       <span id="present-icon" class="toolbar-icon" aria-hidden="true"></span>
-      <span id="present-label">Present</span>
+      <span id="present-label">Presentar</span>
     </button>
     </div>
     <div class="export-wrap">
       <button id="btn-export" type="button"
-              title="Export diagram (E)"
-              aria-label="Export diagram"
+              title="Exportar diagrama (E)"
+              aria-label="Exportar diagrama"
               aria-haspopup="menu"
               aria-expanded="false"
               aria-controls="export-menu">
-        Export <span class="toolbar-icon toolbar-chevron" aria-hidden="true"></span>
+        Exportar <span class="toolbar-icon toolbar-chevron" aria-hidden="true"></span>
       </button>
-      <div class="export-menu" id="export-menu" role="menu" aria-label="Export">
+      <div class="export-menu" id="export-menu" role="menu" aria-label="Exportar">
         <div class="export-menu-header" role="presentation">
-          <div><strong>Export diagram</strong><span>Portable, clean outputs</span></div>
+          <div><strong>Exportar diagrama</strong><span>Salidas portables y limpias</span></div>
           <kbd>E</kbd>
         </div>
-        <div class="export-menu-section" role="group" aria-label="Share">
-          <span class="export-menu-heading" aria-hidden="true">Share</span>
-          <button data-action="route-share-card" type="button" role="menuitem" tabindex="-1" hidden disabled><span class="export-item-copy"><strong>Route Share Card</strong><small class="hint">1200&times;630 PNG</small></span></button>
-          <button data-action="reach-share-card" type="button" role="menuitem" tabindex="-1" hidden disabled><span class="export-item-copy"><strong>Reach Share Card</strong><small class="hint">1200&times;630 PNG</small></span></button>
-          <button data-action="copy" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>Copy diagram</strong><small class="hint">PNG to clipboard</small></span></button>
+        <div class="export-menu-section" role="group" aria-label="Compartir">
+          <span class="export-menu-heading" aria-hidden="true">Compartir</span>
+          <button data-action="route-share-card" type="button" role="menuitem" tabindex="-1" hidden disabled><span class="export-item-copy"><strong>Tarjeta de ruta para compartir</strong><small class="hint">1200&times;630 PNG</small></span></button>
+          <button data-action="reach-share-card" type="button" role="menuitem" tabindex="-1" hidden disabled><span class="export-item-copy"><strong>Tarjeta de alcance para compartir</strong><small class="hint">1200&times;630 PNG</small></span></button>
+          <button data-action="copy" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>Copiar diagrama</strong><small class="hint">PNG al portapapeles</small></span></button>
         </div>
-        <div class="export-menu-section" role="group" aria-label="Raster images">
-          <span class="export-menu-heading" aria-hidden="true">Image</span>
-          <button data-format="png" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>PNG</strong><small class="hint">Lossless image</small></span></button>
-          <button data-format="jpeg" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>JPEG</strong><small class="hint">Compact image</small></span></button>
-          <button data-format="webp" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>WebP</strong><small class="hint">Modern image</small></span></button>
+        <div class="export-menu-section" role="group" aria-label="Imágenes rasterizadas">
+          <span class="export-menu-heading" aria-hidden="true">Imagen</span>
+          <button data-format="png" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>PNG</strong><small class="hint">Imagen sin pérdida</small></span></button>
+          <button data-format="jpeg" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>JPEG</strong><small class="hint">Imagen compacta</small></span></button>
+          <button data-format="webp" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>WebP</strong><small class="hint">Imagen moderna</small></span></button>
         </div>
-        <div class="export-menu-section" role="group" aria-label="Vector and motion">
-          <span class="export-menu-heading" aria-hidden="true">Vector &amp; motion</span>
-          <button data-format="svg" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Auto</strong><small class="hint">Matches host theme</small></span></button>
-          <button data-format="svg-light" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Light</strong><small class="hint">Always light</small></span></button>
-          <button data-format="svg-dark" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Dark</strong><small class="hint">Always dark</small></span></button>
-          <button data-format="webm" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>WebM</strong><small class="hint">6s motion</small></span></button>
+        <div class="export-menu-section" role="group" aria-label="Vector y movimiento">
+          <span class="export-menu-heading" aria-hidden="true">Vector y movimiento</span>
+          <button data-format="svg" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Auto</strong><small class="hint">Coincide con el tema del host</small></span></button>
+          <button data-format="svg-light" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Claro</strong><small class="hint">Siempre claro</small></span></button>
+          <button data-format="svg-dark" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>SVG · Oscuro</strong><small class="hint">Siempre oscuro</small></span></button>
+          <button data-format="webm" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>WebM</strong><small class="hint">Movimiento de 6 s</small></span></button>
         </div>
       </div>
     </div>
@@ -5189,22 +5189,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- Header -->
     <div class="header">
       <div class="header-row"
-           data-preset-badge-signal-flow="SIGNAL FLOW"
-           data-preset-badge-blueprint="BLUEPRINT / REV 01"
-           data-preset-badge-editorial="EDITORIAL / FIELD NOTE">
+           data-preset-badge-signal-flow="FLUJO DE SEÑAL"
+           data-preset-badge-blueprint="PLANO / REV 01"
+           data-preset-badge-editorial="EDITORIAL / NOTA DE CAMPO">
         <div class="pulse-dot"></div>
-        <h1>WinClonerX Architecture</h1>
+        <h1>Ciclo de vida de CloneExecution</h1>
       </div>
     </div>
 
-    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/CarlosSV923/WinClonerX","revision":"0d208a3bc238396dfc05c8ff8d10b21ebe226b48","shortRevision":"0d208a3","label":"CarlosSV923/WinClonerX","href":"https://github.com/CarlosSV923/WinClonerX/tree/0d208a3bc238396dfc05c8ff8d10b21ebe226b48"},"referenceCount":22,"nodes":{"user":[{"path":"README.md","line":9,"endLine":31,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/README.md#L9-L31"}],"wpf":[{"path":"src/WinClonerX.App/ViewModels/WizardViewModel.cs","line":34,"endLine":42,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.App/ViewModels/WizardViewModel.cs#L34-L42"},{"path":"src/WinClonerX.App/Composition/ServiceRegistration.cs","line":11,"endLine":30,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.App/Composition/ServiceRegistration.cs#L11-L30"},{"path":"src/WinClonerX.App/WinClonerX.App.csproj","line":1,"endLine":8,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.App/WinClonerX.App.csproj#L1-L8"}],"application":[{"path":"src/WinClonerX.Application/DependencyInjection.cs","line":20,"endLine":35,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Application/DependencyInjection.cs#L20-L35"},{"path":"src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs","line":21,"endLine":40,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs#L21-L40"}],"domain":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":25,"endLine":52,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L25-L52"},{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":432,"endLine":465,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L432-L465"}],"infra":[{"path":"src/WinClonerX.Infrastructure.Windows/DependencyInjection.cs","line":80,"endLine":140,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/DependencyInjection.cs#L80-L140"},{"path":"src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs","line":22,"endLine":44,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs#L22-L44"}],"windows":[{"path":"src/WinClonerX.Infrastructure.Windows/Storage/WmiStorageInventory.cs","line":8,"endLine":22,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/Storage/WmiStorageInventory.cs#L8-L22"},{"path":"src/WinClonerX.Infrastructure.Windows/Boot/BcdBootConfigurator.cs","line":10,"endLine":24,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/Boot/BcdBootConfigurator.cs#L10-L24"},{"path":"src/WinClonerX.Infrastructure.Windows/Platform/DeviceChangeMonitor.cs","line":10,"endLine":24,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/Platform/DeviceChangeMonitor.cs#L10-L24"}],"source":[{"path":"src/WinClonerX.Infrastructure.Windows/Snapshots/VssSnapshotService.cs","line":20,"endLine":43,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/Snapshots/VssSnapshotService.cs#L20-L43"},{"path":"src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs","line":428,"endLine":451,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs#L428-L451"}],"target":[{"path":"src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs","line":20,"endLine":48,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs#L20-L48"},{"path":"src/WinClonerX.Infrastructure.Windows/RawIo/CopyPipeline.cs","line":1,"endLine":36,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/RawIo/CopyPipeline.cs#L1-L36"}],"guard":[{"path":"src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs","line":22,"endLine":56,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs#L22-L56"},{"path":"src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs","line":20,"endLine":35,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs#L20-L35"}],"msi":[{"path":"installer/WinClonerX.Installer/Package.wxs","line":1,"endLine":21,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/installer/WinClonerX.Installer/Package.wxs#L1-L21"}],"ci":[{"path":".github/workflows/ci.yml","line":1,"endLine":48,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/.github/workflows/ci.yml#L1-L48"},{"path":".github/workflows/release.yml","line":1,"endLine":94,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/.github/workflows/release.yml#L1-L94"}]}}</script>
-    <script id="archify-i18n-data" type="application/json">{"locale":"en","messages":{"viewer.kind.frontend":"Frontend","viewer.kind.backend":"Backend","viewer.kind.database":"Database","viewer.kind.cloud":"Cloud","viewer.kind.security":"Security","viewer.kind.messagebus":"Message bus","viewer.kind.external":"External","viewer.kind.neutral":"Neutral","viewer.kind.node":"Node","viewer.kind.start":"Start","viewer.kind.active":"Active","viewer.kind.waiting":"Waiting","viewer.kind.decision":"Decision","viewer.kind.success":"Success","viewer.kind.failure":"Failure","viewer.toolbar.actions":"Diagram actions","viewer.theme.toggle.title":"Toggle theme (T)","viewer.theme.toggle":"Toggle color theme","viewer.theme.dark":"Dark","viewer.theme.light":"Light","viewer.preset.choose.title":"Choose visual style (S cycles)","viewer.preset.choose":"Choose visual style","viewer.preset.style":"Style","viewer.preset.menu":"Visual style","viewer.preset.identity":"Visual identity","viewer.preset.cycles":"to cycle","viewer.preset.classic":"Classic","viewer.preset.classic.short":"Classic","viewer.preset.classic.hint":"Stable technical default","viewer.preset.flow":"Signal Flow","viewer.preset.flow.short":"Flow","viewer.preset.flow.hint":"Motion-forward presentation","viewer.preset.blueprint":"Blueprint","viewer.preset.blueprint.hint":"Engineering review","viewer.preset.editorial":"Editorial","viewer.preset.editorial.hint":"Publication and launch notes","viewer.preset.badge.signalFlow":"SIGNAL FLOW","viewer.preset.badge.blueprint":"BLUEPRINT / REV 01","viewer.preset.badge.editorial":"EDITORIAL / FIELD NOTE","viewer.preset.badge.editorialPlate":"ARCHIFY / PLATE 04","viewer.preset.current":"Visual style: {style}. Choose visual style","viewer.motion.live":"Live","viewer.motion.still":"Still","viewer.motion.pause":"Pause motion","viewer.motion.resume":"Resume motion","viewer.motion.reduced":"Motion paused by reduced-motion preference","viewer.motion.hidden":"Motion paused while this page is hidden","viewer.motion.yielding":"Pause motion; currently yielding to {owner}","viewer.motion.yielding.title":"Live preview enabled · yielding to {owner}","viewer.owner.route":"Route Probe","viewer.owner.lens":"Semantic Lens","viewer.owner.relationship":"Relationship Preview","viewer.owner.intent":"Intent Trace","viewer.owner.focus":"semantic focus","viewer.owner.legend":"legend preview","viewer.owner.reader":"reader interaction","viewer.present.enter":"Enter presentation stage","viewer.present.enter.title":"Presentation stage (F)","viewer.present.exit":"Exit presentation stage","viewer.present.exit.title":"Exit presentation stage (F or Escape)","viewer.present.present":"Present","viewer.present.exit.label":"Exit","viewer.export.button":"Export","viewer.export.button.title":"Export diagram (E)","viewer.export.diagram":"Export diagram","viewer.export.menu":"Export","viewer.export.subtitle":"Portable, clean outputs","viewer.export.share":"Share","viewer.export.shareCard":"Share Card","viewer.export.routeShareCard":"Route Share Card","viewer.export.reachShareCard":"Reach Share Card","viewer.export.copyDiagram":"Copy diagram","viewer.export.clipboardPng":"PNG to clipboard","viewer.export.raster":"Raster images","viewer.export.image":"Image","viewer.export.lossless":"Lossless image","viewer.export.compact":"Compact image","viewer.export.modern":"Modern image","viewer.export.vectorMotion":"Vector and motion","viewer.export.vectorMotion.heading":"Vector \u0026 motion","viewer.export.editable":"Editable vector","viewer.export.svg.auto":"SVG · Auto","viewer.export.svg.auto.hint":"Matches host theme","viewer.export.svg.light":"SVG · Light","viewer.export.svg.light.hint":"Always light","viewer.export.svg.dark":"SVG · Dark","viewer.export.svg.dark.hint":"Always dark","viewer.export.motion6s":"6s motion","viewer.export.unsupported":"Not supported by this browser","viewer.export.clipboardUnsupported":"Clipboard image write not supported by this browser","viewer.export.clipboardUnsupported.short":"Clipboard image write not supported in this browser.","viewer.export.motionUnavailable":"Motion capture unavailable in this browser","viewer.export.webmUnavailable":"WebM unavailable in this browser","viewer.export.failed":"Export failed: {message}","viewer.export.unknownVariant":"Unknown Share Card variant: {variant}","viewer.export.routeRequired":"Trace a route before exporting a Route Share Card","viewer.export.reachRequired":"Trace authored reach before exporting a Reach Share Card","viewer.export.unknown":"unknown","viewer.export.routeFailed":"Route Share Card export failed: {message}","viewer.export.reachFailed":"Reach Share Card export failed: {message}","viewer.export.copyFailed":"Copy failed: {message}","viewer.export.copiedPng":"Copied PNG to clipboard","viewer.export.downloadedRoute":"Downloaded Route Share Card","viewer.export.downloadedReach":"Downloaded Reach Share Card","viewer.export.downloadedWebm":"Downloaded WebM","viewer.export.recording":"Recording 6 seconds of motion…","viewer.export.card.routeSummary.one":"Path: {source} → {target} · {count} step","viewer.export.card.routeSummary.other":"Path: {source} → {target} · {count} steps","viewer.export.card.reachSummary":"Authored {direction} from {origin} · {nodes} · {links} · max {hops}","viewer.export.card.node.one":"{count} node","viewer.export.card.node.other":"{count} nodes","viewer.export.card.link.one":"{count} link","viewer.export.card.link.other":"{count} links","viewer.export.card.hop.one":"{count} hop","viewer.export.card.hop.other":"{count} hops","viewer.export.card.routeBadge":"ARCHIFY · ROUTE · {hops}","viewer.export.card.reachBadge":"ARCHIFY · {direction} REACH","viewer.export.direction.upstream":"Upstream","viewer.export.direction.downstream":"Downstream","viewer.export.error.canvasUnavailable":"Canvas unavailable for {label}","viewer.export.error.contextUnavailable":"2D canvas context unavailable for {label}","viewer.export.error.toBlobUnavailable":"canvas.toBlob unavailable for {label}","viewer.export.error.toBlobNull":"canvas.toBlob returned no data for {label}","viewer.export.error.variantsCombined":"Share Card variants cannot be combined","viewer.export.error.viewerState":"Share Card export could not remove temporary viewer state","viewer.export.error.routeState":"Route Card export could not preserve the resolved route safely","viewer.export.error.reachState":"Reach Card export could not preserve authored reach safely","viewer.export.error.webmRequirements":"WebM motion export requires a trace animation and browser MediaRecorder support","viewer.export.error.mediaRecorder":"MediaRecorder failed","viewer.export.error.emptyWebm":"MediaRecorder produced an empty WebM","viewer.export.error.webmBackground":"SVG background could not be loaded for WebM export","viewer.guide.title":"Explore this system","viewer.focus.selectedNodes":"{count} selected nodes","viewer.guide.eyebrow":"Diagram guide","viewer.guide.close":"Close diagram guide","viewer.guide.inspecting":"Inspecting compiled semantics","viewer.guide.actions":"Diagram exploration actions","viewer.guide.find":"Find any node","viewer.guide.find.hint":"Search labels, responsibilities, kinds, and stable IDs.","viewer.guide.route":"Trace a route","viewer.guide.route.aria":"Trace a directed route","viewer.guide.route.hint":"Ask how two semantic nodes connect in authored direction.","viewer.guide.map":"See the whole system","viewer.guide.map.hint":"Open Semantic Radar with a live viewport and stable nodes.","viewer.guide.lens":"Compare semantic kinds","viewer.guide.lens.hint":"Count roles, reveal their traffic, and compare direct authored links.","viewer.guide.present":"Enter Presentation Stage","viewer.guide.present.hint":"Give the live diagram the viewport without changing export.","viewer.guide.shortcuts":"Additional keyboard shortcuts","viewer.guide.shortcut.export":"Export","viewer.guide.shortcut.theme":"Theme","viewer.guide.shortcut.style":"Style","viewer.guide.shortcut.reset":"Reset","viewer.guide.shortcut.zoomIn":"Zoom in","viewer.guide.shortcut.zoomOut":"Zoom out","viewer.guide.shortcut.close":"Close","viewer.guide.credit":"Find Archify useful? A star on GitHub helps","viewer.guide.star":"Star","viewer.guide.facts":"{nodes} · {relationships}","viewer.guide.fact.node.one":"{count} semantic node","viewer.guide.fact.node.other":"{count} semantic nodes","viewer.guide.fact.relationship.one":"{count} relationship","viewer.guide.fact.relationship.other":"{count} relationships","viewer.guide.open":"Open diagram guide","viewer.finder.title":"Find a node","viewer.finder.close":"Close node finder","viewer.finder.placeholder":"Search labels or IDs","viewer.finder.search":"Search diagram nodes","viewer.finder.results":"Diagram nodes","viewer.finder.empty":"No matching nodes","viewer.finder.result.focus":"Focus {label}","viewer.finder.result.routeStart":"Choose {label} as route start","viewer.finder.result.routeTarget":"Choose {label} as route destination, {links}","viewer.finder.status.empty":"No matching nodes","viewer.finder.status.count.one":"{count} matching node","viewer.finder.status.count.other":"{count} matching nodes","viewer.finder.noun.nodes":"nodes","viewer.finder.link.one":"{count} link","viewer.finder.link.other":"{count} links","viewer.finder.result.focus.one":"Focus {label}, {count} related connection","viewer.finder.result.focus.other":"Focus {label}, {count} related connections","viewer.finder.status.filtered":"{visible} of {available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"Semantic passport","viewer.passport.metadata":"Node metadata","viewer.passport.evidence":"Verified source evidence","viewer.passport.verified":"Verified source","viewer.passport.verificationScope":"Verified against local Git at the pinned revision. Remote access has not been checked.","viewer.passport.reach":"Authored reach","viewer.passport.reach.trace":"Trace authored reachability","viewer.passport.upstream":"Upstream","viewer.passport.downstream":"Downstream","viewer.passport.upstream.trace":"Trace upstream authored reachability","viewer.passport.downstream.trace":"Trace downstream authored reachability","viewer.passport.close":"Close semantic passport","viewer.passport.move":"Move semantic passport. Drag, use arrow keys, or press Home to reset.","viewer.passport.copy":"Copy link","viewer.passport.copy.focus":"Copy link to focused node","viewer.passport.relations":"Relations","viewer.passport.relations.show":"Show connected relationships","viewer.passport.relations.hide":"Hide connected relationships","viewer.passport.relations.list":"Connected relationships","viewer.passport.copyRelation":"Copy relation","viewer.passport.copyNode":"Copy node","viewer.passport.copyPinned":"Copy link to pinned relationship","viewer.passport.copySource":"Copy link to source node","viewer.passport.copy.focused.success":"Focused node link copied","viewer.passport.copy.pinned.success":"Pinned relationship link copied","viewer.passport.copy.focused.failed":"Could not copy focused node link","viewer.passport.copy.pinned.failed":"Could not copy pinned relationship link","viewer.passport.relationship.none":"No connected relationships","viewer.passport.relationship.count.one":"{count} relation","viewer.passport.relationship.count.other":"{count} relations","viewer.passport.relationship.show.one":"Show {count} connected relationship","viewer.passport.relationship.show.other":"Show {count} connected relationships","viewer.passport.relationship.summary":"{out} outgoing · {in} incoming{loops}","viewer.passport.relationship.loops":" · {count} loop","viewer.passport.relationship.explorer":"Direct relationship explorer","viewer.passport.relationship.help":"Use arrow keys to explore relationships. Press Enter or Space to pin details; Escape clears.","viewer.passport.relationship.loopsBack":"loops back","viewer.passport.relationship.connectsTo":"connects to","viewer.passport.relationship.connectsFrom":"connects from","viewer.passport.relationship.pinned":"Pinned relationship · {from} → {to} · {label}","viewer.passport.relationship.inspect":"Inspect relationship {index} of {total}: {from} to {to}, {label}. Press Enter for details.","viewer.passport.relationship.group.out":"Outgoing","viewer.passport.relationship.group.in":"Incoming","viewer.passport.relationship.group.loop":"Self loops","viewer.passport.relationship.row":"{group}: {relationship}, {neighbor}","viewer.passport.relationship.direction.out":"OUT →","viewer.passport.relationship.direction.in":"← IN","viewer.passport.relationship.direction.loop":"LOOP","viewer.passport.sourceCount.one":"{count} verified source reference","viewer.passport.sourceCount.other":"{count} verified source references","viewer.passport.repository.open":"Open verified repository revision {revision}","viewer.passport.source.open":"Open verified source {path} at revision {revision}","viewer.passport.source.openLink":"Open ↗","viewer.passport.reach.upstream.one":"Trace {count} upstream authored node","viewer.passport.reach.upstream.other":"Trace {count} upstream authored nodes","viewer.passport.reach.downstream.one":"Trace {count} downstream authored node","viewer.passport.reach.downstream.other":"Trace {count} downstream authored nodes","viewer.passport.reach.noUpstream":"No upstream authored nodes","viewer.passport.reach.noDownstream":"No downstream authored nodes","viewer.passport.reach.status":"{direction} · {nodes} nodes · {links} links · max {hops} hops","viewer.route.eyebrow":"Path","viewer.route.start":"Click where the path starts","viewer.route.start.find":"Find start","viewer.route.start.find.aria":"Find a route start","viewer.route.copy":"Copy link","viewer.route.copy.aria":"Copy link to traced route","viewer.route.clear":"Clear","viewer.route.clear.aria":"Clear route probe","viewer.route.traced":"Path","viewer.route.pickTwo":"Click two nodes on the diagram","viewer.route.pickOne":"Click a node on the diagram","viewer.route.controls":"Route journey controls","viewer.route.previous":"Previous route position","viewer.route.play":"Play route journey","viewer.route.pause":"Pause route journey","viewer.route.replay":"Replay route journey","viewer.route.next":"Next route position","viewer.route.journey":"Journey","viewer.route.pause.label":"Pause","viewer.route.replay.label":"Replay","viewer.route.overview":"Overview","viewer.route.overview.aria":"Show complete route overview","viewer.route.instructions":"Click a start, then an end. Paths follow the arrows.","viewer.route.destination":"Where does the path from {label} end?","viewer.route.destination.find":"Find target","viewer.route.destination.find.aria":"Find a reachable route destination","viewer.route.differentDestination":"Choose a different destination","viewer.route.distinct":"Pick two different nodes.","viewer.route.unreachable":"Cannot reach {label} from here","viewer.route.unreachable.detail":"{target} cannot be reached from {source} along the arrows. Pick a highlighted node.","viewer.route.start.instructions":"Next, pick the end. Only nodes you can reach will light up.","viewer.route.copy.success":"Traced route link copied","viewer.route.copy.failed":"Could not copy traced route link","viewer.route.position":"Route position {index} of {total}: {label}","viewer.route.step":"Step {index} of {total} · {phase} · {label}","viewer.route.motionRequired":"Automatic journey requires Live motion","viewer.route.trigger.clear":"Clear traced route","viewer.route.overview.status":"{nodes} · {hops} · shortest path","viewer.route.overview.node.one":"{count} node","viewer.route.overview.node.other":"{count} nodes","viewer.route.overview.hop.one":"{count} step","viewer.route.overview.hop.other":"{count} steps","viewer.route.phase.playing":"Playing","viewer.route.phase.complete":"Complete","viewer.route.phase.inspecting":"Inspecting","viewer.route.destination.count.one":"{count} reachable node is highlighted. Click it.","viewer.route.destination.count.other":"{count} reachable nodes are highlighted. Click one.","viewer.route.noOutgoing":"No arrows lead out of this node. Clear it and pick another start.","viewer.route.result.title":"{source} to {target}","viewer.route.finder.source.title":"Choose route start","viewer.route.finder.source.placeholder":"Search route sources","viewer.route.finder.source.empty":"No matching route sources","viewer.route.finder.source.results":"Nodes that can start a route","viewer.route.finder.source.noun":"route sources","viewer.route.finder.source.badge":"start","viewer.route.finder.target.title":"Destination from {label}","viewer.route.finder.target.placeholder":"Search reachable destinations","viewer.route.finder.target.empty":"No matching reachable destinations","viewer.route.finder.target.results":"Reachable route destinations","viewer.route.finder.target.noun":"reachable destinations","viewer.route.hop.one":"{count} hop","viewer.route.hop.other":"{count} hops","viewer.lens.eyebrow":"Semantic lens","viewer.lens.title":"Compare system roles","viewer.lens.close":"Close semantic lens","viewer.lens.instruction":"Choose up to two semantic kinds. One reveals its real traffic; two compare only direct authored relationships.","viewer.lens.kinds":"Semantic kinds","viewer.lens.choose":"Choose a kind to inspect its nodes and touching relationships.","viewer.lens.copy":"Copy link to semantic lens","viewer.lens.clear":"Clear semantic lens","viewer.lens.open":"Open semantic lens","viewer.lens.openActive":"Open active semantic lens","viewer.lens.legend":"Semantic legend","viewer.lens.legend.inspect.one":"Inspect {label}, {count} node","viewer.lens.legend.inspect.other":"Inspect {label}, {count} nodes","viewer.lens.kind.count.one":"{label}, {count} node","viewer.lens.kind.count.other":"{label}, {count} nodes","viewer.lens.compare.one":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationship","viewer.lens.compare.other":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationships","viewer.lens.single":"{nodes} · {relationships} · connected peers remain visible","viewer.lens.node.one":"{count} {label} node","viewer.lens.node.other":"{count} {label} nodes","viewer.lens.relationship.one":"{count} touching relationship","viewer.lens.relationship.other":"{count} touching relationships","viewer.radar.title":"Semantic radar","viewer.radar.building":"Building overview","viewer.radar.openFull":"Open full semantic radar","viewer.radar.open":"Open radar","viewer.radar.close":"Close semantic radar","viewer.radar.surface":"Diagram overview. Click a node to focus it, or use arrow keys to pan.","viewer.radar.click":"Click node","viewer.radar.drag":"Drag to pan","viewer.radar.space":"Semantic radar needs more MAP space.","viewer.radar.nodes":"Semantic diagram radar nodes","viewer.radar.focus":"Focus {label} from Semantic Radar","viewer.radar.status":"{count} nodes · {viewport}","viewer.radar.fullMap":"{count} nodes · full map","viewer.radar.compacted":"Radar compacted to avoid covering the Semantic Passport or MAP controls.","viewer.radar.cancelWaiting":"Cancel semantic radar waiting for more MAP space","viewer.radar.needsSpace":"Semantic radar needs more visible MAP space","viewer.radar.viewport.full":"full map","viewer.radar.viewport.width":"{percent}% width","viewer.radar.viewport.scale":"{percent}% viewport","viewer.nav.controls":"Diagram view controls","viewer.nav.route":"Trace a directed route","viewer.nav.route.title":"Trace route (R)","viewer.nav.route.short":"ROUTE","viewer.nav.radar":"Open semantic radar","viewer.nav.radar.title":"Semantic radar (M)","viewer.nav.radar.short":"MAP","viewer.nav.lens":"Open semantic lens","viewer.nav.lens.title":"Semantic lens (L)","viewer.nav.lens.short":"LENS","viewer.nav.find":"Find a node","viewer.nav.find.title":"Find a node (/)","viewer.outline.title":"Node index","viewer.rail.show":"Notes \u0026 index","viewer.rail.controls":"Side panel","viewer.rail.collapse":"Collapse side panel","viewer.rail.bottom":"Move panel below the diagram","viewer.rail.right":"Move panel beside the diagram","viewer.nav.guide":"Open diagram guide","viewer.nav.guide.title":"Diagram guide (?)","viewer.nav.zoomOut":"Zoom out","viewer.nav.zoomOut.title":"Zoom out (-)","viewer.nav.reset":"Reset diagram view","viewer.nav.reset.title":"Reset view (0)","viewer.nav.read":"READ","viewer.nav.zoomIn":"Zoom in","viewer.nav.zoomIn.title":"Zoom in (+)","viewer.nav.camera":"{hint}. Reset diagram view","viewer.nav.camera.title":"{semantic}{hint} · reset view (0)","viewer.nav.camera.semantic":"Semantic camera active · ","viewer.nav.level.map":"MAP","viewer.nav.level.read":"READ","viewer.nav.level.full":"FULL","viewer.nav.level.auto":"AUTO","viewer.nav.detail.map":"Zoom in to reveal relationship labels and node context","viewer.nav.detail.read":"Zoom in again to reveal tags and annotations","viewer.nav.detail.full":"Full diagram detail","viewer.intent.summary":"{label}. {out} outgoing, {in} incoming{loops}. {total} connections. Press Enter for details.","viewer.intent.loops":", {count} self loop","viewer.common.copied":"Copied","viewer.common.copyFailed":"Copy failed","viewer.common.copyLink":"Copy link","viewer.common.clear":"Clear","viewer.common.close":"Close"}}</script>
+    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/CarlosSV923/WinClonerX","revision":"0d208a3bc238396dfc05c8ff8d10b21ebe226b48","shortRevision":"0d208a3","label":"CarlosSV923/WinClonerX","href":"https://github.com/CarlosSV923/WinClonerX/tree/0d208a3bc238396dfc05c8ff8d10b21ebe226b48"},"referenceCount":8,"nodes":{"pending":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":48,"endLine":58,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L48-L58"},{"path":"src/WinClonerX.App/ViewModels/DisksStepViewModel.cs","line":159,"endLine":177,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.App/ViewModels/DisksStepViewModel.cs#L159-L177"}],"running":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":101,"endLine":117,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L101-L117"}],"cancelling":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":237,"endLine":253,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L237-L253"}],"failing":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":279,"endLine":321,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L279-L321"}],"completed":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":343,"endLine":381,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L343-L381"}],"cancelled":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":343,"endLine":381,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L343-L381"}],"failed":[{"path":"src/WinClonerX.Domain/Execution/CloneExecution.cs","line":343,"endLine":381,"href":"https://github.com/CarlosSV923/WinClonerX/blob/0d208a3bc238396dfc05c8ff8d10b21ebe226b48/src/WinClonerX.Domain/Execution/CloneExecution.cs#L343-L381"}]}}</script>
+    <script id="archify-i18n-data" type="application/json">{"locale":"es","messages":{"viewer.kind.frontend":"Frontend","viewer.kind.backend":"Backend","viewer.kind.database":"Base de datos","viewer.kind.cloud":"Nube","viewer.kind.security":"Seguridad","viewer.kind.messagebus":"Bus de mensajes","viewer.kind.external":"Externo","viewer.kind.neutral":"Neutral","viewer.kind.node":"Nodo","viewer.kind.start":"Inicio","viewer.kind.active":"Activo","viewer.kind.waiting":"En espera","viewer.kind.decision":"Decisión","viewer.kind.success":"Éxito","viewer.kind.failure":"Fallo","viewer.toolbar.actions":"Acciones del diagrama","viewer.theme.toggle.title":"Cambiar tema (T)","viewer.theme.toggle":"Cambiar tema de color","viewer.theme.dark":"Oscuro","viewer.theme.light":"Claro","viewer.preset.choose.title":"Elegir estilo visual (S alterna)","viewer.preset.choose":"Elegir estilo visual","viewer.preset.style":"Estilo","viewer.preset.menu":"Estilo visual","viewer.preset.identity":"Identidad visual","viewer.preset.cycles":"alterna","viewer.preset.classic":"Clásico","viewer.preset.classic.short":"Clásico","viewer.preset.classic.hint":"Predeterminado técnico estable","viewer.preset.flow":"Flujo de señal","viewer.preset.flow.short":"Flujo","viewer.preset.flow.hint":"Presentación con énfasis en el movimiento","viewer.preset.blueprint":"Plano","viewer.preset.blueprint.hint":"Revisión de ingeniería","viewer.preset.editorial":"Editorial","viewer.preset.editorial.hint":"Notas de publicación y lanzamiento","viewer.preset.badge.signalFlow":"FLUJO DE SEÑAL","viewer.preset.badge.blueprint":"PLANO / REV 01","viewer.preset.badge.editorial":"EDITORIAL / NOTA DE CAMPO","viewer.preset.badge.editorialPlate":"ARCHIFY / LÁMINA 04","viewer.preset.current":"Estilo visual: {style}. Elegir estilo visual","viewer.motion.live":"Activa","viewer.motion.still":"Fija","viewer.motion.pause":"Pausar animación","viewer.motion.resume":"Reanudar animación","viewer.motion.reduced":"Animación pausada por la preferencia de movimiento reducido","viewer.motion.hidden":"Animación pausada mientras esta página está oculta","viewer.motion.yielding":"Pausar animación; cediendo a {owner}","viewer.motion.yielding.title":"Vista previa en vivo activada · cediendo a {owner}","viewer.owner.route":"Sonda de ruta","viewer.owner.lens":"Lente semántico","viewer.owner.relationship":"Vista previa de relación","viewer.owner.intent":"Traza de intención","viewer.owner.focus":"enfoque semántico","viewer.owner.legend":"vista previa de la leyenda","viewer.owner.reader":"interacción del lector","viewer.present.enter":"Entrar al modo presentación","viewer.present.enter.title":"Modo presentación (F)","viewer.present.exit":"Salir del modo presentación","viewer.present.exit.title":"Salir del modo presentación (F o Escape)","viewer.present.present":"Presentar","viewer.present.exit.label":"Salir","viewer.export.button":"Exportar","viewer.export.button.title":"Exportar diagrama (E)","viewer.export.diagram":"Exportar diagrama","viewer.export.menu":"Exportar","viewer.export.subtitle":"Salidas portables y limpias","viewer.export.share":"Compartir","viewer.export.shareCard":"Tarjeta para compartir","viewer.export.routeShareCard":"Tarjeta de ruta para compartir","viewer.export.reachShareCard":"Tarjeta de alcance para compartir","viewer.export.copyDiagram":"Copiar diagrama","viewer.export.clipboardPng":"PNG al portapapeles","viewer.export.raster":"Imágenes rasterizadas","viewer.export.image":"Imagen","viewer.export.lossless":"Imagen sin pérdida","viewer.export.compact":"Imagen compacta","viewer.export.modern":"Imagen moderna","viewer.export.vectorMotion":"Vector y movimiento","viewer.export.vectorMotion.heading":"Vector y movimiento","viewer.export.editable":"Vector editable","viewer.export.svg.auto":"SVG · Auto","viewer.export.svg.auto.hint":"Coincide con el tema del host","viewer.export.svg.light":"SVG · Claro","viewer.export.svg.light.hint":"Siempre claro","viewer.export.svg.dark":"SVG · Oscuro","viewer.export.svg.dark.hint":"Siempre oscuro","viewer.export.motion6s":"Movimiento de 6 s","viewer.export.unsupported":"No compatible con este navegador","viewer.export.clipboardUnsupported":"Este navegador no admite escribir imágenes en el portapapeles","viewer.export.clipboardUnsupported.short":"Escritura de imágenes en el portapapeles no admitida en este navegador.","viewer.export.motionUnavailable":"Captura de movimiento no disponible en este navegador","viewer.export.webmUnavailable":"WebM no disponible en este navegador","viewer.export.failed":"Falló la exportación: {message}","viewer.export.unknownVariant":"Variante de tarjeta para compartir desconocida: {variant}","viewer.export.routeRequired":"Traza una ruta antes de exportar una tarjeta de ruta para compartir","viewer.export.reachRequired":"Traza el alcance definido antes de exportar una tarjeta de alcance para compartir","viewer.export.unknown":"desconocido","viewer.export.routeFailed":"Falló la exportación de la tarjeta de ruta para compartir: {message}","viewer.export.reachFailed":"Falló la exportación de la tarjeta de alcance para compartir: {message}","viewer.export.copyFailed":"Error al copiar: {message}","viewer.export.copiedPng":"PNG copiado al portapapeles","viewer.export.downloadedRoute":"Tarjeta de ruta para compartir descargada","viewer.export.downloadedReach":"Tarjeta de alcance para compartir descargada","viewer.export.downloadedWebm":"WebM descargado","viewer.export.recording":"Grabando 6 segundos de movimiento…","viewer.export.card.routeSummary.one":"Ruta: {source} → {target} · {count} paso","viewer.export.card.routeSummary.other":"Ruta: {source} → {target} · {count} pasos","viewer.export.card.reachSummary":"Alcance definido {direction} desde {origin} · {nodes} · {links} · máx {hops}","viewer.export.card.node.one":"{count} nodo","viewer.export.card.node.other":"{count} nodos","viewer.export.card.link.one":"{count} enlace","viewer.export.card.link.other":"{count} enlaces","viewer.export.card.hop.one":"{count} salto","viewer.export.card.hop.other":"{count} saltos","viewer.export.card.routeBadge":"ARCHIFY · RUTA · {hops}","viewer.export.card.reachBadge":"ARCHIFY · ALCANCE {direction}","viewer.export.direction.upstream":"Ascendente","viewer.export.direction.downstream":"Descendente","viewer.export.error.canvasUnavailable":"Lienzo no disponible para {label}","viewer.export.error.contextUnavailable":"Contexto de lienzo 2D no disponible para {label}","viewer.export.error.toBlobUnavailable":"canvas.toBlob no disponible para {label}","viewer.export.error.toBlobNull":"canvas.toBlob no devolvió datos para {label}","viewer.export.error.variantsCombined":"Las variantes de tarjeta para compartir no se pueden combinar","viewer.export.error.viewerState":"La exportación de la tarjeta para compartir no pudo quitar el estado temporal del visor","viewer.export.error.routeState":"La exportación de la tarjeta de ruta no pudo preservar la ruta resuelta de forma segura","viewer.export.error.reachState":"La exportación de la tarjeta de alcance no pudo preservar el alcance definido de forma segura","viewer.export.error.webmRequirements":"La exportación de movimiento WebM requiere una animación de traza y compatibilidad del navegador con MediaRecorder","viewer.export.error.mediaRecorder":"MediaRecorder falló","viewer.export.error.emptyWebm":"MediaRecorder produjo un WebM vacío","viewer.export.error.webmBackground":"No se pudo cargar el fondo SVG para la exportación WebM","viewer.guide.title":"Explorar este sistema","viewer.focus.selectedNodes":"{count} nodos seleccionados","viewer.guide.eyebrow":"Guía del diagrama","viewer.guide.close":"Cerrar la guía del diagrama","viewer.guide.inspecting":"Inspeccionando la semántica compilada","viewer.guide.actions":"Acciones de exploración del diagrama","viewer.guide.find":"Buscar cualquier nodo","viewer.guide.find.hint":"Busca por etiquetas, responsabilidades, tipos e IDs estables.","viewer.guide.route":"Trazar una ruta","viewer.guide.route.aria":"Trazar una ruta dirigida","viewer.guide.route.hint":"Pregunta cómo se conectan dos nodos semánticos en el sentido definido.","viewer.guide.map":"Ver todo el sistema","viewer.guide.map.hint":"Abre el Radar semántico con un viewport en vivo y nodos estables.","viewer.guide.lens":"Comparar tipos semánticos","viewer.guide.lens.hint":"Cuenta roles, revela su tráfico y compara enlaces directos definidos.","viewer.guide.present":"Entrar al modo presentación","viewer.guide.present.hint":"Dale al diagrama en vivo todo el viewport sin cambiar la exportación.","viewer.guide.shortcuts":"Atajos de teclado adicionales","viewer.guide.shortcut.export":"Exportar","viewer.guide.shortcut.theme":"Tema","viewer.guide.shortcut.style":"Estilo","viewer.guide.shortcut.reset":"Restablecer","viewer.guide.shortcut.zoomIn":"Acercar","viewer.guide.shortcut.zoomOut":"Alejar","viewer.guide.shortcut.close":"Cerrar","viewer.guide.credit":"¿Te resulta útil Archify? Una estrella en GitHub ayuda","viewer.guide.star":"Star","viewer.guide.facts":"{nodes} · {relationships}","viewer.guide.fact.node.one":"{count} nodo semántico","viewer.guide.fact.node.other":"{count} nodos semánticos","viewer.guide.fact.relationship.one":"{count} relación","viewer.guide.fact.relationship.other":"{count} relaciones","viewer.guide.open":"Abrir la guía del diagrama","viewer.finder.title":"Buscar un nodo","viewer.finder.close":"Cerrar el buscador de nodos","viewer.finder.placeholder":"Buscar etiquetas o IDs","viewer.finder.search":"Buscar nodos del diagrama","viewer.finder.results":"Nodos del diagrama","viewer.finder.empty":"No hay nodos coincidentes","viewer.finder.result.focus":"Enfocar {label}","viewer.finder.result.routeStart":"Elegir {label} como inicio de la ruta","viewer.finder.result.routeTarget":"Elegir {label} como destino de la ruta, {links}","viewer.finder.status.empty":"No hay nodos coincidentes","viewer.finder.status.count.one":"{count} nodo coincidente","viewer.finder.status.count.other":"{count} nodos coincidentes","viewer.finder.noun.nodes":"nodos","viewer.finder.link.one":"{count} enlace","viewer.finder.link.other":"{count} enlaces","viewer.finder.result.focus.one":"Enfocar {label}, {count} conexión relacionada","viewer.finder.result.focus.other":"Enfocar {label}, {count} conexiones relacionadas","viewer.finder.status.filtered":"{visible} de {available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"Pasaporte semántico","viewer.passport.metadata":"Metadatos del nodo","viewer.passport.evidence":"Evidencia de fuente verificada","viewer.passport.verified":"Fuente verificada","viewer.passport.verificationScope":"Verificado contra el Git local en la revisión fijada. No se ha comprobado el acceso remoto.","viewer.passport.reach":"Alcance definido","viewer.passport.reach.trace":"Trazar la alcanzabilidad definida","viewer.passport.upstream":"Ascendente","viewer.passport.downstream":"Descendente","viewer.passport.upstream.trace":"Trazar la alcanzabilidad definida ascendente","viewer.passport.downstream.trace":"Trazar la alcanzabilidad definida descendente","viewer.passport.close":"Cerrar el pasaporte semántico","viewer.passport.move":"Mover el pasaporte semántico. Arrastra, usa las flechas o pulsa Inicio para restablecer.","viewer.passport.copy":"Copiar enlace","viewer.passport.copy.focus":"Copiar enlace al nodo enfocado","viewer.passport.relations":"Relaciones","viewer.passport.relations.show":"Mostrar relaciones conectadas","viewer.passport.relations.hide":"Ocultar relaciones conectadas","viewer.passport.relations.list":"Relaciones conectadas","viewer.passport.copyRelation":"Copiar relación","viewer.passport.copyNode":"Copiar nodo","viewer.passport.copyPinned":"Copiar enlace a la relación fijada","viewer.passport.copySource":"Copiar enlace al nodo de origen","viewer.passport.copy.focused.success":"Enlace del nodo enfocado copiado","viewer.passport.copy.pinned.success":"Enlace de la relación fijada copiado","viewer.passport.copy.focused.failed":"No se pudo copiar el enlace del nodo enfocado","viewer.passport.copy.pinned.failed":"No se pudo copiar el enlace de la relación fijada","viewer.passport.relationship.none":"No hay relaciones conectadas","viewer.passport.relationship.count.one":"{count} relación","viewer.passport.relationship.count.other":"{count} relaciones","viewer.passport.relationship.show.one":"Mostrar {count} relación conectada","viewer.passport.relationship.show.other":"Mostrar {count} relaciones conectadas","viewer.passport.relationship.summary":"{out} salientes · {in} entrantes{loops}","viewer.passport.relationship.loops":" · {count} bucle","viewer.passport.relationship.explorer":"Explorador de relaciones directas","viewer.passport.relationship.help":"Usa las flechas para explorar las relaciones. Pulsa Enter o Espacio para fijar detalles; Escape las borra.","viewer.passport.relationship.loopsBack":"vuelve sobre sí mismo","viewer.passport.relationship.connectsTo":"conecta a","viewer.passport.relationship.connectsFrom":"conecta desde","viewer.passport.relationship.pinned":"Relación fijada · {from} → {to} · {label}","viewer.passport.relationship.inspect":"Inspeccionar relación {index} de {total}: {from} a {to}, {label}. Pulsa Enter para ver detalles.","viewer.passport.relationship.group.out":"Salientes","viewer.passport.relationship.group.in":"Entrantes","viewer.passport.relationship.group.loop":"Bucles propios","viewer.passport.relationship.row":"{group}: {relationship}, {neighbor}","viewer.passport.relationship.direction.out":"SAL →","viewer.passport.relationship.direction.in":"← ENT","viewer.passport.relationship.direction.loop":"BUCLE","viewer.passport.sourceCount.one":"{count} referencia de fuente verificada","viewer.passport.sourceCount.other":"{count} referencias de fuente verificadas","viewer.passport.repository.open":"Abrir la revisión verificada del repositorio {revision}","viewer.passport.source.open":"Abrir la fuente verificada {path} en la revisión {revision}","viewer.passport.source.openLink":"Abrir ↗","viewer.passport.reach.upstream.one":"Trazar {count} nodo definido ascendente","viewer.passport.reach.upstream.other":"Trazar {count} nodos definidos ascendentes","viewer.passport.reach.downstream.one":"Trazar {count} nodo definido descendente","viewer.passport.reach.downstream.other":"Trazar {count} nodos definidos descendentes","viewer.passport.reach.noUpstream":"No hay nodos definidos ascendentes","viewer.passport.reach.noDownstream":"No hay nodos definidos descendentes","viewer.passport.reach.status":"{direction} · {nodes} nodos · {links} enlaces · máx {hops} saltos","viewer.route.eyebrow":"Ruta","viewer.route.start":"Haz clic donde empieza la ruta","viewer.route.start.find":"Buscar inicio","viewer.route.start.find.aria":"Buscar un inicio de ruta","viewer.route.copy":"Copiar enlace","viewer.route.copy.aria":"Copiar enlace a la ruta trazada","viewer.route.clear":"Borrar","viewer.route.clear.aria":"Borrar la sonda de ruta","viewer.route.traced":"Ruta","viewer.route.pickTwo":"Haz clic en dos nodos del diagrama","viewer.route.pickOne":"Haz clic en un nodo del diagrama","viewer.route.controls":"Controles del recorrido de la ruta","viewer.route.previous":"Posición anterior de la ruta","viewer.route.play":"Reproducir el recorrido de la ruta","viewer.route.pause":"Pausar el recorrido de la ruta","viewer.route.replay":"Repetir el recorrido de la ruta","viewer.route.next":"Posición siguiente de la ruta","viewer.route.journey":"Recorrido","viewer.route.pause.label":"Pausar","viewer.route.replay.label":"Repetir","viewer.route.overview":"Vista general","viewer.route.overview.aria":"Mostrar la vista general completa de la ruta","viewer.route.instructions":"Haz clic en un inicio y luego en un final. La ruta sigue las flechas.","viewer.route.destination":"¿Dónde termina la ruta desde {label}?","viewer.route.destination.find":"Buscar destino","viewer.route.destination.find.aria":"Buscar un destino de ruta alcanzable","viewer.route.differentDestination":"Elige un destino diferente","viewer.route.distinct":"Elige dos nodos distintos.","viewer.route.unreachable":"No se llega a {label} desde aquí","viewer.route.unreachable.detail":"No se llega a {target} desde {source} siguiendo las flechas. Elige un nodo resaltado.","viewer.route.start.instructions":"Luego elige el final. Solo se iluminan los nodos alcanzables.","viewer.route.copy.success":"Enlace de la ruta trazada copiado","viewer.route.copy.failed":"No se pudo copiar el enlace de la ruta trazada","viewer.route.position":"Posición de la ruta {index} de {total}: {label}","viewer.route.step":"Paso {index} de {total} · {phase} · {label}","viewer.route.motionRequired":"El recorrido automático requiere la animación Activa","viewer.route.trigger.clear":"Borrar la ruta trazada","viewer.route.overview.status":"{nodes} · {hops} · ruta más corta","viewer.route.overview.node.one":"{count} nodo","viewer.route.overview.node.other":"{count} nodos","viewer.route.overview.hop.one":"{count} paso","viewer.route.overview.hop.other":"{count} pasos","viewer.route.phase.playing":"Reproduciendo","viewer.route.phase.complete":"Completo","viewer.route.phase.inspecting":"Inspeccionando","viewer.route.destination.count.one":"{count} nodo alcanzable está resaltado. Haz clic en él.","viewer.route.destination.count.other":"{count} nodos alcanzables están resaltados. Haz clic en uno.","viewer.route.noOutgoing":"Ninguna flecha sale de este nodo. Bórralo y elige otro inicio.","viewer.route.result.title":"{source} a {target}","viewer.route.finder.source.title":"Elegir el inicio de la ruta","viewer.route.finder.source.placeholder":"Buscar orígenes de ruta","viewer.route.finder.source.empty":"No hay orígenes de ruta coincidentes","viewer.route.finder.source.results":"Nodos que pueden iniciar una ruta","viewer.route.finder.source.noun":"orígenes de ruta","viewer.route.finder.source.badge":"inicio","viewer.route.finder.target.title":"Destino desde {label}","viewer.route.finder.target.placeholder":"Buscar destinos alcanzables","viewer.route.finder.target.empty":"No hay destinos alcanzables coincidentes","viewer.route.finder.target.results":"Destinos de ruta alcanzables","viewer.route.finder.target.noun":"destinos alcanzables","viewer.route.hop.one":"{count} salto","viewer.route.hop.other":"{count} saltos","viewer.lens.eyebrow":"Lente semántico","viewer.lens.title":"Comparar roles del sistema","viewer.lens.close":"Cerrar el lente semántico","viewer.lens.instruction":"Elige hasta dos tipos semánticos. Uno revela su tráfico real; dos comparan solo las relaciones directas definidas.","viewer.lens.kinds":"Tipos semánticos","viewer.lens.choose":"Elige un tipo para inspeccionar sus nodos y las relaciones que lo tocan.","viewer.lens.copy":"Copiar enlace al lente semántico","viewer.lens.clear":"Borrar el lente semántico","viewer.lens.open":"Abrir el lente semántico","viewer.lens.openActive":"Abrir el lente semántico activo","viewer.lens.legend":"Leyenda semántica","viewer.lens.legend.inspect.one":"Inspeccionar {label}, {count} nodo","viewer.lens.legend.inspect.other":"Inspeccionar {label}, {count} nodos","viewer.lens.kind.count.one":"{label}, {count} nodo","viewer.lens.kind.count.other":"{label}, {count} nodos","viewer.lens.compare.one":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} relación directa","viewer.lens.compare.other":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} relaciones directas","viewer.lens.single":"{nodes} · {relationships} · los pares conectados permanecen visibles","viewer.lens.node.one":"{count} nodo {label}","viewer.lens.node.other":"{count} nodos {label}","viewer.lens.relationship.one":"{count} relación en contacto","viewer.lens.relationship.other":"{count} relaciones en contacto","viewer.radar.title":"Radar semántico","viewer.radar.building":"Construyendo la vista general","viewer.radar.openFull":"Abrir el radar semántico completo","viewer.radar.open":"Abrir el radar","viewer.radar.close":"Cerrar el radar semántico","viewer.radar.surface":"Vista general del diagrama. Haz clic en un nodo para enfocarlo, o usa las flechas para desplazarte.","viewer.radar.click":"Clic en el nodo","viewer.radar.drag":"Arrastra para desplazar","viewer.radar.space":"El radar semántico necesita más espacio de MAPA.","viewer.radar.nodes":"Nodos del radar del diagrama semántico","viewer.radar.focus":"Enfocar {label} desde el Radar semántico","viewer.radar.status":"{count} nodos · {viewport}","viewer.radar.fullMap":"{count} nodos · mapa completo","viewer.radar.compacted":"Radar compactado para no tapar el Pasaporte semántico ni los controles de MAPA.","viewer.radar.cancelWaiting":"Cancelar la espera del radar semántico por más espacio de MAPA","viewer.radar.needsSpace":"El radar semántico necesita más espacio de MAPA visible","viewer.radar.viewport.full":"mapa completo","viewer.radar.viewport.width":"{percent}% de ancho","viewer.radar.viewport.scale":"{percent}% del viewport","viewer.nav.controls":"Controles de vista del diagrama","viewer.nav.route":"Trazar una ruta dirigida","viewer.nav.route.title":"Trazar ruta (R)","viewer.nav.route.short":"RUTA","viewer.nav.radar":"Abrir el radar semántico","viewer.nav.radar.title":"Radar semántico (M)","viewer.nav.radar.short":"MAPA","viewer.nav.lens":"Abrir el lente semántico","viewer.nav.lens.title":"Lente semántico (L)","viewer.nav.lens.short":"LENTE","viewer.nav.find":"Buscar un nodo","viewer.nav.find.title":"Buscar un nodo (/)","viewer.outline.title":"Índice de nodos","viewer.rail.show":"Notas e índice","viewer.rail.controls":"Panel lateral","viewer.rail.collapse":"Contraer panel lateral","viewer.rail.bottom":"Mover el panel debajo","viewer.rail.right":"Mover el panel al lado","viewer.nav.guide":"Abrir la guía del diagrama","viewer.nav.guide.title":"Guía del diagrama (?)","viewer.nav.zoomOut":"Alejar","viewer.nav.zoomOut.title":"Alejar (-)","viewer.nav.reset":"Restablecer la vista del diagrama","viewer.nav.reset.title":"Restablecer vista (0)","viewer.nav.read":"LEER","viewer.nav.zoomIn":"Acercar","viewer.nav.zoomIn.title":"Acercar (+)","viewer.nav.camera":"{hint}. Restablecer la vista del diagrama","viewer.nav.camera.title":"{semantic}{hint} · restablecer vista (0)","viewer.nav.camera.semantic":"Cámara semántica activa · ","viewer.nav.level.map":"MAPA","viewer.nav.level.read":"LEER","viewer.nav.level.full":"COMPLETO","viewer.nav.level.auto":"AUTO","viewer.nav.detail.map":"Acerca para revelar las etiquetas de relación y el contexto de los nodos","viewer.nav.detail.read":"Acerca de nuevo para revelar etiquetas y anotaciones","viewer.nav.detail.full":"Detalle completo del diagrama","viewer.intent.summary":"{label}. {out} salientes, {in} entrantes{loops}. {total} conexiones. Pulsa Enter para ver detalles.","viewer.intent.loops":", {count} bucle propio","viewer.common.copied":"Copiado","viewer.common.copyFailed":"Error al copiar","viewer.common.copyLink":"Copiar enlace","viewer.common.clear":"Borrar","viewer.common.close":"Cerrar"}}</script>
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
-         data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 1356 700" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="blueprint" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
-        <title id="archify-diagram-title">WinClonerX Architecture</title>
-        <desc id="archify-diagram-description">An architecture diagram generated by Archify.</desc>
+         data-preset-badge-editorial-plate="ARCHIFY / LÁMINA 04">
+      <svg viewBox="0 0 856 482" data-reader-fit="intrinsic-height" data-lifecycle-layout="main-path-v3" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="blueprint" data-quality-profile="showcase" data-motion-choreography="walk">
+        <title id="archify-diagram-title">Ciclo de vida de CloneExecution</title>
+        <desc id="archify-diagram-description">Un diagrama de ciclo de vida generado por Archify.</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5223,286 +5223,180 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
           </pattern>
         </defs>
-        <style>
-          svg[data-node-ui] [data-node-id] > rect:not(.c-mask) { stroke-width: 1.25px; }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-frontend { fill: color-mix(in srgb, var(--frontend-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--frontend-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-backend { fill: color-mix(in srgb, var(--backend-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--backend-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-database { fill: color-mix(in srgb, var(--database-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--database-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-cloud { fill: color-mix(in srgb, var(--cloud-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--cloud-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-security { fill: color-mix(in srgb, var(--security-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--security-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-messagebus { fill: color-mix(in srgb, var(--messagebus-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--messagebus-stroke) 72%, var(--mask)); }
-          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-external { fill: color-mix(in srgb, var(--external-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--external-stroke) 72%, var(--mask)); }
-          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-region { fill: color-mix(in srgb, var(--cloud-stroke) 3%, transparent); stroke: color-mix(in srgb, var(--cloud-stroke) 42%, var(--lane-stroke)); stroke-dasharray: none; }
-          svg[data-node-ui] .c-security-group { stroke: color-mix(in srgb, var(--security-stroke) 58%, var(--lane-stroke)); }
-          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-security-group { stroke-dasharray: 4 3; }
-          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-lane { stroke: var(--lane-stroke); stroke-dasharray: none; }
-          svg[data-node-ui] [data-graph-role="structural-frame-label-mask"] { rx: 5px; fill: color-mix(in srgb, var(--cloud-stroke) 10%, var(--mask)); stroke: color-mix(in srgb, var(--cloud-stroke) 38%, var(--mask)); stroke-width: .8px; }
-          svg[data-node-ui] [data-composition-frame-kind="security-group"] > [data-graph-role="structural-frame-label-mask"] { fill: color-mix(in srgb, var(--security-stroke) 9%, var(--mask)); stroke: color-mix(in srgb, var(--security-stroke) 36%, var(--mask)); }
-          svg[data-node-ui] .phase-rule { opacity: .5; stroke-dasharray: none; }
-          svg[data-node-ui] .phase-chip { stroke: var(--lane-stroke); stroke-width: .75px; }
-          svg[data-node-ui] g[data-edge-from] > rect.c-mask { rx: 7px; stroke: var(--lane-stroke); stroke-width: .75px; }
-          svg[data-node-ui][data-preset="blueprint"] :is([data-graph-role="structural-frame-label-mask"], g[data-edge-from] > rect.c-mask, .phase-chip) { rx: 2px; }
-          svg[data-node-ui][data-preset="editorial"] :is([data-graph-role="structural-frame-label-mask"], g[data-edge-from] > rect.c-mask, .phase-chip) { rx: 3px; }
-        </style>
 
         <!-- Background Grid -->
         <rect width="100%" height="100%" fill="url(#grid)" />
 
-        <!-- Boundaries (behind everything) -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="App · Application · Domain · Infrastructure" x="160" y="130" width="790" height="362" rx="12" class="c-region" stroke-width="1"/>
+        <!-- Composite phases -->
 
-        <!-- Connection paths (before components for correct z-order) -->
+
+        <!-- Transition paths -->
         <g data-graph-role="automatic-crossover" style="--step:0">
-          <path data-graph-role="automatic-crossover-underlay" d="M 100 242 L 100 273 Q 100 281 108 281 L 271.95 281 Q 279.95 281 279.95 273 L 279.95 257" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="user" data-edge-to="wpf" data-edge-label="select and confirm" data-edge-key="0" data-edge-id="user-wpf" data-composition-points="100,242;100,281;279.95,281;279.95,257" data-composition-crossover="halo" data-composition-independent="true" d="M 100 242 L 100 273 Q 100 281 108 281 L 271.95 281 Q 279.95 281 279.95 273 L 279.95 257" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 196 60 L 276 60" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="pending" data-edge-to="running" data-edge-label="iniciar" data-edge-key="0" data-composition-points="196,60;276,60" data-composition-crossover="halo" data-composition-independent="true" d="M 196 60 L 276 60" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:1">
-          <path data-graph-role="automatic-crossover-underlay" d="M 310.05 257 L 310.05 273 Q 310.05 281 318.05 281 L 504.95000000000005 281 Q 512.95 281 512.95 273 L 512.95 257" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="wpf" data-edge-to="application" data-edge-label="commands · queries" data-edge-key="1" data-edge-id="wpf-app" data-composition-points="310.05,257;310.05,281;512.95,281;512.95,257" data-composition-crossover="halo" data-composition-independent="true" d="M 310.05 257 L 310.05 273 Q 310.05 281 318.05 281 L 504.95000000000005 281 Q 512.95 281 512.95 273 L 512.95 257" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 333 92 L 333 114 Q 333 126 321 126 L 214 126 Q 202 126 202 138 L 202 184" fill="none" stroke="var(--mask)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="running" data-edge-to="cancelling" data-edge-label="cancelación aceptada" data-edge-key="1" data-composition-points="333,92;333,126;202,126;202,184" data-composition-crossover="halo" data-composition-independent="true" d="M 333 92 L 333 114 Q 333 126 321 126 L 214 126 Q 202 126 202 138 L 202 184" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.2" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:2">
-          <path data-graph-role="automatic-crossover-underlay" d="M 528 257 L 528 380" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="application" data-edge-to="domain" data-edge-label="model and validate" data-edge-key="2" data-edge-id="app-domain" data-composition-points="528,257;528,380" data-composition-crossover="halo" data-composition-independent="true" d="M 528 257 L 528 380" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 359 92 L 359 114 Q 359 126 371 126 L 587 126 Q 599 126 599 138 L 599 184" fill="none" stroke="var(--mask)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="running" data-edge-to="failing" data-edge-label="fallo · retirada de dispositivo" data-edge-key="2" data-composition-points="359,92;359,126;599,126;599,184" data-composition-crossover="halo" data-composition-independent="true" d="M 359 92 L 359 114 Q 359 126 371 126 L 587 126 Q 599 126 599 138 L 599 184" class="a-security" data-animate="edge" style="--step:2" stroke-width="1.2" marker-end="url(#arrowhead-security)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:3">
-          <path data-graph-role="automatic-crossover-underlay" d="M 542 380 L 542 257" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="domain" data-edge-to="application" data-edge-label="plan · phases · events" data-edge-key="3" data-edge-id="domain-app" data-composition-points="542,380;542,257" data-composition-crossover="halo" data-composition-independent="true" d="M 542 380 L 542 257" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 416 60 L 580 60" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="running" data-edge-to="completed" data-edge-label="verificación aprobada" data-edge-key="3" data-composition-points="416,60;580,60" data-composition-crossover="halo" data-composition-independent="true" d="M 416 60 L 580 60" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:4">
-          <path data-graph-role="automatic-crossover-underlay" d="M 640 211 L 680 211" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="application" data-edge-to="infra" data-edge-label="ports" data-edge-key="4" data-edge-id="app-infra" data-composition-points="640,211;680,211" data-composition-crossover="halo" data-composition-independent="true" d="M 640 211 L 680 211" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 202 248 L 202 340" fill="none" stroke="var(--mask)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="cancelling" data-edge-to="cancelled" data-edge-label="compensación completa" data-edge-key="4" data-composition-points="202,248;202,340" data-composition-crossover="halo" data-composition-independent="true" d="M 202 248 L 202 340" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.2" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:5">
-          <path data-graph-role="automatic-crossover-underlay" d="M 920 214 L 1040 214" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="infra" data-edge-to="windows" data-edge-label="APIs · tools" data-edge-key="5" data-edge-id="infra-win" data-composition-points="920,214;1040,214" data-composition-crossover="halo" data-composition-independent="true" d="M 920 214 L 1040 214" class="a-emphasis" data-animate="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 291.5 216 L 509.5 216" fill="none" stroke="var(--mask)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="cancelling" data-edge-to="failing" data-edge-label="fallo durante la compensación" data-edge-key="5" data-composition-points="291.5,216;509.5,216" data-composition-crossover="halo" data-composition-independent="true" d="M 291.5 216 L 509.5 216" class="a-security" data-animate="edge" style="--step:5" stroke-width="1.2" marker-end="url(#arrowhead-security)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:6">
-          <path data-graph-role="automatic-crossover-underlay" d="M 800 268 L 800 380" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="infra" data-edge-to="guard" data-edge-label="only write-open path" data-edge-key="6" data-edge-id="infra-guard" data-composition-points="800,268;800,380" data-composition-crossover="halo" data-composition-independent="true" d="M 800 268 L 800 380" class="a-security" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
-        </g>
-        <g data-graph-role="automatic-crossover" style="--step:7">
-          <path data-graph-role="automatic-crossover-underlay" d="M 920 422 L 1040 422" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="guard" data-edge-to="target" data-edge-label="target only" data-edge-key="7" data-edge-id="guard-dst" data-composition-points="920,422;1040,422" data-composition-crossover="halo" data-composition-independent="true" d="M 920 422 L 1040 422" class="a-security" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
-        </g>
-        <g data-graph-role="automatic-crossover" style="--step:8">
-          <path data-graph-role="automatic-crossover-underlay" d="M 1260 208 L 1276 208 Q 1284 208 1284 216 L 1284 571 Q 1284 579 1276 579 L 1240 579" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="windows" data-edge-to="source" data-edge-label="VSS · reads" data-edge-key="8" data-edge-id="win-src" data-composition-points="1260,208;1284,208;1284,579;1240,579" data-composition-crossover="halo" data-composition-independent="true" d="M 1260 208 L 1276 208 Q 1284 208 1284 216 L 1284 571 Q 1284 579 1276 579 L 1240 579" class="a-dashed" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
-        </g>
-        <g data-graph-role="automatic-crossover" style="--step:9">
-          <path data-graph-role="automatic-crossover-underlay" d="M 295 560 L 295 257" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="msi" data-edge-to="wpf" data-edge-label="installs" data-edge-key="9" data-edge-id="msi-app" data-composition-points="295,560;295,257" data-composition-crossover="halo" data-composition-independent="true" d="M 295 560 L 295 257" class="a-dashed" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
-        </g>
-        <g data-graph-role="automatic-crossover" style="--step:10">
-          <path data-graph-role="automatic-crossover-underlay" d="M 440 596 L 424 596 Q 416 596 416 588 L 416 544 Q 416 536 408 536 L 317 536 Q 309 536 309 544 L 309 560" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="ci" data-edge-to="msi" data-edge-label="builds and releases" data-edge-key="10" data-edge-id="ci-msi" data-composition-points="440,596;416,596;416,536;309,536;309,560" data-composition-crossover="halo" data-composition-independent="true" d="M 440 596 L 424 596 Q 416 596 416 588 L 416 544 Q 416 536 408 536 L 317 536 Q 309 536 309 544 L 309 560" class="a-dashed" data-animate="edge" style="--step:10" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 599 248 L 599 340" fill="none" stroke="var(--mask)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="failing" data-edge-to="failed" data-edge-label="compensación completa" data-edge-key="6" data-composition-points="599,248;599,340" data-composition-crossover="halo" data-composition-independent="true" d="M 599 248 L 599 340" class="a-security" data-animate="edge" style="--step:6" stroke-width="1.2" marker-end="url(#arrowhead-security)"/>
         </g>
 
-        <!-- Components -->
-        <g id="node-user" data-node-id="user" data-node-label="User" tabindex="0" role="button" aria-label="Focus User, Local operator, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="Local operator" data-node-context="Architecture component">
-          <title>User · Local operator · Architecture component</title>
-          <rect x="30" y="170" width="140" height="72" rx="8" class="c-mask"/>
-          <rect x="30" y="170" width="140" height="72" rx="8" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(36 176) scale(0.6875)">
-            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
-            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+
+        <!-- States -->
+        <g id="node-pending" data-node-id="pending" data-node-label="Pendiente" tabindex="0" role="button" aria-label="Enfocar Pendiente, plan confirmado, Estado del ciclo de vida" aria-pressed="false" data-node-kind="start" data-node-sublabel="plan confirmado" data-node-context="Estado del ciclo de vida">
+          <title>Pendiente · plan confirmado · Estado del ciclo de vida</title>
+          <rect x="56" y="28" width="140" height="64" rx="8" class="c-mask"/>
+          <rect x="56" y="28" width="140" height="64" rx="8" class="c-frontend" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-lifecycle-initial-marker=""><circle cx="30" cy="60" r="4.5" style="fill: var(--arrow-emphasis)"/><path d="M 34.5 60 L 49 60" class="a-emphasis" stroke-width="1.4"/><path d="M 48 56.5 L 55 60 L 48 63.5 Z" style="fill: var(--arrow-emphasis)"/></g>
+          
+          <text data-node-label="" data-detail-anchor="" x="121.6" y="55" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Pendiente</text>
+          <text data-detail="context" x="126" y="73" class="t-muted" font-size="9" text-anchor="middle">plan confirmado</text>
+        </g>
+
+        <g id="node-running" data-node-id="running" data-node-label="En curso" tabindex="0" role="button" aria-label="Enfocar En curso, fases en orden, Estado del ciclo de vida" aria-pressed="false" data-node-kind="active" data-node-sublabel="fases en orden" data-node-context="Estado del ciclo de vida">
+          <title>En curso · fases en orden · Estado del ciclo de vida</title>
+          <rect x="276" y="28" width="140" height="64" rx="8" class="c-mask"/>
+          <rect x="276" y="28" width="140" height="64" rx="8" class="c-frontend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          
+          <text data-node-label="" data-detail-anchor="" x="345.2" y="55" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">En curso</text>
+          <text data-detail="context" x="346" y="73" class="t-muted" font-size="9" text-anchor="middle">fases en orden</text>
+        </g>
+
+        <g id="node-cancelling" data-node-id="cancelling" data-node-label="Cancelando" tabindex="0" role="button" aria-label="Enfocar Cancelando, compensaciones pendientes, Estado del ciclo de vida" aria-pressed="false" data-node-kind="active" data-node-sublabel="compensaciones pendientes" data-node-context="Estado del ciclo de vida">
+          <title>Cancelando · compensaciones pendientes · Estado del ciclo de vida</title>
+          <rect x="112.5" y="184" width="179" height="64" rx="8" class="c-mask"/>
+          <rect x="112.5" y="184" width="179" height="64" rx="8" class="c-frontend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          
+          <text data-node-label="" data-detail-anchor="" x="202" y="211" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Cancelando</text>
+          <text data-detail="context" x="202" y="229" class="t-muted" font-size="9" text-anchor="middle">compensaciones pendientes</text>
+        </g>
+
+        <g id="node-failing" data-node-id="failing" data-node-label="Fallando" tabindex="0" role="button" aria-label="Enfocar Fallando, compensaciones pendientes, Estado del ciclo de vida" aria-pressed="false" data-node-kind="failure" data-node-sublabel="compensaciones pendientes" data-node-context="Estado del ciclo de vida">
+          <title>Fallando · compensaciones pendientes · Estado del ciclo de vida</title>
+          <rect x="509.5" y="184" width="179" height="64" rx="8" class="c-mask"/>
+          <rect x="509.5" y="184" width="179" height="64" rx="8" class="c-security" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="failure" class="semantic-sigil s-security" transform="translate(515.5 190) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="100" y="204" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">User</text>
-        <text data-detail="context" x="100" y="220" class="t-muted" font-size="9" text-anchor="middle">Local operator</text>
+          <text data-node-label="" data-detail-anchor="" x="599" y="211" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Fallando</text>
+          <text data-detail="context" x="599" y="229" class="t-muted" font-size="9" text-anchor="middle">compensaciones pendientes</text>
         </g>
 
-        <g id="node-wpf" data-node-id="wpf" data-node-label="WinClonerX · WPF" tabindex="0" role="button" aria-label="Focus WinClonerX · WPF, Select · review · confirm · progress · result, App · Application · Domain · Infrastructure" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Select · review · confirm · progress · result" data-node-context="App · Application · Domain · Infrastructure">
-          <title>WinClonerX · WPF · Select · review · confirm · progress · result · App · Application · Domain · Infrastructure</title>
-          <rect x="190" y="165" width="210" height="92" rx="8" class="c-mask"/>
-          <rect x="190" y="165" width="210" height="92" rx="8" class="c-frontend" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(196 171) scale(0.6875)">
-            <rect x="2" y="3" width="12" height="10" rx="2"/>
-            <path d="M2 6.5h12"/>
-            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
-            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+        <g id="node-completed" data-node-id="completed" data-node-label="Completada" tabindex="0" role="button" aria-label="Enfocar Completada, verificación estructural aprobada, Estado del ciclo de vida" aria-pressed="false" data-node-kind="success" data-node-sublabel="verificación estructural aprobada" data-node-context="Estado del ciclo de vida">
+          <title>Completada · verificación estructural aprobada · Estado del ciclo de vida</title>
+          <rect x="580" y="28" width="220" height="64" rx="8" class="c-mask"/>
+          <rect x="580" y="28" width="220" height="64" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <rect x="583" y="31" width="214" height="58" rx="5" class="c-backend" style="fill: none" stroke-width="1"/>
+          <g aria-hidden="true" data-semantic-sigil="success" class="semantic-sigil s-backend" transform="translate(586 34) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <path d="m5.2 8 1.8 1.8 3.8-4"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="295" y="209" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">WinClonerX · WPF</text>
-        <text data-detail="context" x="295" y="225" class="t-muted" font-size="7.4" text-anchor="middle">Select · review · confirm · progress · result</text>
+          <text data-node-label="" data-detail-anchor="" x="690" y="55" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Completada</text>
+          <text data-detail="context" x="690" y="73" class="t-muted" font-size="9" text-anchor="middle">verificación estructural aprobada</text>
         </g>
 
-        <g id="node-application" data-node-id="application" data-node-label="Application" tabindex="0" role="button" aria-label="Focus Application, Ports · inventory · plan · execution · recovery, App · Application · Domain · Infrastructure" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Ports · inventory · plan · execution · recovery" data-node-context="App · Application · Domain · Infrastructure">
-          <title>Application · Ports · inventory · plan · execution · recovery · App · Application · Domain · Infrastructure</title>
-          <rect x="430" y="165" width="210" height="92" rx="8" class="c-mask"/>
-          <rect x="430" y="165" width="210" height="92" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(436 171) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+        <g id="node-cancelled" data-node-id="cancelled" data-node-label="Cancelada" tabindex="0" role="button" aria-label="Enfocar Cancelada, compensación completa, Estado del ciclo de vida" aria-pressed="false" data-node-kind="neutral" data-node-sublabel="compensación completa" data-node-context="Estado del ciclo de vida">
+          <title>Cancelada · compensación completa · Estado del ciclo de vida</title>
+          <rect x="123" y="340" width="158" height="64" rx="8" class="c-mask"/>
+          <rect x="123" y="340" width="158" height="64" rx="8" class="c-external" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <rect x="126" y="343" width="152" height="58" rx="5" class="c-external" style="fill: none" stroke-width="1"/>
+          <g aria-hidden="true" data-semantic-sigil="stop" class="semantic-sigil s-external" transform="translate(129 346) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <rect x="6.1" y="6.1" width="3.8" height="3.8" rx=".5" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="535" y="209" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Application</text>
-        <text data-detail="context" x="535" y="225" class="t-muted" font-size="7.1" text-anchor="middle">Ports · inventory · plan · execution · recovery</text>
+          <text data-node-label="" data-detail-anchor="" x="202" y="367" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Cancelada</text>
+          <text data-detail="context" x="202" y="385" class="t-muted" font-size="9" text-anchor="middle">compensación completa</text>
         </g>
 
-        <g id="node-domain" data-node-id="domain" data-node-label="Domain" tabindex="0" role="button" aria-label="Focus Domain, Inventory · planning · execution · boot repair, App · Application · Domain · Infrastructure" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Inventory · planning · execution · boot repair" data-node-context="App · Application · Domain · Infrastructure">
-          <title>Domain · Inventory · planning · execution · boot repair · App · Application · Domain · Infrastructure</title>
-          <rect x="430" y="380" width="210" height="92" rx="8" class="c-mask"/>
-          <rect x="430" y="380" width="210" height="92" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(436 386) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+        <g id="node-failed" data-node-id="failed" data-node-label="Fallida" tabindex="0" role="button" aria-label="Enfocar Fallida, compensación completa, Estado del ciclo de vida" aria-pressed="false" data-node-kind="failure" data-node-sublabel="compensación completa" data-node-context="Estado del ciclo de vida">
+          <title>Fallida · compensación completa · Estado del ciclo de vida</title>
+          <rect x="520" y="340" width="158" height="64" rx="8" class="c-mask"/>
+          <rect x="520" y="340" width="158" height="64" rx="8" class="c-security" data-animate="node" style="--step:7" stroke-width="1.5"/>
+          <rect x="523" y="343" width="152" height="58" rx="5" class="c-security" style="fill: none" stroke-width="1"/>
+          <g aria-hidden="true" data-semantic-sigil="failure" class="semantic-sigil s-security" transform="translate(526 346) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="535" y="424" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Domain</text>
-        <text data-detail="context" x="535" y="440" class="t-muted" font-size="7.3" text-anchor="middle">Inventory · planning · execution · boot repair</text>
+          <text data-node-label="" data-detail-anchor="" x="599" y="367" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Fallida</text>
+          <text data-detail="context" x="599" y="385" class="t-muted" font-size="9" text-anchor="middle">compensación completa</text>
         </g>
 
-        <g id="node-infra" data-node-id="infra" data-node-label="Windows Infrastructure" tabindex="0" role="button" aria-label="Focus Windows Infrastructure, VSS · raw I/O · GPT · Storage/WMI · boot · journal, App · Application · Domain · Infrastructure" aria-pressed="false" data-node-kind="backend" data-node-sublabel="VSS · raw I/O · GPT · Storage/WMI · boot · journal" data-node-context="App · Application · Domain · Infrastructure">
-          <title>Windows Infrastructure · VSS · raw I/O · GPT · Storage/WMI · boot · journal · App · Application · Domain · Infrastructure</title>
-          <rect x="680" y="160" width="240" height="108" rx="8" class="c-mask"/>
-          <rect x="680" y="160" width="240" height="108" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(686 166) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="800" y="212" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Windows Infrastructure</text>
-        <text data-detail="context" x="800" y="228" class="t-muted" font-size="7.7" text-anchor="middle">VSS · raw I/O · GPT · Storage/WMI · boot · journal</text>
+        <!-- Transition labels -->
+        <g data-detail="context" data-edge-from="pending" data-edge-to="running" data-edge-label="iniciar" data-edge-key="0">
+          <rect x="209" y="38" width="54" height="16" rx="4" class="c-mask"/>
+          <text x="236" y="49.5" class="t-edge-emphasis" font-size="10" text-anchor="middle">iniciar</text>
         </g>
-
-        <g id="node-windows" data-node-id="windows" data-node-label="Windows services &amp; tools" tabindex="0" role="button" aria-label="Focus Windows services &amp; tools, VSS · MSFT_Partition/WMI · bcdedit · reagentc · CfgMgr32, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="VSS · MSFT_Partition/WMI · bcdedit · reagentc · CfgMgr32" data-node-context="Architecture component">
-          <title>Windows services &amp; tools · VSS · MSFT_Partition/WMI · bcdedit · reagentc · CfgMgr32 · Architecture component</title>
-          <rect x="1040" y="160" width="220" height="96" rx="8" class="c-mask"/>
-          <rect x="1040" y="160" width="220" height="96" rx="8" class="c-external" data-animate="node" style="--step:6" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(1046 166) scale(0.6875)">
-            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
-            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="1150" y="206" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Windows services &amp; tools</text>
-        <text data-detail="context" x="1150" y="222" class="t-muted" font-size="6.3" text-anchor="middle">VSS · MSFT_Partition/WMI · bcdedit · reagentc · CfgMgr32</text>
+        <g data-detail="context" data-edge-from="running" data-edge-to="cancelling" data-edge-label="cancelación aceptada" data-edge-key="1">
+          <rect x="64" y="147" width="132" height="16" rx="4" class="c-mask"/>
+          <text x="130" y="158.5" class="t-muted" font-size="10" text-anchor="middle">cancelación aceptada</text>
         </g>
-
-        <g id="node-source" data-node-id="source" data-node-label="Source disk" tabindex="0" role="button" aria-label="Focus Source disk, Running Windows · read through VSS, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="Running Windows · read through VSS" data-node-context="Architecture component">
-          <title>Source disk · Running Windows · read through VSS · Architecture component</title>
-          <rect x="1040" y="540" width="200" height="78" rx="8" class="c-mask"/>
-          <rect x="1040" y="540" width="200" height="78" rx="8" class="c-database" data-animate="node" style="--step:9" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1046 546) scale(0.6875)">
-            <ellipse cx="8" cy="4" rx="5" ry="2"/>
-            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="1140" y="577" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Source disk</text>
-        <text data-detail="context" x="1140" y="593" class="t-muted" font-size="9" text-anchor="middle">Running Windows · read through VSS</text>
+        <g data-detail="context" data-edge-from="running" data-edge-to="failing" data-edge-label="fallo · retirada de dispositivo" data-edge-key="2">
+          <rect x="395" y="147" width="198" height="16" rx="4" class="c-mask"/>
+          <text x="494" y="158.5" class="t-edge-security" font-size="10" text-anchor="middle">fallo · retirada de dispositivo</text>
         </g>
-
-        <g id="node-target" data-node-id="target" data-node-label="Target disk" tabindex="0" role="button" aria-label="Focus Target disk, Physical device · writes only through guard, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="Physical device · writes only through guard" data-node-context="Architecture component">
-          <title>Target disk · Physical device · writes only through guard · Architecture component</title>
-          <rect x="1040" y="380" width="200" height="78" rx="8" class="c-mask"/>
-          <rect x="1040" y="380" width="200" height="78" rx="8" class="c-database" data-animate="node" style="--step:8" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1046 386) scale(0.6875)">
-            <ellipse cx="8" cy="4" rx="5" ry="2"/>
-            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="1140" y="417" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Target disk</text>
-        <text data-detail="context" x="1140" y="433" class="t-muted" font-size="7.4" text-anchor="middle">Physical device · writes only through guard</text>
+        <g data-detail="context" data-edge-from="running" data-edge-to="completed" data-edge-label="verificación aprobada" data-edge-key="3">
+          <rect x="429" y="38" width="138" height="16" rx="4" class="c-mask"/>
+          <text x="498" y="49.5" class="t-edge-emphasis" font-size="10" text-anchor="middle">verificación aprobada</text>
         </g>
-
-        <g id="node-guard" data-node-id="guard" data-node-label="DiskWriteGuard" tabindex="0" role="button" aria-label="Focus DiskWriteGuard, Only write path · blocks the system disk, App · Application · Domain · Infrastructure" aria-pressed="false" data-node-kind="security" data-node-sublabel="Only write path · blocks the system disk" data-node-context="App · Application · Domain · Infrastructure">
-          <title>DiskWriteGuard · Only write path · blocks the system disk · App · Application · Domain · Infrastructure</title>
-          <rect x="680" y="380" width="240" height="84" rx="8" class="c-mask"/>
-          <rect x="680" y="380" width="240" height="84" rx="8" class="c-security" data-animate="node" style="--step:7" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(686 386) scale(0.6875)">
-            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
-            <path d="m5.8 8 1.5 1.5 3-3"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="800" y="420" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">DiskWriteGuard</text>
-        <text data-detail="context" x="800" y="436" class="t-muted" font-size="9" text-anchor="middle">Only write path · blocks the system disk</text>
+        <g data-detail="context" data-edge-from="cancelling" data-edge-to="cancelled" data-edge-label="compensación completa" data-edge-key="4">
+          <rect x="58" y="286" width="138" height="16" rx="4" class="c-mask"/>
+          <text x="127" y="297.5" class="t-muted" font-size="10" text-anchor="middle">compensación completa</text>
         </g>
-
-        <g id="node-msi" data-node-id="msi" data-node-label="WiX MSI installer" tabindex="0" role="button" aria-label="Focus WiX MSI installer, MSI package, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="MSI package" data-node-context="Architecture component">
-          <title>WiX MSI installer · MSI package · Architecture component</title>
-          <rect x="200" y="560" width="190" height="72" rx="8" class="c-mask"/>
-          <rect x="200" y="560" width="190" height="72" rx="8" class="c-external" data-animate="node" style="--step:9" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(206 566) scale(0.6875)">
-            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
-            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="295" y="594" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">WiX MSI installer</text>
-        <text data-detail="context" x="295" y="610" class="t-muted" font-size="9" text-anchor="middle">MSI package</text>
+        <g data-detail="context" data-edge-from="cancelling" data-edge-to="failing" data-edge-label="fallo durante la compensación" data-edge-key="5">
+          <rect x="307.5" y="194" width="186" height="16" rx="4" class="c-mask"/>
+          <text x="400.5" y="205.5" class="t-edge-security" font-size="10" text-anchor="middle">fallo durante la compensación</text>
         </g>
-
-        <g id="node-ci" data-node-id="ci" data-node-label="GitHub Actions" tabindex="0" role="button" aria-label="Focus GitHub Actions, CI · tests · versioning and release, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="CI · tests · versioning and release" data-node-context="Architecture component">
-          <title>GitHub Actions · CI · tests · versioning and release · Architecture component</title>
-          <rect x="440" y="560" width="200" height="72" rx="8" class="c-mask"/>
-          <rect x="440" y="560" width="200" height="72" rx="8" class="c-external" data-animate="node" style="--step:10" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(446 566) scale(0.6875)">
-            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
-            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="540" y="594" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">GitHub Actions</text>
-        <text data-detail="context" x="540" y="610" class="t-muted" font-size="9" text-anchor="middle">CI · tests · versioning and release</text>
-        </g>
-
-        <!-- Connection labels -->
-        <g data-detail="context" data-edge-from="user" data-edge-to="wpf" data-edge-label="select and confirm" data-edge-key="0" data-edge-id="user-wpf">
-          <rect x="141.775" y="261" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="189.975" y="271" class="t-edge-emphasis" font-size="8" text-anchor="middle">select and confirm</text>
-        </g>
-        <g data-detail="context" data-edge-from="wpf" data-edge-to="application" data-edge-label="commands · queries" data-edge-key="1" data-edge-id="wpf-app">
-          <rect x="363.3" y="261" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="411.5" y="271" class="t-edge-emphasis" font-size="8" text-anchor="middle">commands · queries</text>
-        </g>
-        <g data-detail="context" data-edge-from="application" data-edge-to="domain" data-edge-label="model and validate" data-edge-key="2" data-edge-id="app-domain">
-          <rect x="425.6" y="311.5" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="473.8" y="321.5" class="t-edge-default" font-size="8" text-anchor="middle">model and validate</text>
-        </g>
-        <g data-detail="context" data-edge-from="domain" data-edge-to="application" data-edge-label="plan · phases · events" data-edge-key="3" data-edge-id="domain-app">
-          <rect x="548" y="311.5" width="115.6" height="14" rx="3" class="c-mask"/>
-          <text x="605.8" y="321.5" class="t-edge-default" font-size="8" text-anchor="middle">plan · phases · events</text>
-        </g>
-        <g data-detail="context" data-edge-from="application" data-edge-to="infra" data-edge-label="ports" data-edge-key="4" data-edge-id="app-infra">
-          <rect x="643" y="191" width="34" height="14" rx="3" class="c-mask"/>
-          <text x="660" y="201" class="t-edge-emphasis" font-size="8" text-anchor="middle">ports</text>
-        </g>
-        <g data-detail="context" data-edge-from="infra" data-edge-to="windows" data-edge-label="APIs · tools" data-edge-key="5" data-edge-id="infra-win">
-          <rect x="946.2" y="194" width="67.6" height="14" rx="3" class="c-mask"/>
-          <text x="980" y="204" class="t-edge-emphasis" font-size="8" text-anchor="middle">APIs · tools</text>
-        </g>
-        <g data-detail="context" data-edge-from="infra" data-edge-to="guard" data-edge-label="only write-open path" data-edge-key="6" data-edge-id="infra-guard">
-          <rect x="688" y="317" width="106" height="14" rx="3" class="c-mask"/>
-          <text x="741" y="327" class="t-edge-security" font-size="8" text-anchor="middle">only write-open path</text>
-        </g>
-        <g data-detail="context" data-edge-from="guard" data-edge-to="target" data-edge-label="target only" data-edge-key="7" data-edge-id="guard-dst">
-          <rect x="948.6" y="402" width="62.8" height="14" rx="3" class="c-mask"/>
-          <text x="980" y="412" class="t-edge-security" font-size="8" text-anchor="middle">target only</text>
-        </g>
-        <g data-detail="context" data-edge-from="windows" data-edge-to="source" data-edge-label="VSS · reads" data-edge-key="8" data-edge-id="win-src">
-          <rect x="1252.6" y="373.5" width="62.8" height="14" rx="3" class="c-mask"/>
-          <text x="1284" y="383.5" class="t-edge-dashed" font-size="8" text-anchor="middle">VSS · reads</text>
-        </g>
-        <g data-detail="context" data-edge-from="msi" data-edge-to="wpf" data-edge-label="installs" data-edge-key="9" data-edge-id="msi-app">
-          <rect x="240.60000000000002" y="401.5" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="264.8" y="411.5" class="t-edge-dashed" font-size="8" text-anchor="middle">installs</text>
-        </g>
-        <g data-detail="context" data-edge-from="ci" data-edge-to="msi" data-edge-label="builds and releases" data-edge-key="10" data-edge-id="ci-msi">
-          <rect x="365.4" y="546" width="101.2" height="14" rx="3" class="c-mask"/>
-          <text x="416" y="556" class="t-edge-dashed" font-size="8" text-anchor="middle">builds and releases</text>
-        </g>
-
-        <!-- Boundary labels (foreground masks keep routes out of titles) -->
-        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="App · Application · Domain · Infrastructure">
-          <rect data-graph-role="structural-frame-label-mask" x="164" y="140" width="242.2" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="168" y="153" class="t-cloud" font-size="9" font-weight="600">App · Application · Domain · Infrastructure</text>
+        <g data-detail="context" data-edge-from="failing" data-edge-to="failed" data-edge-label="compensación completa" data-edge-key="6">
+          <rect x="455" y="286" width="138" height="16" rx="4" class="c-mask"/>
+          <text x="524" y="297.5" class="t-edge-security" font-size="10" text-anchor="middle">compensación completa</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="664" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="684" data-legend-width="93">
-            <rect x="40" y="675" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
-            <text x="62" y="684" class="t-muted" font-size="10" font-weight="500">Frontend</text>
+          <text x="40" y="430" class="t-primary" font-size="12" font-weight="650">Leyenda</text>
+          <g data-legend-semantic-kind="start" data-legend-kind="start" data-legend-label="estado inicial" data-legend-x="40" data-legend-baseline="450" data-legend-width="142">
+            <circle cx="44.5" cy="446.5" r="4.5" style="fill: var(--arrow-emphasis)"/><path d="M 49 446.5 L 58 446.5" class="a-emphasis" stroke-width="1.4"/><path d="M 57 443 L 64 446.5 L 57 450 Z" style="fill: var(--arrow-emphasis)"/>
+            <text x="74" y="450" class="t-muted" font-size="10" font-weight="500">estado inicial</text>
           </g>
-          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="155" data-legend-baseline="684" data-legend-width="87">
-            <rect x="155" y="675" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
-            <text x="177" y="684" class="t-muted" font-size="10" font-weight="500">Backend</text>
+          <g data-legend-semantic-kind="active" data-legend-kind="active" data-legend-label="activo" data-legend-x="204" data-legend-baseline="450" data-legend-width="81">
+            <rect x="204" y="442" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="226" y="450" class="t-muted" font-size="10" font-weight="500">activo</text>
           </g>
-          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="264" data-legend-baseline="684" data-legend-width="93">
-            <rect x="264" y="675" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
-            <text x="286" y="684" class="t-muted" font-size="10" font-weight="500">Database</text>
+          <g data-legend-semantic-kind="success" data-legend-kind="success" data-legend-label="éxito" data-legend-x="307" data-legend-baseline="450" data-legend-width="74">
+            <rect x="307" y="442" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="329" y="450" class="t-muted" font-size="10" font-weight="500">éxito</text>
           </g>
-          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Security" data-legend-x="379" data-legend-baseline="684" data-legend-width="93">
-            <rect x="379" y="675" width="16" height="10" rx="2.5" class="c-security" stroke-width="1"/>
-            <text x="401" y="684" class="t-muted" font-size="10" font-weight="500">Security</text>
+          <g data-legend-semantic-kind="failure" data-legend-kind="failure" data-legend-label="fallo / salida" data-legend-x="403" data-legend-baseline="450" data-legend-width="130">
+            <rect x="403" y="442" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="425" y="450" class="t-muted" font-size="10" font-weight="500">fallo / salida</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="494" data-legend-baseline="684" data-legend-width="93">
-            <rect x="494" y="675" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="516" y="684" class="t-muted" font-size="10" font-weight="500">External</text>
+          <g data-legend-semantic-kind="neutral" data-legend-kind="neutral" data-legend-label="neutral" data-legend-x="555" data-legend-baseline="450" data-legend-width="87">
+            <rect x="555" y="442" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="577" y="450" class="t-muted" font-size="10" font-weight="500">neutral</text>
+          </g>
+          <g data-legend-semantic-kind="final" data-legend-x="664" data-legend-baseline="450" data-legend-width="99">
+            <rect x="664" y="442" width="14" height="9" rx="2" class="c-external" stroke-width="1"/><rect x="666.5" y="444.5" width="9" height="4" rx="1" class="c-external" style="fill: none" stroke-width="0.8"/>
+            <text x="688" y="450" class="t-muted" font-size="10" font-weight="500">estado final</text>
           </g>
         </g>
       </svg>
@@ -5510,201 +5404,201 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div class="diagram-guide no-print" id="diagram-guide" hidden role="dialog" aria-modal="false" aria-labelledby="diagram-guide-title">
         <div class="diagram-guide-head">
           <span>
-            <span class="diagram-guide-eyebrow">Diagram guide</span>
-            <strong class="diagram-guide-title" id="diagram-guide-title">Explore this system</strong>
+            <span class="diagram-guide-eyebrow">Guía del diagrama</span>
+            <strong class="diagram-guide-title" id="diagram-guide-title">Explorar este sistema</strong>
           </span>
-          <button class="diagram-guide-close" id="diagram-guide-close" type="button" aria-label="Close diagram guide">&#215;</button>
+          <button class="diagram-guide-close" id="diagram-guide-close" type="button" aria-label="Cerrar la guía del diagrama">&#215;</button>
         </div>
-        <p class="diagram-guide-stats" id="diagram-guide-stats">Inspecting compiled semantics</p>
-        <div class="diagram-guide-actions" id="diagram-guide-actions" role="group" aria-label="Diagram exploration actions">
-          <button class="diagram-guide-action" type="button" data-guide-action="find" aria-label="Find any node">
+        <p class="diagram-guide-stats" id="diagram-guide-stats">Inspeccionando la semántica compilada</p>
+        <div class="diagram-guide-actions" id="diagram-guide-actions" role="group" aria-label="Acciones de exploración del diagrama">
+          <button class="diagram-guide-action" type="button" data-guide-action="find" aria-label="Buscar cualquier nodo">
             <span class="diagram-guide-index" aria-hidden="true">01</span>
-            <span class="diagram-guide-action-copy"><strong>Find any node</strong><small>Search labels, responsibilities, kinds, and stable IDs.</small></span>
+            <span class="diagram-guide-action-copy"><strong>Buscar cualquier nodo</strong><small>Busca por etiquetas, responsabilidades, tipos e IDs estables.</small></span>
             <kbd aria-hidden="true">/</kbd>
           </button>
-          <button class="diagram-guide-action" type="button" data-guide-action="route" aria-label="Trace a directed route">
+          <button class="diagram-guide-action" type="button" data-guide-action="route" aria-label="Trazar una ruta dirigida">
             <span class="diagram-guide-index" aria-hidden="true">02</span>
-            <span class="diagram-guide-action-copy"><strong>Trace a route</strong><small>Ask how two semantic nodes connect in authored direction.</small></span>
+            <span class="diagram-guide-action-copy"><strong>Trazar una ruta</strong><small>Pregunta cómo se conectan dos nodos semánticos en el sentido definido.</small></span>
             <kbd aria-hidden="true">R</kbd>
           </button>
-          <button class="diagram-guide-action" type="button" data-guide-action="map" aria-label="See the whole system">
+          <button class="diagram-guide-action" type="button" data-guide-action="map" aria-label="Ver todo el sistema">
             <span class="diagram-guide-index" aria-hidden="true">03</span>
-            <span class="diagram-guide-action-copy"><strong>See the whole system</strong><small>Open Semantic Radar with a live viewport and stable nodes.</small></span>
+            <span class="diagram-guide-action-copy"><strong>Ver todo el sistema</strong><small>Abre el Radar semántico con un viewport en vivo y nodos estables.</small></span>
             <kbd aria-hidden="true">M</kbd>
           </button>
-          <button class="diagram-guide-action" type="button" data-guide-action="lens" aria-label="Compare semantic kinds">
+          <button class="diagram-guide-action" type="button" data-guide-action="lens" aria-label="Comparar tipos semánticos">
             <span class="diagram-guide-index" aria-hidden="true">04</span>
-            <span class="diagram-guide-action-copy"><strong>Compare semantic kinds</strong><small>Count roles, reveal their traffic, and compare direct authored links.</small></span>
+            <span class="diagram-guide-action-copy"><strong>Comparar tipos semánticos</strong><small>Cuenta roles, revela su tráfico y compara enlaces directos definidos.</small></span>
             <kbd aria-hidden="true">L</kbd>
           </button>
-          <button class="diagram-guide-action" type="button" data-guide-action="present" aria-label="Enter presentation stage">
+          <button class="diagram-guide-action" type="button" data-guide-action="present" aria-label="Entrar al modo presentación">
             <span class="diagram-guide-index" aria-hidden="true">05</span>
-            <span class="diagram-guide-action-copy"><strong>Enter Presentation Stage</strong><small>Give the live diagram the viewport without changing export.</small></span>
+            <span class="diagram-guide-action-copy"><strong>Entrar al modo presentación</strong><small>Dale al diagrama en vivo todo el viewport sin cambiar la exportación.</small></span>
             <kbd aria-hidden="true">F</kbd>
           </button>
         </div>
-        <div class="diagram-guide-shortcuts" aria-label="Additional keyboard shortcuts">
-          <span><kbd>E</kbd> Export</span><span><kbd>T</kbd> Theme</span><span><kbd>S</kbd> Style</span><span><kbd>0</kbd> Reset</span><span><kbd>+</kbd> Zoom in</span><span><kbd>-</kbd> Zoom out</span><span><kbd>Esc</kbd> Close</span>
+        <div class="diagram-guide-shortcuts" aria-label="Atajos de teclado adicionales">
+          <span><kbd>E</kbd> Exportar</span><span><kbd>T</kbd> Tema</span><span><kbd>S</kbd> Estilo</span><span><kbd>0</kbd> Restablecer</span><span><kbd>+</kbd> Acercar</span><span><kbd>-</kbd> Alejar</span><span><kbd>Esc</kbd> Cerrar</span>
         </div>
         <p class="diagram-guide-feedback" id="diagram-guide-feedback" aria-live="polite"></p>
-        <a class="diagram-guide-credit" href="https://github.com/tt-a1i/archify" target="_blank" rel="noopener noreferrer"><span>Find Archify useful? A star on GitHub helps</span><span class="diagram-guide-credit-link"><span class="diagram-guide-star" aria-hidden="true"></span>Star <span aria-hidden="true">&#8599;</span></span></a>
+        <a class="diagram-guide-credit" href="https://github.com/tt-a1i/archify" target="_blank" rel="noopener noreferrer"><span>¿Te resulta útil Archify? Una estrella en GitHub ayuda</span><span class="diagram-guide-credit-link"><span class="diagram-guide-star" aria-hidden="true"></span>Star <span aria-hidden="true">&#8599;</span></span></a>
       </div>
       <div class="node-finder no-print" id="node-finder" hidden role="dialog" aria-modal="false" aria-labelledby="node-finder-title">
         <div class="node-finder-head">
-          <strong id="node-finder-title">Find a node</strong>
-          <button class="node-finder-close" id="node-finder-close" type="button" aria-label="Close node finder">&#215;</button>
+          <strong id="node-finder-title">Buscar un nodo</strong>
+          <button class="node-finder-close" id="node-finder-close" type="button" aria-label="Cerrar el buscador de nodos">&#215;</button>
         </div>
         <div class="node-finder-search">
           <span aria-hidden="true">&#8981;</span>
-          <input class="node-finder-input" id="node-finder-input" type="search" autocomplete="off" spellcheck="false" placeholder="Search labels or IDs" aria-label="Search diagram nodes" aria-describedby="node-finder-status">
+          <input class="node-finder-input" id="node-finder-input" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar etiquetas o IDs" aria-label="Buscar nodos del diagrama" aria-describedby="node-finder-status">
           <kbd aria-hidden="true">/</kbd>
         </div>
-        <div class="node-finder-results" id="node-finder-results" role="group" aria-label="Diagram nodes"></div>
-        <p class="node-finder-empty" id="node-finder-empty" hidden>No matching nodes</p>
+        <div class="node-finder-results" id="node-finder-results" role="group" aria-label="Nodos del diagrama"></div>
+        <p class="node-finder-empty" id="node-finder-empty" hidden>No hay nodos coincidentes</p>
         <p class="node-finder-status" id="node-finder-status" aria-live="polite"></p>
       </div>
       <div class="focus-chip relationship-lens no-print" id="focus-chip" hidden role="region" aria-labelledby="relationship-lens-title">
         <div class="relationship-lens-head">
-          <button class="relationship-lens-drag-handle" id="btn-focus-move" type="button" data-focus-drag-handle aria-label="Move semantic passport. Drag, use arrow keys, or press Home to reset." title="Move semantic passport. Drag, use arrow keys, or press Home to reset."></button>
+          <button class="relationship-lens-drag-handle" id="btn-focus-move" type="button" data-focus-drag-handle aria-label="Mover el pasaporte semántico. Arrastra, usa las flechas o pulsa Inicio para restablecer." title="Mover el pasaporte semántico. Arrastra, usa las flechas o pulsa Inicio para restablecer."></button>
           <div class="relationship-lens-copy">
-            <span class="relationship-lens-eyebrow">Semantic passport</span>
+            <span class="relationship-lens-eyebrow">Pasaporte semántico</span>
             <strong class="relationship-lens-title" id="relationship-lens-title"><span id="focus-label"></span></strong>
             <span class="semantic-passport-detail" id="focus-detail" hidden></span>
-            <div class="semantic-passport-meta" id="focus-passport-meta" aria-label="Node metadata">
+            <div class="semantic-passport-meta" id="focus-passport-meta" aria-label="Metadatos del nodo">
               <span id="focus-kind" data-passport="kind"></span>
               <span id="focus-context" data-passport="context" hidden></span>
               <span id="focus-tag" data-passport="tag" hidden></span>
               <span id="focus-brand" data-passport="brand" hidden></span>
               <code id="focus-id" data-passport="id"></code>
             </div>
-            <div class="semantic-passport-evidence" id="focus-evidence" hidden aria-label="Verified source evidence">
+            <div class="semantic-passport-evidence" id="focus-evidence" hidden aria-label="Evidencia de fuente verificada">
               <div class="semantic-passport-evidence-head">
-                <span class="semantic-passport-evidence-status">Verified source</span>
+                <span class="semantic-passport-evidence-status">Fuente verificada</span>
                 <a class="semantic-passport-repository" id="focus-repository" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer"></a>
               </div>
               <div class="semantic-passport-evidence-links" id="focus-evidence-links"></div>
             </div>
             <span class="relationship-lens-summary" id="focus-summary" aria-live="polite"></span>
             <div class="semantic-passport-reach" id="focus-reach" hidden>
-              <span class="semantic-passport-reach-label">Authored reach</span>
-              <div class="semantic-passport-reach-actions" role="group" aria-label="Trace authored reachability">
-                <button id="btn-reach-upstream" type="button" aria-label="Trace upstream authored reachability" aria-pressed="false">
-                  <span>Upstream</span><strong id="focus-reach-upstream-count">0</strong>
+              <span class="semantic-passport-reach-label">Alcance definido</span>
+              <div class="semantic-passport-reach-actions" role="group" aria-label="Trazar la alcanzabilidad definida">
+                <button id="btn-reach-upstream" type="button" aria-label="Trazar la alcanzabilidad definida ascendente" aria-pressed="false">
+                  <span>Ascendente</span><strong id="focus-reach-upstream-count">0</strong>
                 </button>
-                <button id="btn-reach-downstream" type="button" aria-label="Trace downstream authored reachability" aria-pressed="false">
-                  <span>Downstream</span><strong id="focus-reach-downstream-count">0</strong>
+                <button id="btn-reach-downstream" type="button" aria-label="Trazar la alcanzabilidad definida descendente" aria-pressed="false">
+                  <span>Descendente</span><strong id="focus-reach-downstream-count">0</strong>
                 </button>
               </div>
               <small class="semantic-passport-reach-status" id="focus-reach-status" hidden aria-live="polite"></small>
             </div>
           </div>
           <div class="relationship-lens-actions">
-            <button id="btn-focus-clear" type="button" aria-label="Close semantic passport" title="Close">&#215;</button>
-            <button id="btn-focus-copy" type="button" aria-label="Copy link to focused node">Copy link</button>
-            <button id="btn-focus-relations" type="button" aria-label="Show connected relationships" aria-expanded="false" aria-controls="relationship-lens-list">Relations</button>
+            <button id="btn-focus-clear" type="button" aria-label="Cerrar el pasaporte semántico" title="Cerrar">&#215;</button>
+            <button id="btn-focus-copy" type="button" aria-label="Copiar enlace al nodo enfocado">Copiar enlace</button>
+            <button id="btn-focus-relations" type="button" aria-label="Mostrar relaciones conectadas" aria-expanded="false" aria-controls="relationship-lens-list">Relaciones</button>
           </div>
         </div>
-        <div class="relationship-lens-list" id="relationship-lens-list" aria-label="Connected relationships"></div>
+        <div class="relationship-lens-list" id="relationship-lens-list" aria-label="Relaciones conectadas"></div>
       </div>
       <div class="route-probe no-print" id="route-probe" hidden role="region" aria-labelledby="route-probe-title" data-state="idle">
         <div class="route-probe-head">
           <span class="route-probe-copy">
-            <span class="route-probe-eyebrow">Path</span>
-            <strong class="route-probe-title" id="route-probe-title">Click where the path starts</strong>
+            <span class="route-probe-eyebrow">Ruta</span>
+            <strong class="route-probe-title" id="route-probe-title">Haz clic donde empieza la ruta</strong>
           </span>
           <span class="route-probe-actions">
-            <button class="route-probe-find" id="route-probe-find" type="button" aria-label="Find a route start" data-node-finder-trigger>Find start</button>
-            <button class="route-probe-copy-link" id="route-probe-copy" type="button" aria-label="Copy link to traced route" hidden>Copy link</button>
-            <button id="route-probe-clear" type="button" aria-label="Clear route probe">Clear</button>
+            <button class="route-probe-find" id="route-probe-find" type="button" aria-label="Buscar un inicio de ruta" data-node-finder-trigger>Buscar inicio</button>
+            <button class="route-probe-copy-link" id="route-probe-copy" type="button" aria-label="Copiar enlace a la ruta trazada" hidden>Copiar enlace</button>
+            <button id="route-probe-clear" type="button" aria-label="Borrar la sonda de ruta">Borrar</button>
           </span>
         </div>
-        <div class="route-probe-path" id="route-probe-path" aria-label="Path">
-          <span class="route-probe-placeholder">Click two nodes on the diagram</span>
+        <div class="route-probe-path" id="route-probe-path" aria-label="Ruta">
+          <span class="route-probe-placeholder">Haz clic en dos nodos del diagrama</span>
         </div>
-        <div class="route-journey-controls" id="route-journey-controls" hidden role="group" aria-label="Route journey controls" data-playing="false">
-          <button id="route-journey-prev" type="button" aria-label="Previous route position" title="Previous route position">&#8592;</button>
-          <button class="route-journey-play" id="route-journey-play" type="button" aria-label="Play route journey" aria-pressed="false" title="Play route journey">
+        <div class="route-journey-controls" id="route-journey-controls" hidden role="group" aria-label="Controles del recorrido de la ruta" data-playing="false">
+          <button id="route-journey-prev" type="button" aria-label="Posición anterior de la ruta" title="Posición anterior de la ruta">&#8592;</button>
+          <button class="route-journey-play" id="route-journey-play" type="button" aria-label="Reproducir el recorrido de la ruta" aria-pressed="false" title="Reproducir el recorrido de la ruta">
             <span id="route-journey-play-icon" aria-hidden="true">&#9654;</span>
-            <span id="route-journey-play-label">Journey</span>
+            <span id="route-journey-play-label">Recorrido</span>
           </button>
-          <button id="route-journey-next" type="button" aria-label="Next route position" title="Next route position">&#8594;</button>
-          <button class="route-journey-overview" id="route-journey-overview" type="button" aria-label="Show complete route overview" title="Show complete route overview">Overview</button>
+          <button id="route-journey-next" type="button" aria-label="Posición siguiente de la ruta" title="Posición siguiente de la ruta">&#8594;</button>
+          <button class="route-journey-overview" id="route-journey-overview" type="button" aria-label="Mostrar la vista general completa de la ruta" title="Mostrar la vista general completa de la ruta">Vista general</button>
         </div>
-        <small class="route-probe-status" id="route-probe-status" aria-live="polite">Click a start, then an end. Paths follow the arrows.</small>
+        <small class="route-probe-status" id="route-probe-status" aria-live="polite">Haz clic en un inicio y luego en un final. La ruta sigue las flechas.</small>
       </div>
       <div class="semantic-lens no-print" id="semantic-lens" hidden role="dialog" aria-modal="false" aria-labelledby="semantic-lens-title">
         <div class="semantic-lens-head">
           <span>
-            <span class="semantic-lens-eyebrow">Semantic lens</span>
-            <strong class="semantic-lens-title" id="semantic-lens-title">Compare system roles</strong>
+            <span class="semantic-lens-eyebrow">Lente semántico</span>
+            <strong class="semantic-lens-title" id="semantic-lens-title">Comparar roles del sistema</strong>
           </span>
-          <button class="semantic-lens-close" id="semantic-lens-close" type="button" aria-label="Close semantic lens">&#215;</button>
+          <button class="semantic-lens-close" id="semantic-lens-close" type="button" aria-label="Cerrar el lente semántico">&#215;</button>
         </div>
-        <p class="semantic-lens-instruction">Choose up to two semantic kinds. One reveals its real traffic; two compare only direct authored relationships.</p>
-        <div class="semantic-lens-kinds" id="semantic-lens-kinds" role="group" aria-label="Semantic kinds"></div>
-        <p class="semantic-lens-status" id="semantic-lens-status" aria-live="polite">Choose a kind to inspect its nodes and touching relationships.</p>
+        <p class="semantic-lens-instruction">Elige hasta dos tipos semánticos. Uno revela su tráfico real; dos comparan solo las relaciones directas definidas.</p>
+        <div class="semantic-lens-kinds" id="semantic-lens-kinds" role="group" aria-label="Tipos semánticos"></div>
+        <p class="semantic-lens-status" id="semantic-lens-status" aria-live="polite">Elige un tipo para inspeccionar sus nodos y las relaciones que lo tocan.</p>
         <div class="semantic-lens-actions">
-          <button id="semantic-lens-copy" type="button" aria-label="Copy link to semantic lens" hidden>Copy link</button>
-          <button id="semantic-lens-clear" type="button" aria-label="Clear semantic lens">Clear</button>
+          <button id="semantic-lens-copy" type="button" aria-label="Copiar enlace al lente semántico" hidden>Copiar enlace</button>
+          <button id="semantic-lens-clear" type="button" aria-label="Borrar el lente semántico">Borrar</button>
         </div>
       </div>
       <div class="overview-map no-print" id="overview-map" hidden role="region" aria-labelledby="overview-map-title">
         <div class="overview-map-head">
           <span class="overview-map-live" aria-hidden="true"></span>
           <span class="overview-map-copy">
-            <strong id="overview-map-title">Semantic radar</strong>
-            <small id="overview-map-status" aria-live="polite">Building overview</small>
+            <strong id="overview-map-title">Radar semántico</strong>
+            <small id="overview-map-status" aria-live="polite">Construyendo la vista general</small>
           </span>
-          <button class="overview-map-expand" id="overview-map-expand" type="button" aria-label="Open full semantic radar">Open radar</button>
-          <button class="overview-map-close" id="overview-map-close" type="button" aria-label="Close semantic radar">&#215;</button>
+          <button class="overview-map-expand" id="overview-map-expand" type="button" aria-label="Abrir el radar semántico completo">Abrir el radar</button>
+          <button class="overview-map-close" id="overview-map-close" type="button" aria-label="Cerrar el radar semántico">&#215;</button>
         </div>
-        <div class="overview-map-surface" id="overview-map-surface" tabindex="0" role="group" aria-label="Diagram overview. Click a node to focus it, or use arrow keys to pan."></div>
-        <div class="overview-map-hint" aria-hidden="true"><span>Click node</span><span>Drag to pan</span></div>
+        <div class="overview-map-surface" id="overview-map-surface" tabindex="0" role="group" aria-label="Vista general del diagrama. Haz clic en un nodo para enfocarlo, o usa las flechas para desplazarte."></div>
+        <div class="overview-map-hint" aria-hidden="true"><span>Clic en el nodo</span><span>Arrastra para desplazar</span></div>
       </div>
-      <p class="overview-map-feedback no-print" id="overview-map-feedback" role="status" aria-live="polite" hidden>Semantic radar needs more MAP space.</p>
-      <button class="rail-reveal no-print" id="rail-reveal" type="button" hidden aria-controls="reader-rail" aria-expanded="false"><span class="rail-reveal-icon" aria-hidden="true"></span><span>Notes &amp; index</span></button>
-      <div class="diagram-nav no-print" role="toolbar" aria-label="Diagram view controls">
-        <button id="btn-route-probe" type="button" aria-label="Trace a directed route" aria-pressed="false" aria-controls="route-probe" title="Trace route (R)">ROUTE</button>
-        <button id="btn-overview-map" type="button" aria-label="Open semantic radar" aria-expanded="false" aria-controls="overview-map" title="Semantic radar (M)">MAP</button>
-        <button id="btn-semantic-lens" type="button" aria-label="Open semantic lens" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false" aria-controls="semantic-lens" title="Semantic lens (L)">LENS</button>
-        <button id="btn-node-finder" type="button" aria-label="Find a node" aria-haspopup="dialog" aria-expanded="false" aria-controls="node-finder" title="Find a node (/)" data-node-finder-trigger><span class="diagram-nav-icon find" aria-hidden="true"></span></button>
-        <button id="btn-diagram-guide" type="button" aria-label="Open diagram guide" aria-haspopup="dialog" aria-expanded="false" aria-controls="diagram-guide" title="Diagram guide (?)"><span class="diagram-nav-icon guide" aria-hidden="true"></span></button>
-        <button data-view="out" type="button" aria-label="Zoom out" title="Zoom out (-)"><span class="diagram-nav-icon minus" aria-hidden="true"></span></button>
-        <button data-view="reset" type="button" aria-label="Reset diagram view" title="Reset view (0)"><span class="diagram-nav-detail" data-view-detail hidden>READ</span><span class="diagram-nav-percent" data-view-percent>100%</span></button>
-        <button data-view="in" type="button" aria-label="Zoom in" title="Zoom in (+)"><span class="diagram-nav-icon plus" aria-hidden="true"></span></button>
+      <p class="overview-map-feedback no-print" id="overview-map-feedback" role="status" aria-live="polite" hidden>El radar semántico necesita más espacio de MAPA.</p>
+      <button class="rail-reveal no-print" id="rail-reveal" type="button" hidden aria-controls="reader-rail" aria-expanded="false"><span class="rail-reveal-icon" aria-hidden="true"></span><span>Notas e índice</span></button>
+      <div class="diagram-nav no-print" role="toolbar" aria-label="Controles de vista del diagrama">
+        <button id="btn-route-probe" type="button" aria-label="Trazar una ruta dirigida" aria-pressed="false" aria-controls="route-probe" title="Trazar ruta (R)">RUTA</button>
+        <button id="btn-overview-map" type="button" aria-label="Abrir el radar semántico" aria-expanded="false" aria-controls="overview-map" title="Radar semántico (M)">MAPA</button>
+        <button id="btn-semantic-lens" type="button" aria-label="Abrir el lente semántico" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false" aria-controls="semantic-lens" title="Lente semántico (L)">LENTE</button>
+        <button id="btn-node-finder" type="button" aria-label="Buscar un nodo" aria-haspopup="dialog" aria-expanded="false" aria-controls="node-finder" title="Buscar un nodo (/)" data-node-finder-trigger><span class="diagram-nav-icon find" aria-hidden="true"></span></button>
+        <button id="btn-diagram-guide" type="button" aria-label="Abrir la guía del diagrama" aria-haspopup="dialog" aria-expanded="false" aria-controls="diagram-guide" title="Guía del diagrama (?)"><span class="diagram-nav-icon guide" aria-hidden="true"></span></button>
+        <button data-view="out" type="button" aria-label="Alejar" title="Alejar (-)"><span class="diagram-nav-icon minus" aria-hidden="true"></span></button>
+        <button data-view="reset" type="button" aria-label="Restablecer la vista del diagrama" title="Restablecer vista (0)"><span class="diagram-nav-detail" data-view-detail hidden>LEER</span><span class="diagram-nav-percent" data-view-percent>100%</span></button>
+        <button data-view="in" type="button" aria-label="Acercar" title="Acercar (+)"><span class="diagram-nav-icon plus" aria-hidden="true"></span></button>
       </div>
     </div>
 
     <aside class="reader-rail" id="reader-rail">
-    <div class="rail-controls no-print" role="toolbar" aria-label="Side panel">
-      <button class="rail-control" id="rail-placement" type="button" hidden aria-label="Move panel below the diagram" title="Move panel below the diagram" data-placement="right"><span class="rail-control-icon placement" aria-hidden="true"></span></button>
-      <button class="rail-control" id="rail-collapse" type="button" hidden aria-controls="reader-rail" aria-expanded="true" aria-label="Collapse side panel" title="Collapse side panel"><span class="rail-control-icon collapse" aria-hidden="true"></span></button>
+    <div class="rail-controls no-print" role="toolbar" aria-label="Panel lateral">
+      <button class="rail-control" id="rail-placement" type="button" hidden aria-label="Mover el panel debajo" title="Mover el panel debajo" data-placement="right"><span class="rail-control-icon placement" aria-hidden="true"></span></button>
+      <button class="rail-control" id="rail-collapse" type="button" hidden aria-controls="reader-rail" aria-expanded="true" aria-label="Contraer panel lateral" title="Contraer panel lateral"><span class="rail-control-icon collapse" aria-hidden="true"></span></button>
     </div>
     <!-- Info Cards -->
     <div class="cards">
       <div class="card">
         <div class="card-header">
-          <div class="card-dot rose"></div>
-          <h3>Write boundary</h3>
+          <div class="card-dot amber"></div>
+          <h3>Cancelación diferida</h3>
         </div>
         <ul>
-          <li>DiskWriteGuard is the only path to open a physical disk for writing. It rejects both the system disk and the disk hosting running Windows.</li>
+          <li>Durante ShrinkSource, CommitLayout, RepairBoot, Cleanup y RestoreSource, la cancelación espera a que termine la fase.</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot cyan"></div>
-          <h3>Ports and adapters</h3>
+          <div class="card-dot rose"></div>
+          <h3>Verificación y pérdida del dispositivo</h3>
         </div>
         <ul>
-          <li>Application depends on ports; Infrastructure.Windows registers the Windows adapters.</li>
+          <li>Después de aprobar la verificación estructural no se aceptan cancelaciones. Retirar un disco vigilado convierte la ejecución en fallo.</li>
         </ul>
       </div>
     </div>
     <nav class="node-outline no-print" id="node-outline" hidden aria-labelledby="node-outline-title">
       <div class="node-outline-head">
-        <strong id="node-outline-title">Node index</strong>
+        <strong id="node-outline-title">Índice de nodos</strong>
         <span class="node-outline-count" id="node-outline-count"></span>
       </div>
       <ol class="node-outline-list" id="node-outline-list"></ol>
