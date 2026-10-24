@@ -4,11 +4,16 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>..\..\assets\icon\winclonerx.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
     <!-- Required by LibraryImport (SYSLIB1062) for the user32 calls in NativeMethods.cs. -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\icon\winclonerx.ico" Link="Assets\winclonerx.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WinClonerX.Application\WinClonerX.Application.csproj" />

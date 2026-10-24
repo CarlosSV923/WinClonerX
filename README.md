@@ -1,5 +1,7 @@
 # WinClonerX
 
+<p align="center"><img src="assets/icon/winclonerx-256.png" width="96" alt="Icono de WinClonerX"></p>
+
 Antes se llamaba WinCopy.
 
 > **In short (English):** WinClonerX copies the Windows system disk to another disk, for example from an HDD to an SSD, so you can boot Windows from the new disk. It only does that. It works only on UEFI systems with a GPT disk, on Windows 10 22H2 and Windows 11 (x64). The project is in development. The installer is not signed, so Windows SmartScreen will show a warning. The installation section explains how to continue.

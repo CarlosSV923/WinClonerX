@@ -1,4 +1,5 @@
 <Window x:Class="WinClonerX.App.Views.ConfirmationDialog"
+        Icon="pack://application:,,,/WinClonerX.App;component/Assets/winclonerx.ico"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:themes="clr-namespace:WinClonerX.App.Themes"
