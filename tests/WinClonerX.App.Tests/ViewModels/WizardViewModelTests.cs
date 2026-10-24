@@ -95,8 +95,26 @@ public sealed class WizardViewModelTests
     {
         var vm = NavigateTo(WizardStepKind.Result);
 
+        vm.IsResultStep.ShouldBeTrue();
+        vm.IsBackVisible.ShouldBeFalse();
         vm.CanGoBack.ShouldBeFalse();
         vm.BackCommand.CanExecute(null).ShouldBeFalse();
+        vm.IsNextVisible.ShouldBeFalse();
+        vm.NextCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(WizardStepKind.Disks, true)]
+    [InlineData(WizardStepKind.Review, true)]
+    [InlineData(WizardStepKind.Confirm, true)]
+    [InlineData(WizardStepKind.Progress, true)]
+    [InlineData(WizardStepKind.Result, false)]
+    public void BackVisibilityChangesOnlyOnResultStep(WizardStepKind kind, bool expected)
+    {
+        var vm = NavigateTo(kind);
+
+        vm.IsBackVisible.ShouldBe(expected);
+        vm.IsResultStep.ShouldBe(kind == WizardStepKind.Result);
     }
 
     [Fact]

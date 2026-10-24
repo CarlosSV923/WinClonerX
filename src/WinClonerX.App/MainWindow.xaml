@@ -97,6 +97,7 @@
                     Margin="0,0,12,0"
                     Content="{loc:Loc Common_Back}"
                     AutomationProperties.Name="{loc:Loc Common_Back}"
+                    Visibility="{Binding IsBackVisible, Converter={StaticResource BoolToVisibility}}"
                     Command="{Binding BackCommand}" />
             <Button Style="{StaticResource Button.Danger}"
                     MinWidth="180"
@@ -106,7 +107,28 @@
                     Visibility="{Binding IsConfirmActionVisible, Converter={StaticResource BoolToVisibility}}"
                     IsDefault="True"
                     Command="{Binding ConfirmStep.CloneNowCommand}" />
-            <!-- Hidden on step 3 and step 4: step 3 has its own confirmation action and step 4 advances by itself. -->
+            <Button x:Name="ResultCloseButton"
+                    Style="{StaticResource Button.Secondary}"
+                    Margin="0,0,12,0"
+                    Content="{loc:Loc Result_CloseApp}"
+                    AutomationProperties.Name="{loc:Loc Result_CloseApp}"
+                    Visibility="{Binding ResultStep.CanCloseApp, Converter={StaticResource BoolToVisibility}}"
+                    Command="{Binding ResultStep.CloseAppCommand}" />
+            <Button x:Name="ResultStartOverButton"
+                    Style="{StaticResource Button.Primary}"
+                    Content="{loc:Loc Result_StartOver}"
+                    AutomationProperties.Name="{loc:Loc Result_StartOver}"
+                    Visibility="{Binding ResultStep.CanStartOver, Converter={StaticResource BoolToVisibility}}"
+                    IsDefault="{Binding ResultStep.CanStartOver}"
+                    Command="{Binding ResultStep.StartOverCommand}" />
+            <Button x:Name="ResultFinishButton"
+                    Style="{StaticResource Button.Primary}"
+                    Content="{loc:Loc Result_Finish}"
+                    AutomationProperties.Name="{loc:Loc Result_Finish}"
+                    Visibility="{Binding ResultStep.CanFinish, Converter={StaticResource BoolToVisibility}}"
+                    IsDefault="{Binding ResultStep.CanFinish}"
+                    Command="{Binding ResultStep.CloseAppCommand}" />
+            <!-- Step 3 confirms the clone, step 4 advances by itself, and step 5 has its outcome actions. -->
             <Button Style="{StaticResource Button.Primary}"
                     MinWidth="120"
                     Content="{loc:Loc Common_Next}"

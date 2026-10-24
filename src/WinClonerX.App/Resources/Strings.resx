@@ -706,8 +706,11 @@
   <data name="Result_StartOver" xml:space="preserve">
     <value>Start over</value>
   </data>
+  <data name="Result_Finish" xml:space="preserve">
+    <value>Finish</value>
+  </data>
   <data name="Result_CloseApp" xml:space="preserve">
-    <value>Close WinClonerX</value>
+    <value>Close</value>
   </data>
   <data name="Review_VerifyAll_Hint" xml:space="preserve">
     <value>Reads the target disk again to check that it holds exactly the copied data. It catches write errors that would otherwise go unnoticed.</value>

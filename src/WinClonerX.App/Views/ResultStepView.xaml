@@ -45,24 +45,6 @@
                       AutomationProperties.Name="{loc:Loc Result_Export_IncludeInventory}"
                       IsChecked="{Binding IncludeInventory}" />
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
-                <Button Style="{StaticResource Button.Primary}"
-                        MinWidth="140"
-                        MinHeight="36"
-                        VerticalAlignment="Center"
-                        Margin="0,0,8,0"
-                        Content="{loc:Loc Result_StartOver}"
-                        AutomationProperties.Name="{loc:Loc Result_StartOver}"
-                        Command="{Binding StartOverCommand}"
-                        Visibility="{Binding CanStartOver, Converter={StaticResource BoolToVisibility}}" />
-                <Button Style="{StaticResource Button.Primary}"
-                        MinWidth="140"
-                        MinHeight="36"
-                        VerticalAlignment="Center"
-                        Margin="0,0,8,0"
-                        Content="{loc:Loc Result_CloseApp}"
-                        AutomationProperties.Name="{loc:Loc Result_CloseApp}"
-                        Command="{Binding CloseAppCommand}"
-                        Visibility="{Binding CanCloseApp, Converter={StaticResource BoolToVisibility}}" />
                 <Button x:Name="ExportLogButton"
                         Style="{StaticResource Button.Secondary}"
                         MinWidth="120"

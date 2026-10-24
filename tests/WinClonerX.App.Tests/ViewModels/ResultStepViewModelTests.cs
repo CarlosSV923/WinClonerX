@@ -27,7 +27,38 @@ public sealed class ResultStepViewModelTests
     }
 
     [Fact]
-    public void CloseAppIsAvailableOnlyForCompletedAndCallsLifetime()
+    public void ResultActionsMatchTheOutcome()
+    {
+        var vm = ResultStepFactory.Create();
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        vm.Show(Success());
+        vm.CanFinish.ShouldBeTrue();
+        vm.CanStartOver.ShouldBeFalse();
+        vm.CanCloseApp.ShouldBeFalse();
+        vm.CloseAppCommand.CanExecute(null).ShouldBeTrue();
+        changed.ShouldContain(nameof(ResultStepViewModel.CanFinish));
+        changed.ShouldContain(nameof(ResultStepViewModel.CanStartOver));
+
+        changed.Clear();
+        vm.Show(Failed(CloneOutcome.Failed));
+        vm.CanFinish.ShouldBeFalse();
+        vm.CanStartOver.ShouldBeTrue();
+        vm.CanCloseApp.ShouldBeTrue();
+        vm.CloseAppCommand.CanExecute(null).ShouldBeTrue();
+        changed.ShouldContain(nameof(ResultStepViewModel.CanCloseApp));
+        changed.ShouldContain(nameof(ResultStepViewModel.CanStartOver));
+
+        vm.Show(Failed(CloneOutcome.Cancelled));
+        vm.CanFinish.ShouldBeFalse();
+        vm.CanStartOver.ShouldBeTrue();
+        vm.CanCloseApp.ShouldBeTrue();
+        vm.CloseAppCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CloseAppIsAvailableForEveryOutcomeAndCallsLifetime()
     {
         var lifetime = new FakeAppLifetime();
         var vm = new ResultStepViewModel(
@@ -39,7 +70,9 @@ public sealed class ResultStepViewModelTests
         vm.CloseAppCommand.Execute(null);
         lifetime.ShutdownCalls.ShouldBe(1);
         vm.Show(Failed(CloneOutcome.Failed));
-        vm.CloseAppCommand.CanExecute(null).ShouldBeFalse();
+        vm.CloseAppCommand.CanExecute(null).ShouldBeTrue();
+        vm.CloseAppCommand.Execute(null);
+        lifetime.ShutdownCalls.ShouldBe(2);
     }
 
     [Fact]

@@ -160,7 +160,11 @@ public sealed partial class ResultStepViewModel : ObservableObject
 
     public bool CanStartOver => Outcome is CloneOutcome.Cancelled or CloneOutcome.Failed;
 
-    public bool CanCloseApp => Outcome == CloneOutcome.Completed;
+    public bool CanFinish => Outcome == CloneOutcome.Completed;
+
+    public bool CanCloseApp => Outcome is CloneOutcome.Failed or CloneOutcome.Cancelled;
+
+    private bool CanExit => CanFinish || CanCloseApp;
 
     /// <summary>True when there is an export or folder message to show.</summary>
     public bool HasExportStatus => ExportStatusText.Length > 0;
@@ -170,7 +174,7 @@ public sealed partial class ResultStepViewModel : ObservableObject
 
     public event EventHandler? StartOverRequested;
 
-    [RelayCommand(CanExecute = nameof(CanCloseApp))]
+    [RelayCommand(CanExecute = nameof(CanExit))]
     private void CloseApp() => _appLifetime.Shutdown();
 
     /// <summary>Exports the log of the run to a .zip the person picks (FR-026). Available for every outcome.</summary>
@@ -221,6 +225,9 @@ public sealed partial class ResultStepViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsSuccess));
         OnPropertyChanged(nameof(IsFailure));
+        OnPropertyChanged(nameof(CanStartOver));
+        OnPropertyChanged(nameof(CanFinish));
+        OnPropertyChanged(nameof(CanCloseApp));
         StartOverCommand.NotifyCanExecuteChanged();
         CloseAppCommand.NotifyCanExecuteChanged();
     }

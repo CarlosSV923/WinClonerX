@@ -152,6 +152,8 @@ public sealed partial class WizardViewModel : ObservableObject
             OnPropertyChanged(nameof(CurrentPage));
             OnPropertyChanged(nameof(CanGoBack));
             OnPropertyChanged(nameof(CanGoNext));
+            OnPropertyChanged(nameof(IsResultStep));
+            OnPropertyChanged(nameof(IsBackVisible));
             OnPropertyChanged(nameof(IsNextVisible));
             OnPropertyChanged(nameof(IsConfirmActionVisible));
             BackCommand.NotifyCanExecuteChanged();
@@ -196,10 +198,16 @@ public sealed partial class WizardViewModel : ObservableObject
     public bool CanGoBack =>
         CurrentIndex > 0 && CurrentStep.Kind is not (WizardStepKind.Progress or WizardStepKind.Result);
 
+    /// <summary>Whether the current page is the final result step.</summary>
+    public bool IsResultStep => CurrentStep.Kind == WizardStepKind.Result;
+
+    /// <summary>The Back button is omitted on the final result step.</summary>
+    public bool IsBackVisible => !IsResultStep;
+
     /// <summary>
     /// Whether the generic Next button applies. Step 3 has its own "Clone now" action, and step 4 advances by itself.
     /// </summary>
-    public bool IsNextVisible => CurrentStep.Kind is not (WizardStepKind.Confirm or WizardStepKind.Progress);
+    public bool IsNextVisible => CurrentStep.Kind is not (WizardStepKind.Confirm or WizardStepKind.Progress or WizardStepKind.Result);
 
     public bool IsConfirmActionVisible => CurrentStep.Kind == WizardStepKind.Confirm;
 

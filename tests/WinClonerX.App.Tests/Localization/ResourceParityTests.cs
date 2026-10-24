@@ -27,6 +27,7 @@ public sealed class ResourceParityTests
         "Common_Back",
         "Common_Next",
         "Common_Cancel",
+        "Result_Finish",
     ];
 
     [Fact]
