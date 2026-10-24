@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- B: oversized W with compact stacked CX; small sizes keep the W. -->
+  <rect width="256" height="256" rx="44" fill="#14213D"/>
+  <path fill="#FFFFFF" d="M18 83h20l11 77 19-49h14l19 49 13-77h20l-21 103H94l-18-47-19 47H39z"/>
+  <path fill="#1F6FEB" d="M166 55l11-12h37l12 12v15h-17v-8h-26v39h26v-8h17v16l-12 12h-37l-11-12z"/>
+  <path fill="#1F6FEB" d="M168 149h18l13 20 13-20h19l-22 32 23 34h-19l-14-22-14 22h-19l23-34z"/>
+  <g id="small-size-mark" display="none"><path fill="#FFFFFF" d="M43 60h22l19 91 26-56h18l25 56 20-91h22l-29 139h-23l-24-59-23 59H73z"/></g>
+</svg>

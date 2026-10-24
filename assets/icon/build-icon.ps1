@@ -12,97 +12,64 @@ function New-Color([int]$r, [int]$g, [int]$b) {
     return [System.Drawing.Color]::FromArgb(255, $r, $g, $b)
 }
 
-function Draw-RoundedRectangle($graphics, $brush, [single]$x, [single]$y, [single]$width, [single]$height, [single]$radius) {
+function Fill-Polygon([System.Drawing.Graphics]$graphics, [System.Drawing.Brush]$brush, [float[]]$coordinates, [int]$size, [bool]$pixelSnap) {
+    $points = New-Object 'System.Collections.Generic.List[System.Drawing.PointF]'
+    for ($index = 0; $index -lt $coordinates.Length; $index += 2) {
+        $x = $coordinates[$index] * $size / 256.0
+        $y = $coordinates[$index + 1] * $size / 256.0
+        if ($pixelSnap) {
+            $x = [Math]::Round($x)
+            $y = [Math]::Round($y)
+        }
+        $points.Add((New-Object System.Drawing.PointF([single]$x, [single]$y)))
+    }
+    $graphics.FillPolygon($brush, $points.ToArray())
+}
+
+function Draw-Tile([System.Drawing.Graphics]$graphics, [System.Drawing.Brush]$brush, [int]$size) {
     $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $diameter = $radius * 2
-    $path.AddArc($x, $y, $diameter, $diameter, 180, 90)
-    $path.AddArc($x + $width - $diameter, $y, $diameter, $diameter, 270, 90)
-    $path.AddArc($x + $width - $diameter, $y + $height - $diameter, $diameter, $diameter, 0, 90)
-    $path.AddArc($x, $y + $height - $diameter, $diameter, $diameter, 90, 90)
+    $radius = 44.0 * $size / 256.0
+    if ($size -le 32) { $radius = [Math]::Max(2, [Math]::Round($radius)) }
+    $diameter = [single]($radius * 2)
+    $edge = [single]$size
+    $path.AddArc(0, 0, $diameter, $diameter, 180, 90)
+    $path.AddArc($edge - $diameter, 0, $diameter, $diameter, 270, 90)
+    $path.AddArc($edge - $diameter, $edge - $diameter, $diameter, $diameter, 0, 90)
+    $path.AddArc(0, $edge - $diameter, $diameter, $diameter, 90, 90)
     $path.CloseFigure()
     $graphics.FillPath($brush, $path)
     $path.Dispose()
 }
 
 function Draw-Icon([System.Drawing.Graphics]$graphics, [int]$size) {
-    $navy = New-Object System.Drawing.SolidBrush (New-Color 20 33 61)
     $blue = New-Object System.Drawing.SolidBrush (New-Color 31 111 235)
     $white = New-Object System.Drawing.SolidBrush (New-Color 255 255 255)
-    $pen = New-Object System.Drawing.Pen ((New-Color 255 255 255), 8.0)
-    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $navy = New-Object System.Drawing.SolidBrush (New-Color 20 33 61)
+    $pixelSnap = $size -le 32
 
-    if ($size -le 24) {
-        # Compact silhouette and a thick down-right copy arrow stay legible at small sizes.
-        $smallScale = $size / 16.0
-        $graphics.ScaleTransform($smallScale, $smallScale)
-        Draw-RoundedRectangle $graphics $navy 1 1 14 14 2
-        $graphics.FillRectangle($white, 4, 4, 8, 5)
-        $graphics.FillRectangle($navy, 5, 5, 6, 3)
-        $graphics.FillRectangle($blue, 5, 7, 8, 6)
-        $arrowPen = New-Object System.Drawing.Pen ((New-Color 255 255 255), 1.8)
-        $arrowPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-        $arrowPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-        $graphics.DrawLine($arrowPen, 6, 5, 10, 9)
-        $arrowHead = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $arrowHead.AddPolygon([System.Drawing.PointF[]]@(
-            (New-Object System.Drawing.PointF(8.1, 8.8)),
-            (New-Object System.Drawing.PointF(10.4, 10.2)),
-            (New-Object System.Drawing.PointF(10.1, 7.5))
-        ))
-        $graphics.FillPath($white, $arrowHead)
-        $arrowHead.Dispose(); $arrowPen.Dispose()
-        $graphics.ResetTransform()
+    $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
+    $graphics.Clear([System.Drawing.Color]::Transparent)
+    Draw-Tile $graphics $blue $size
+
+    if ($size -le 32) {
+        # Pixel-snapped white W silhouette, matching option D's small-size mark.
+        Fill-Polygon $graphics $white ([float[]]@(43,60,65,60,84,151,110,95,128,95,153,151,173,60,195,60,166,199,143,199,119,140,96,199,73,199)) $size $true
     }
     else {
-        $scale = $size / 256.0
-        $graphics.ScaleTransform($scale, $scale)
-        Draw-RoundedRectangle $graphics $navy 12 12 232 232 52
-
-        $backPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $backPath.AddArc(48, 57, 40, 40, 180, 90)
-        $backPath.AddArc(153, 57, 40, 40, 270, 90)
-        $backPath.AddArc(153, 108, 40, 40, 0, 90)
-        $backPath.AddArc(48, 108, 40, 40, 90, 90)
-        $backPath.CloseFigure()
-        $graphics.FillPath($navy, $backPath)
-        $graphics.DrawPath($pen, $backPath)
-        $backPath.Dispose()
-        Draw-RoundedRectangle $graphics $blue 64 91 145 99 20
-        # Outline the front drive with a rounded path.
-        $frontPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $frontPath.AddArc(64, 91, 40, 40, 180, 90)
-        $frontPath.AddArc(169, 91, 40, 40, 270, 90)
-        $frontPath.AddArc(169, 150, 40, 40, 0, 90)
-        $frontPath.AddArc(64, 150, 40, 40, 90, 90)
-        $frontPath.CloseFigure()
-        $graphics.DrawPath($pen, $frontPath)
-        $frontPath.Dispose()
-        $graphics.DrawLine($pen, 83, 158, 189, 158)
-        $graphics.FillEllipse($white, 183, 169, 10, 10)
-
-        $graphics.DrawLine($pen, 91, 81, 151, 141)
-        $arrowHead = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $arrowHead.AddPolygon([System.Drawing.PointF[]]@(
-            (New-Object System.Drawing.PointF(128, 137)),
-            (New-Object System.Drawing.PointF(153, 147)),
-            (New-Object System.Drawing.PointF(147, 122))
-        ))
-        $graphics.FillPath($white, $arrowHead)
-        $arrowHead.Dispose()
-        $graphics.ResetTransform()
+        # Geometric WCX paths from option D; no font rendering is used.
+        Fill-Polygon $graphics $white ([float[]]@(15,86,31,86,42,145,56,105,69,105,83,145,95,86,111,86,93,178,77,178,62,139,47,178,31,178)) $size $false
+        Fill-Polygon $graphics $white ([float[]]@(119,96,131,84,162,84,173,97,173,111,157,111,157,102,132,102,132,160,157,160,157,150,173,150,173,166,162,178,131,178,119,165)) $size $false
+        Fill-Polygon $graphics $navy ([float[]]@(183,84,199,84,240,174,224,174)) $size $false
+        Fill-Polygon $graphics $navy ([float[]]@(224,84,240,84,198,174,182,174)) $size $false
     }
 
-    $pen.Dispose(); $navy.Dispose(); $blue.Dispose(); $white.Dispose()
+    $blue.Dispose(); $white.Dispose(); $navy.Dispose()
 }
 
 foreach ($size in $sizes) {
     $bitmap = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-    $graphics.Clear([System.Drawing.Color]::Transparent)
-    $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-    $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
-    $graphics.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
     Draw-Icon $graphics $size
     $graphics.Dispose()
 
@@ -135,7 +102,7 @@ $writer.Flush()
 [System.IO.File]::WriteAllBytes((Join-Path $assetDirectory 'winclonerx.ico'), $iconStream.ToArray())
 $writer.Dispose(); $iconStream.Dispose()
 
-# Side-by-side review sheet: 16, 32 and 48 px icons enlarged 4x with nearest-neighbor sampling.
+# Side-by-side preview: native 16, 32 and 48 px icons enlarged 4x with nearest-neighbor sampling.
 $preview = New-Object System.Drawing.Bitmap(384, 192, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $previewGraphics = [System.Drawing.Graphics]::FromImage($preview)
 $previewGraphics.Clear([System.Drawing.Color]::Transparent)

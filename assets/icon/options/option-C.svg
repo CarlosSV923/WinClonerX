@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- C: WC letters end in a pair of crossing blue chevrons, a restrained clone/motion hint. Small sizes reduce to the blue X. -->
+  <rect width="256" height="256" rx="44" fill="#14213D"/>
+  <path fill="#FFFFFF" d="M15 86h16l11 59 14-40h13l14 40 12-59h16L93 178H77l-15-39-15 39H31z"/>
+  <path fill="#FFFFFF" d="M120 96l12-12h31l11 13v14h-16v-9h-25v58h25v-10h16v16l-11 12h-31l-12-13z"/>
+  <path fill="#1F6FEB" d="M183 86h15l35 34h-19zM233 86h15l-35 34h-19zM183 168h15l35-34h-19zM233 168h15l-35-34h-19z"/>
+  <g id="small-size-mark" display="none"><path fill="#1F6FEB" d="M52 58h28l48 51 48-51h28l-53 70 53 70h-28l-48-51-48 51H52l59-70z"/></g>
+</svg>

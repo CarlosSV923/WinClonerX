@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- A bold white down-right arrow shows data copying from the outlined back drive to the blue front drive; navy #14213D, blue #1F6FEB and white #FFFFFF match the app palette. -->
+<!-- WCX monogram on accent blue #1F6FEB; white W and C with navy X #14213D. At 32 px and below, a simplified white W keeps the mark legible. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-  <rect x="12" y="12" width="232" height="232" rx="52" fill="#14213D"/>
-  <g fill="#14213D" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="9">
-    <rect x="48" y="57" width="145" height="91" rx="20"/>
-  </g>
-  <g fill="#1F6FEB" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
-    <rect x="64" y="91" width="145" height="99" rx="20"/>
-    <path d="M83 158h106"/>
-    <circle cx="188" cy="174" r="5" fill="#FFFFFF" stroke="none"/>
-  </g>
-  <path d="M91 81 151 141" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="12"/>
-  <path d="m128 137 25 10-6-26z" fill="#FFFFFF"/>
+  <rect width="256" height="256" rx="44" fill="#1F6FEB"/>
+  <path fill="#FFFFFF" d="M15 86h16l11 59 14-40h13l14 40 12-59h16L93 178H77l-15-39-15 39H31z"/>
+  <path fill="#FFFFFF" d="M119 96l12-12h31l11 13v14h-16v-9h-25v58h25v-10h16v16l-11 12h-31l-12-13z"/>
+  <path fill="#14213D" d="M183 84h16l41 90h-16zM224 84h16l-42 90h-16z"/>
 </svg>
