@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WCX monogram on accent blue #1F6FEB; white W and C with navy X #14213D. At 32 px and below, a simplified white W keeps the mark legible. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="44" fill="#1F6FEB"/>
+  <path fill="#FFFFFF" d="M15 86h16l11 59 14-40h13l14 40 12-59h16L93 178H77l-15-39-15 39H31z"/>
+  <path fill="#FFFFFF" d="M119 96l12-12h31l11 13v14h-16v-9h-25v58h25v-10h16v16l-11 12h-31l-12-13z"/>
+  <path fill="#14213D" d="M183 84h16l41 90h-16zM224 84h16l-42 90h-16z"/>
+</svg>

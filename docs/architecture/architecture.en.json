@@ -1,0 +1,419 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "WinClonerX Architecture",
+    "locale": "en",
+    "output": "docs/architecture/site/en/architecture.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/CarlosSV923/WinClonerX.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "0d208a3bc238396dfc05c8ff8d10b21ebe226b48"
+    }
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User",
+      "sublabel": "Local operator",
+      "pos": [
+        30,
+        170
+      ],
+      "size": [
+        140,
+        72
+      ],
+      "sources": [
+        {
+          "path": "README.md",
+          "line": 9,
+          "end_line": 31
+        }
+      ]
+    },
+    {
+      "id": "wpf",
+      "type": "frontend",
+      "label": "WinClonerX · WPF",
+      "sublabel": "Select · review · confirm · progress · result",
+      "pos": [
+        190,
+        165
+      ],
+      "size": [
+        210,
+        92
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.App/ViewModels/WizardViewModel.cs",
+          "line": 34,
+          "end_line": 42
+        },
+        {
+          "path": "src/WinClonerX.App/Composition/ServiceRegistration.cs",
+          "line": 11,
+          "end_line": 30
+        },
+        {
+          "path": "src/WinClonerX.App/WinClonerX.App.csproj",
+          "line": 1,
+          "end_line": 8
+        }
+      ]
+    },
+    {
+      "id": "application",
+      "type": "backend",
+      "label": "Application",
+      "sublabel": "Ports · inventory · plan · execution · recovery",
+      "pos": [
+        430,
+        165
+      ],
+      "size": [
+        210,
+        92
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/DependencyInjection.cs",
+          "line": 20,
+          "end_line": 35
+        },
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 21,
+          "end_line": 40
+        }
+      ]
+    },
+    {
+      "id": "domain",
+      "type": "backend",
+      "label": "Domain",
+      "sublabel": "Inventory · planning · execution · boot repair",
+      "pos": [
+        430,
+        380
+      ],
+      "size": [
+        210,
+        92
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 25,
+          "end_line": 52
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "infra",
+      "type": "backend",
+      "label": "Windows Infrastructure",
+      "sublabel": "VSS · raw I/O · GPT · Storage/WMI · boot · journal",
+      "pos": [
+        680,
+        160
+      ],
+      "size": [
+        240,
+        108
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/DependencyInjection.cs",
+          "line": 80,
+          "end_line": 140
+        },
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs",
+          "line": 22,
+          "end_line": 44
+        }
+      ]
+    },
+    {
+      "id": "windows",
+      "type": "external",
+      "label": "Windows services & tools",
+      "sublabel": "VSS · MSFT_Partition/WMI · bcdedit · reagentc · CfgMgr32",
+      "pos": [
+        1040,
+        160
+      ],
+      "size": [
+        220,
+        96
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/Storage/WmiStorageInventory.cs",
+          "line": 8,
+          "end_line": 22
+        },
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/Boot/BcdBootConfigurator.cs",
+          "line": 10,
+          "end_line": 24
+        },
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/Platform/DeviceChangeMonitor.cs",
+          "line": 10,
+          "end_line": 24
+        }
+      ]
+    },
+    {
+      "id": "source",
+      "type": "database",
+      "label": "Source disk",
+      "sublabel": "Running Windows · read through VSS",
+      "pos": [
+        1040,
+        540
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/Snapshots/VssSnapshotService.cs",
+          "line": 20,
+          "end_line": 43
+        },
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 428,
+          "end_line": 451
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "database",
+      "label": "Target disk",
+      "sublabel": "Physical device · writes only through guard",
+      "pos": [
+        1040,
+        380
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs",
+          "line": 20,
+          "end_line": 48
+        },
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/RawIo/CopyPipeline.cs",
+          "line": 1,
+          "end_line": 36
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "DiskWriteGuard",
+      "sublabel": "Only write path · blocks the system disk",
+      "pos": [
+        680,
+        380
+      ],
+      "size": [
+        240,
+        84
+      ],
+      "sources": [
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/RawIo/DiskWriteGuard.cs",
+          "line": 22,
+          "end_line": 56
+        },
+        {
+          "path": "src/WinClonerX.Infrastructure.Windows/RawIo/TargetDiskFactory.cs",
+          "line": 20,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "msi",
+      "type": "external",
+      "label": "WiX MSI installer",
+      "sublabel": "MSI package",
+      "pos": [
+        200,
+        560
+      ],
+      "size": [
+        190,
+        72
+      ],
+      "sources": [
+        {
+          "path": "installer/WinClonerX.Installer/Package.wxs",
+          "line": 1,
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "ci",
+      "type": "external",
+      "label": "GitHub Actions",
+      "sublabel": "CI · tests · versioning and release",
+      "pos": [
+        440,
+        560
+      ],
+      "size": [
+        200,
+        72
+      ],
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 1,
+          "end_line": 48
+        },
+        {
+          "path": ".github/workflows/release.yml",
+          "line": 1,
+          "end_line": 94
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "App · Application · Domain · Infrastructure",
+      "wraps": [
+        "wpf",
+        "application",
+        "domain",
+        "infra",
+        "guard"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "user-wpf",
+      "from": "user",
+      "to": "wpf",
+      "label": "select and confirm",
+      "variant": "emphasis"
+    },
+    {
+      "id": "wpf-app",
+      "from": "wpf",
+      "to": "application",
+      "label": "commands · queries",
+      "variant": "emphasis"
+    },
+    {
+      "id": "app-domain",
+      "from": "application",
+      "to": "domain",
+      "label": "model and validate",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "domain-app",
+      "from": "domain",
+      "to": "application",
+      "label": "plan · phases · events",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "app-infra",
+      "from": "application",
+      "to": "infra",
+      "label": "ports",
+      "variant": "emphasis"
+    },
+    {
+      "id": "infra-win",
+      "from": "infra",
+      "to": "windows",
+      "label": "APIs · tools",
+      "variant": "emphasis"
+    },
+    {
+      "id": "infra-guard",
+      "from": "infra",
+      "to": "guard",
+      "label": "only write-open path",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "security"
+    },
+    {
+      "id": "guard-dst",
+      "from": "guard",
+      "to": "target",
+      "label": "target only",
+      "variant": "security"
+    },
+    {
+      "id": "win-src",
+      "from": "windows",
+      "to": "source",
+      "label": "VSS · reads",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "right"
+    },
+    {
+      "id": "msi-app",
+      "from": "msi",
+      "to": "wpf",
+      "label": "installs",
+      "variant": "dashed"
+    },
+    {
+      "id": "ci-msi",
+      "from": "ci",
+      "to": "msi",
+      "label": "builds and releases",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Write boundary",
+      "items": [
+        "DiskWriteGuard is the only path to open a physical disk for writing. It rejects both the system disk and the disk hosting running Windows."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Ports and adapters",
+      "items": [
+        "Application depends on ports; Infrastructure.Windows registers the Windows adapters."
+      ]
+    }
+  ]
+}

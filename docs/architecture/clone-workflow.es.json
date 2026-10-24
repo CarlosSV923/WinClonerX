@@ -1,0 +1,349 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Flujo de clonado",
+    "locale": "es",
+    "output": "docs/architecture/site/clone-workflow.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/CarlosSV923/WinClonerX.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "0d208a3bc238396dfc05c8ff8d10b21ebe226b48"
+    }
+  },
+  "lanes": [
+    {
+      "id": "run",
+      "label": "Ejecución"
+    },
+    {
+      "id": "failure",
+      "label": "Fallo o cancelación",
+      "variant": "exception"
+    },
+    {
+      "id": "compensation",
+      "label": "Compensación",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "copy_process",
+      "label": "Preparar y copiar",
+      "fromCol": 0,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "finish_process",
+      "label": "Confirmar y restaurar",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "revalidate",
+    "shrink",
+    "prepare",
+    "copy",
+    "commit",
+    "finish"
+  ],
+  "nodes": [
+    {
+      "id": "revalidate",
+      "lane": "run",
+      "col": 0,
+      "type": "backend",
+      "label": "Revalidar",
+      "sublabel": "discos y plan sin cambios",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "shrink",
+      "lane": "run",
+      "col": 1,
+      "type": "backend",
+      "label": "Reducir origen",
+      "sublabel": "solo si el destino es menor",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "prepare",
+      "lane": "run",
+      "col": 2,
+      "type": "backend",
+      "label": "Instantánea y destino",
+      "sublabel": "VSS · destino sin conexión",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "copy",
+      "lane": "run",
+      "col": 3,
+      "type": "backend",
+      "label": "Copiar y verificar",
+      "sublabel": "clústeres usados · SHA-256",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "commit",
+      "lane": "run",
+      "col": 4,
+      "type": "backend",
+      "label": "Escribir GPT y arranque",
+      "sublabel": "GPT al final · BCD · WinRE",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "finish",
+      "lane": "run",
+      "col": 5,
+      "type": "backend",
+      "label": "Comprobar y restaurar",
+      "sublabel": "estructura · limpieza · origen",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "abort",
+      "lane": "failure",
+      "col": 0,
+      "type": "security",
+      "label": "Fallo o cancelación",
+      "sublabel": "en cualquier fase",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 152,
+          "end_line": 167
+        }
+      ]
+    },
+    {
+      "id": "del_layout",
+      "lane": "compensation",
+      "col": 1,
+      "type": "backend",
+      "label": "Borrar tabla del destino",
+      "sublabel": "solo si se escribió",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "del_snapshot",
+      "lane": "compensation",
+      "col": 2,
+      "type": "backend",
+      "label": "Borrar instantánea",
+      "sublabel": "VSS",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "release_mounts",
+      "lane": "compensation",
+      "col": 3,
+      "type": "backend",
+      "label": "Liberar montajes",
+      "sublabel": "letras temporales",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "restore_source",
+      "lane": "compensation",
+      "col": 4,
+      "type": "backend",
+      "label": "Restaurar origen",
+      "sublabel": "si se redujo",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "allow_sleep",
+      "lane": "compensation",
+      "col": 5,
+      "type": "backend",
+      "label": "Permitir suspensión",
+      "sublabel": "fin de la ejecución",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "revalidate",
+      "to": "shrink",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "shrink",
+      "to": "prepare",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "prepare",
+      "to": "copy",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "copy",
+      "to": "commit",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "commit",
+      "to": "finish",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "abort",
+      "to": "del_layout",
+      "label": "orden fijo",
+      "variant": "security"
+    },
+    {
+      "from": "del_layout",
+      "to": "del_snapshot",
+      "role": "main"
+    },
+    {
+      "from": "del_snapshot",
+      "to": "release_mounts",
+      "role": "main"
+    },
+    {
+      "from": "release_mounts",
+      "to": "restore_source",
+      "role": "main"
+    },
+    {
+      "from": "restore_source",
+      "to": "allow_sleep",
+      "role": "main"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Fases reales, en orden",
+      "items": [
+        "Revalidate · ShrinkSource (opcional) · Snapshot · PrepareTarget · CopyData · FullVerification (opcional) · CommitLayout · ExpandFileSystem (si hace falta) · RepairBoot · StructuralVerification · Cleanup · RestoreSource (si se redujo)."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Fases no interrumpibles",
+      "items": [
+        "ShrinkSource, CommitLayout, RepairBoot, Cleanup y RestoreSource. Una cancelación pedida durante ellas espera a que terminen."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Verificación",
+      "items": [
+        "La completa relee el destino y compara huellas SHA-256 tomadas durante la copia, antes de escribir la GPT. La estructural comprueba el clon al final."
+      ]
+    }
+  ]
+}

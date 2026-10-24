@@ -1,0 +1,349 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Clone workflow",
+    "locale": "en",
+    "output": "docs/architecture/site/en/clone-workflow.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/CarlosSV923/WinClonerX.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "0d208a3bc238396dfc05c8ff8d10b21ebe226b48"
+    }
+  },
+  "lanes": [
+    {
+      "id": "run",
+      "label": "Execution"
+    },
+    {
+      "id": "failure",
+      "label": "Failure or cancel",
+      "variant": "exception"
+    },
+    {
+      "id": "compensation",
+      "label": "Compensation",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "copy_process",
+      "label": "Prepare and copy",
+      "fromCol": 0,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "finish_process",
+      "label": "Commit and restore",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "revalidate",
+    "shrink",
+    "prepare",
+    "copy",
+    "commit",
+    "finish"
+  ],
+  "nodes": [
+    {
+      "id": "revalidate",
+      "lane": "run",
+      "col": 0,
+      "type": "backend",
+      "label": "Revalidate",
+      "sublabel": "disks and plan unchanged",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "shrink",
+      "lane": "run",
+      "col": 1,
+      "type": "backend",
+      "label": "Shrink source",
+      "sublabel": "only if the target is smaller",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "prepare",
+      "lane": "run",
+      "col": 2,
+      "type": "backend",
+      "label": "Snapshot and target",
+      "sublabel": "VSS · target offline",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "copy",
+      "lane": "run",
+      "col": 3,
+      "type": "backend",
+      "label": "Copy and verify",
+      "sublabel": "used clusters · SHA-256",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "commit",
+      "lane": "run",
+      "col": 4,
+      "type": "backend",
+      "label": "Write GPT and boot",
+      "sublabel": "GPT last · BCD · WinRE",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "finish",
+      "lane": "run",
+      "col": 5,
+      "type": "backend",
+      "label": "Check and restore",
+      "sublabel": "structure · cleanup · source",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 187,
+          "end_line": 221
+        },
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 432,
+          "end_line": 465
+        }
+      ]
+    },
+    {
+      "id": "abort",
+      "lane": "failure",
+      "col": 0,
+      "type": "security",
+      "label": "Failure or cancel",
+      "sublabel": "in any phase",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Application/UseCases/Execution/ExecuteClone.cs",
+          "line": 152,
+          "end_line": 167
+        }
+      ]
+    },
+    {
+      "id": "del_layout",
+      "lane": "compensation",
+      "col": 1,
+      "type": "backend",
+      "label": "Delete target table",
+      "sublabel": "only if written",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "del_snapshot",
+      "lane": "compensation",
+      "col": 2,
+      "type": "backend",
+      "label": "Delete snapshot",
+      "sublabel": "VSS",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "release_mounts",
+      "lane": "compensation",
+      "col": 3,
+      "type": "backend",
+      "label": "Release mounts",
+      "sublabel": "temporary letters",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "restore_source",
+      "lane": "compensation",
+      "col": 4,
+      "type": "backend",
+      "label": "Restore source",
+      "sublabel": "if it was shrunk",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "allow_sleep",
+      "lane": "compensation",
+      "col": 5,
+      "type": "backend",
+      "label": "Allow sleep",
+      "sublabel": "end of the run",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "revalidate",
+      "to": "shrink",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "shrink",
+      "to": "prepare",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "prepare",
+      "to": "copy",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "copy",
+      "to": "commit",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "commit",
+      "to": "finish",
+      "role": "main",
+      "variant": "emphasis"
+    },
+    {
+      "from": "abort",
+      "to": "del_layout",
+      "label": "fixed order",
+      "variant": "security"
+    },
+    {
+      "from": "del_layout",
+      "to": "del_snapshot",
+      "role": "main"
+    },
+    {
+      "from": "del_snapshot",
+      "to": "release_mounts",
+      "role": "main"
+    },
+    {
+      "from": "release_mounts",
+      "to": "restore_source",
+      "role": "main"
+    },
+    {
+      "from": "restore_source",
+      "to": "allow_sleep",
+      "role": "main"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Real phases, in order",
+      "items": [
+        "Revalidate · ShrinkSource (optional) · Snapshot · PrepareTarget · CopyData · FullVerification (optional) · CommitLayout · ExpandFileSystem (when needed) · RepairBoot · StructuralVerification · Cleanup · RestoreSource (if shrunk)."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Non-interruptible phases",
+      "items": [
+        "ShrinkSource, CommitLayout, RepairBoot, Cleanup and RestoreSource. A cancel requested during them waits until they finish."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Verification",
+      "items": [
+        "The full one re-reads the target and compares SHA-256 digests taken during the copy, before the GPT is written. The structural one checks the clone at the end."
+      ]
+    }
+  ]
+}
