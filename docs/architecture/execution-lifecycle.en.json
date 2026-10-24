@@ -1,0 +1,177 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "CloneExecution lifecycle",
+    "locale": "en",
+    "output": "docs/architecture/site/en/execution-lifecycle.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/CarlosSV923/WinClonerX.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "0d208a3bc238396dfc05c8ff8d10b21ebe226b48"
+    }
+  },
+  "mainPath": [
+    "pending",
+    "running",
+    "completed"
+  ],
+  "states": [
+    {
+      "id": "pending",
+      "type": "start",
+      "label": "Pending",
+      "sublabel": "confirmed plan",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 48,
+          "end_line": 58
+        },
+        {
+          "path": "src/WinClonerX.App/ViewModels/DisksStepViewModel.cs",
+          "line": 159,
+          "end_line": 177
+        }
+      ]
+    },
+    {
+      "id": "running",
+      "type": "active",
+      "label": "Running",
+      "sublabel": "ordered phases",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 101,
+          "end_line": 117
+        }
+      ]
+    },
+    {
+      "id": "cancelling",
+      "type": "active",
+      "label": "Cancelling",
+      "sublabel": "compensation pending",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 237,
+          "end_line": 253
+        }
+      ]
+    },
+    {
+      "id": "failing",
+      "type": "failure",
+      "label": "Failing",
+      "sublabel": "compensation pending",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "completed",
+      "type": "success",
+      "label": "Completed",
+      "sublabel": "structural verification passed",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    },
+    {
+      "id": "cancelled",
+      "type": "neutral",
+      "label": "Cancelled",
+      "sublabel": "compensation complete",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Failed",
+      "sublabel": "compensation complete",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "pending",
+      "to": "running",
+      "label": "start"
+    },
+    {
+      "from": "running",
+      "to": "cancelling",
+      "label": "cancel accepted"
+    },
+    {
+      "from": "running",
+      "to": "failing",
+      "label": "failure · device removed",
+      "variant": "security"
+    },
+    {
+      "from": "running",
+      "to": "completed",
+      "label": "verification passed",
+      "variant": "emphasis"
+    },
+    {
+      "from": "cancelling",
+      "to": "cancelled",
+      "label": "compensation complete"
+    },
+    {
+      "from": "cancelling",
+      "to": "failing",
+      "label": "failure during compensation",
+      "variant": "security"
+    },
+    {
+      "from": "failing",
+      "to": "failed",
+      "label": "compensation complete",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Deferred cancellation",
+      "items": [
+        "During ShrinkSource, CommitLayout, RepairBoot, Cleanup, and RestoreSource, cancellation waits until the phase ends."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Verification and device loss",
+      "items": [
+        "Cancellation is no longer accepted after structural verification passes. Removing a watched disk turns the execution into a failure."
+      ]
+    }
+  ]
+}

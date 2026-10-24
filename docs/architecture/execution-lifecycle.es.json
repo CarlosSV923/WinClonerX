@@ -1,0 +1,177 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Ciclo de vida de CloneExecution",
+    "locale": "es",
+    "output": "docs/architecture/site/execution-lifecycle.html",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "repository": {
+      "url": "https://github.com/CarlosSV923/WinClonerX.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "0d208a3bc238396dfc05c8ff8d10b21ebe226b48"
+    }
+  },
+  "mainPath": [
+    "pending",
+    "running",
+    "completed"
+  ],
+  "states": [
+    {
+      "id": "pending",
+      "type": "start",
+      "label": "Pendiente",
+      "sublabel": "plan confirmado",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 48,
+          "end_line": 58
+        },
+        {
+          "path": "src/WinClonerX.App/ViewModels/DisksStepViewModel.cs",
+          "line": 159,
+          "end_line": 177
+        }
+      ]
+    },
+    {
+      "id": "running",
+      "type": "active",
+      "label": "En curso",
+      "sublabel": "fases en orden",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 101,
+          "end_line": 117
+        }
+      ]
+    },
+    {
+      "id": "cancelling",
+      "type": "active",
+      "label": "Cancelando",
+      "sublabel": "compensaciones pendientes",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 237,
+          "end_line": 253
+        }
+      ]
+    },
+    {
+      "id": "failing",
+      "type": "failure",
+      "label": "Fallando",
+      "sublabel": "compensaciones pendientes",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 279,
+          "end_line": 321
+        }
+      ]
+    },
+    {
+      "id": "completed",
+      "type": "success",
+      "label": "Completada",
+      "sublabel": "verificación estructural aprobada",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    },
+    {
+      "id": "cancelled",
+      "type": "neutral",
+      "label": "Cancelada",
+      "sublabel": "compensación completa",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Fallida",
+      "sublabel": "compensación completa",
+      "sources": [
+        {
+          "path": "src/WinClonerX.Domain/Execution/CloneExecution.cs",
+          "line": 343,
+          "end_line": 381
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "pending",
+      "to": "running",
+      "label": "iniciar"
+    },
+    {
+      "from": "running",
+      "to": "cancelling",
+      "label": "cancelación aceptada"
+    },
+    {
+      "from": "running",
+      "to": "failing",
+      "label": "fallo · retirada de dispositivo",
+      "variant": "security"
+    },
+    {
+      "from": "running",
+      "to": "completed",
+      "label": "verificación aprobada",
+      "variant": "emphasis"
+    },
+    {
+      "from": "cancelling",
+      "to": "cancelled",
+      "label": "compensación completa"
+    },
+    {
+      "from": "cancelling",
+      "to": "failing",
+      "label": "fallo durante la compensación",
+      "variant": "security"
+    },
+    {
+      "from": "failing",
+      "to": "failed",
+      "label": "compensación completa",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Cancelación diferida",
+      "items": [
+        "Durante ShrinkSource, CommitLayout, RepairBoot, Cleanup y RestoreSource, la cancelación espera a que termine la fase."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Verificación y pérdida del dispositivo",
+      "items": [
+        "Después de aprobar la verificación estructural no se aceptan cancelaciones. Retirar un disco vigilado convierte la ejecución en fallo."
+      ]
+    }
+  ]
+}
