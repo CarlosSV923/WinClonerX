@@ -1,0 +1,112 @@
+name: Release
+
+# Publishes a version when a tag such as v0.1.0 is pushed. The MSI is not signed (see the constitution, "Distribución y firma de código").
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write       # create the GitHub release and upload the MSI
+      id-token: write       # sign the build provenance attestation
+      attestations: write   # store the attestation in GitHub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read version from tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          $tag = $env:TAG
+          if ($tag -match '^v(\d+\.\d+\.\d+)$') {
+            "VERSION=$($Matches[1])" >> $env:GITHUB_ENV
+          } else {
+            throw "The tag '$tag' must look like v1.2.3. Pre-release suffixes are not supported by the MSI version."
+          }
+
+      - name: Restore
+        run: dotnet restore WinClonerX.slnx
+
+      # The Release solution build also builds the MSI (the installer is excluded from Debug builds in WinClonerX.slnx).
+      # WinClonerXVersion sets the MSI product version from the tag, and Version stamps the same version on the app
+      # assemblies, so the app logs (AppVersion) and the installer agree.
+      - name: Build (Release, includes the MSI)
+        run: dotnet build WinClonerX.slnx -c Release --no-restore "-p:WinClonerXVersion=$env:VERSION" "-p:Version=$env:VERSION"
+
+      # Unit tests must pass before anything is published. Integration tests need administrator rights and virtual disks,
+      # so they never run here.
+      - name: Test (unit tests only)
+        run: dotnet test WinClonerX.slnx -c Release --no-build --filter "Category!=Integration"
+
+      - name: Copy MSI and compute SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          msi_files=(installer/WinClonerX.Installer/bin/Release/*.msi)
+          if [ "${#msi_files[@]}" -ne 1 ]; then
+            echo "Expected exactly one MSI in installer/WinClonerX.Installer/bin/Release, found ${#msi_files[@]}." >&2
+            exit 1
+          fi
+          mkdir -p dist
+          msi="dist/WinClonerX-${VERSION}.msi"
+          cp "${msi_files[0]}" "$msi"
+          sha=$(sha256sum "$msi" | cut -d ' ' -f 1)
+          echo "MSI_PATH=$msi" >> "$GITHUB_ENV"
+          echo "MSI_SHA256=$sha" >> "$GITHUB_ENV"
+
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ${{ env.MSI_PATH }}
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
+          ## WinClonerX ${VERSION}
+
+          Instalador: WinClonerX-${VERSION}.msi. No está firmado, así que Windows SmartScreen mostrará un aviso. El README explica cómo continuar.
+
+          SHA-256 del instalador:
+
+              ${MSI_SHA256}  WinClonerX-${VERSION}.msi
+
+          Comprobación con PowerShell:
+
+              Get-FileHash .\WinClonerX-${VERSION}.msi -Algorithm SHA256
+              gh attestation verify .\WinClonerX-${VERSION}.msi --repo ${{ github.repository }}
+
+          Las instrucciones de instalación están en la sección Instalación del README.
+          EOF
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Versions before 1.0.0 are published as pre-releases.
+          prerelease=""
+          if [[ "$VERSION" == 0.* ]]; then prerelease="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" "$MSI_PATH" \
+            --title "WinClonerX ${VERSION}" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
+            --verify-tag \
+            $prerelease

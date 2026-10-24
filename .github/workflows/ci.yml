@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - '0*-*'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore WinClonerX.slnx
+
+      - name: Build
+        run: dotnet build WinClonerX.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test WinClonerX.slnx -c Release --no-build --filter "Category!=Integration" --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+
+      # The Release solution build above also builds the MSI (the installer is excluded from Debug builds in the slnx),
+      # and only Release runs ICE validation.
+      - name: Upload MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinClonerX-msi
+          path: installer/WinClonerX.Installer/bin/Release/*.msi
+          if-no-files-found: error

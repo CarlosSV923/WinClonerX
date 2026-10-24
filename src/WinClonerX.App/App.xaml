@@ -1,0 +1,17 @@
+<Application x:Class="WinClonerX.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:WinClonerX.App.Converters"
+             ThemeMode="Light">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/WinClonerXTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:LocKeyConverter x:Key="LocKeyConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

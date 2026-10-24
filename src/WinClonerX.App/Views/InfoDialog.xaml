@@ -1,0 +1,60 @@
+<Window x:Class="WinClonerX.App.Views.InfoDialog"
+        Icon="pack://application:,,,/WinClonerX.App;component/Assets/winclonerx.ico"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:themes="clr-namespace:WinClonerX.App.Themes"
+        MinWidth="400"
+        MaxWidth="520"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Brush.Background}"
+        FontFamily="{x:Static themes:WinClonerXFonts.Text}"
+        FocusManager.FocusedElement="{Binding ElementName=CloseButton}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Style="{StaticResource ScrollViewer.Page}" Grid.Row="0" MaxHeight="560" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock x:Name="TitleText" Style="{StaticResource Text.Title}" Margin="0,0,0,14" TextWrapping="Wrap" />
+                <TextBlock x:Name="IntroText" Style="{StaticResource Text.Body}" TextWrapping="Wrap" />
+                <TextBlock x:Name="DetectsHeadingText" Style="{StaticResource Text.Subtitle}" Margin="0,16,0,0" TextWrapping="Wrap" />
+                <ItemsControl x:Name="DetectsItems" Margin="0,4,0,0" Focusable="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="0,3,0,0" LastChildFill="True">
+                                <Ellipse DockPanel.Dock="Left" Width="5" Height="5" Margin="4,7,9,0" Fill="{StaticResource Brush.TextPrimary}" />
+                                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding}" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="CostText" Style="{StaticResource Text.Body}" Margin="0,12,0,0" TextWrapping="Wrap" />
+                <TextBlock x:Name="WhenHeadingText" Style="{StaticResource Text.Subtitle}" Margin="0,16,0,0" TextWrapping="Wrap" />
+                <ItemsControl x:Name="WhenItems" Margin="0,4,0,0" Focusable="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="0,3,0,0" LastChildFill="True">
+                                <Ellipse DockPanel.Dock="Left" Width="5" Height="5" Margin="4,7,9,0" Fill="{StaticResource Brush.TextPrimary}" />
+                                <TextBlock Style="{StaticResource Text.Body}" Text="{Binding}" TextWrapping="Wrap" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock x:Name="NoteText" Style="{StaticResource Text.Caption}" Margin="0,16,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+        </ScrollViewer>
+        <Button x:Name="CloseButton"
+                Grid.Row="1"
+                Style="{StaticResource Button.Primary}"
+                MinWidth="140"
+                Margin="0,20,16,0"
+                HorizontalAlignment="Right"
+                IsDefault="True"
+                IsCancel="True"
+                Click="OnCloseClick" />
+    </Grid>
+</Window>
