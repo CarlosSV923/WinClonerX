@@ -83,7 +83,7 @@ jobs:
           cat > "$RUNNER_TEMP/release-notes.md" <<EOF
           ## WinClonerX ${VERSION}
 
-          Instalador: WinClonerX-${VERSION}.msi. No está firmado, así que Windows SmartScreen mostrará un aviso. El README explica cómo continuar.
+          Instalador: WinClonerX-${VERSION}.msi. No está firmado, así que Windows SmartScreen mostrará un aviso. El README (en inglés; en español: README.es.md) explica cómo continuar.
 
           SHA-256 del instalador:
 
@@ -94,7 +94,7 @@ jobs:
               Get-FileHash .\WinClonerX-${VERSION}.msi -Algorithm SHA256
               gh attestation verify .\WinClonerX-${VERSION}.msi --repo ${{ github.repository }}
 
-          Las instrucciones de instalación están en la sección Instalación del README.
+          Las instrucciones de instalación están en la sección Installation del README (en español, Instalación en README.es.md).
           EOF
 
       - name: Publish GitHub release
