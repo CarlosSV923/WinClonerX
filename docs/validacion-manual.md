@@ -129,6 +129,26 @@ Los hallazgos corregidos durante la validación (inicio colgado, mapa de bits de
 
 Antes de este resultado, la verificación fallaba siempre en el mismo equipo (2026-10-22, versiones f76edd6 y 429f55c). El diagnóstico de las diferencias mostró que el destino se leía siempre igual, pero el origen no: VSS no congela `pagefile.sys`, `hiberfil.sys` ni `swapfile.sys` (unos 18,9 GB), y la partición EFI se copia en vivo. La verificación se rediseñó para comparar el destino con huellas SHA-256 tomadas durante la copia (research R18).
 
+### Ejecución: 0.9.0 instalada con el MSI (2026-10-23), nivel 4 completo (T119)
+
+| | |
+|---|---|
+| Versión | `0.9.0+d205af3`, instalada con `WinClonerX-0.9.0.msi` de la pre-release `v0.9.0` (SHA-256 y atestación comprobados) |
+| Equipo | Mini PC con Windows 11 (es-MX), UEFI + GPT |
+| Origen | Samsung SSD 990 EVO Plus 1 TB |
+| Destino | WD Green M.2 SATA de 960 GB en un adaptador USB |
+| Plan | Reducción temporal del origen y verificación completa |
+| Resultado | **Correcto**: `ExecutionCompleted` en 11 min 24 s; verificación con 0 bytes distintos |
+
+| Comprobación | Resultado |
+|---|---|
+| Instalación | SmartScreen superado con "Más información → Ejecutar de todas formas"; acceso en el menú Inicio |
+| SC-001: de abrir la app a confirmar | 42 s (objetivo < 3 min) |
+| SC-006: tiempo restante al 10 % de la copia | Estimado 348 s, real 382 s: −9 % (objetivo ±20 %) |
+| Fases | Copia 6 min 47 s; verificación 4 min 8 s; reapunte del BCD correcto |
+| Arranque del clon (SC-002) | Arranca sin menú; una sola entrada de arranque (`partition=C:`, `es-MX`, `recoverysequence`, `hypervisorlaunchtype Auto`); WinRE `Enabled` en la partición 4 del clon; Windows en `C:` |
+| Desinstalación (FR-032) | Desde Configuración → Aplicaciones. No queda `Program Files\WinClonerX`, ni la entrada de la lista de aplicaciones, ni el acceso del menú Inicio, ni procesos. `%ProgramData%\WinClonerX` se conserva a propósito (registros) |
+
 ## Revisión de accesibilidad (T109)
 
 Se revisaron los cinco pasos, el cambio de página mediante `CurrentPage`, los controles de `Views/`, los componentes de `Controls/` y los recursos del tema. El paso 1 enfoca la primera tarjeta apta cuando termina la lectura de discos; las tarjetas aceptan Tab, Mayús/Tab, Intro y Espacio y muestran un borde de foco. Los pasos 2 a 5 enfocan respectivamente el título, el campo de confirmación, Cancelar y Exportar registro al aparecer.

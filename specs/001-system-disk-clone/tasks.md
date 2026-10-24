@@ -285,8 +285,8 @@ intacto, el destino queda sin tabla de particiones y el registro describe lo ocu
 
 ### Validación final
 
-- [ ] T118 Ejecutar los niveles 1 a 3 de `specs/001-system-disk-clone/quickstart.md` y corregir lo que falle
-- [ ] T119 Ejecutar el nivel 4 de [quickstart.md](quickstart.md) en el segundo disco físico (⚠️ se borra) e incluir la desinstalación: comprobar que no quedan archivos en `Program Files\WinClonerX`, entradas en Programas y características ni procesos o servicios (FR-032). Registrar el resultado en `docs/validacion-manual.md` (SC-001, SC-002, SC-006)
+- [ ] T118 Ejecutar los niveles 1 a 3 de `specs/001-system-disk-clone/quickstart.md` y corregir lo que falle **Nivel 1 en cada cambio y en la CI; niveles 2 y 3 aplazados por decisión del autor (uso personal), ver `docs/pendientes-1.0.md`.**
+- [X] T119 Ejecutar el nivel 4 de [quickstart.md](quickstart.md) en el segundo disco físico (⚠️ se borra) e incluir la desinstalación: comprobar que no quedan archivos en `Program Files\WinClonerX`, entradas en Programas y características ni procesos o servicios (FR-032). Registrar el resultado en `docs/validacion-manual.md` (SC-001, SC-002, SC-006) **Hecho el 2026-10-23 en el mini PC con el MSI 0.9.0; ver `docs/validacion-manual.md`.**
 - [ ] T120 Prueba de uso de SC-007 (manual, antes de la 1.0) con al menos 5 personas sin perfil técnico: cada una identifica, antes de confirmar, qué disco se borrará en el paso 3. Registrar el protocolo y el resultado (≥ 90 % de aciertos) en `docs/validacion-manual.md`
 
 ---
