@@ -18,4 +18,7 @@
     <Project Path="tests/WinClonerX.Infrastructure.IntegrationTests/WinClonerX.Infrastructure.IntegrationTests.csproj" />
     <Project Path="tests/WinClonerX.Infrastructure.Windows.Tests/WinClonerX.Infrastructure.Windows.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/WinClonerX.Screenshots/WinClonerX.Screenshots.csproj" />
+  </Folder>
 </Solution>

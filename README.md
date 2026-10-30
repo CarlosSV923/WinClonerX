@@ -111,6 +111,25 @@ WinClonerX does not disable Smart App Control or any other Windows protection.
 
 On the review step you can check **Verify all data**. After copying, WinClonerX reads the target disk again and checks that it holds exactly the copied data, comparing SHA-256 digests taken during the copy. It takes about 50% more time.
 
+## Screenshots
+
+These screenshots use fictitious disks and serial numbers.
+
+<table>
+  <tr>
+    <td><strong>1. Choose a disk</strong><br><a href="docs/screenshots/en/01-disks.png"><img width="100%" src="docs/screenshots/en/01-disks.png" alt="Disk selection with a Contoso system disk, a selected Fabrikam SATA SSD, and an ineligible Northwind USB disk below."></a></td>
+    <td><strong>2. Review the plan</strong><br><a href="docs/screenshots/en/02-review.png"><img width="100%" src="docs/screenshots/en/02-review.png" alt="Clone plan with source and target partition layouts and full data verification enabled."></a></td>
+  </tr>
+  <tr>
+    <td><strong>3. Confirm the target</strong><br><a href="docs/screenshots/en/03-confirm.png"><img width="100%" src="docs/screenshots/en/03-confirm.png" alt="Confirmation screen with the last four fictitious serial characters entered and cloning enabled."></a></td>
+    <td><strong>4. Copy in progress</strong><br><a href="docs/screenshots/en/04-progress.png"><img width="100%" src="docs/screenshots/en/04-progress.png" alt="Clone progress at 50 percent, with earlier phases complete and copying data underway."></a></td>
+  </tr>
+  <tr>
+    <td><strong>5. Successful result</strong><br><a href="docs/screenshots/en/05-result.png"><img width="100%" src="docs/screenshots/en/05-result.png" alt="Successful clone result showing passed structural and full data verification."></a></td>
+    <td><strong>6. Full verification details</strong><br><a href="docs/screenshots/en/06-verify-info.png"><img width="100%" src="docs/screenshots/en/06-verify-info.png" alt="Information dialog explaining what full data verification checks, shown over the review screen."></a></td>
+  </tr>
+</table>
+
 ## After cloning
 
 1. Shut down the computer. To boot from the new disk, you can leave both disks connected and choose the new disk from the firmware boot menu. The key to open that menu depends on the manufacturer. Alternatively, remove the original disk and boot.

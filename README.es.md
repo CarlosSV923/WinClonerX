@@ -111,6 +111,25 @@ WinClonerX no desactiva Smart App Control ni ninguna otra protección de Windows
 
 En la revisión puedes marcar **Verificar todos los datos**. Después de copiar, WinClonerX vuelve a leer el disco de destino y comprueba que guarda exactamente los datos copiados, comparando huellas SHA-256 tomadas durante la copia. Tarda aproximadamente un 50 % más.
 
+## Capturas
+
+Estas capturas usan discos y números de serie ficticios.
+
+<table>
+  <tr>
+    <td><strong>1. Elegir un disco</strong><br><a href="docs/screenshots/es/01-disks.png"><img width="100%" src="docs/screenshots/es/01-disks.png" alt="Selección de discos: disco del sistema Contoso, SSD SATA Fabrikam seleccionado y, debajo, un disco USB Northwind no válido."></a></td>
+    <td><strong>2. Revisar el plan</strong><br><a href="docs/screenshots/es/02-review.png"><img width="100%" src="docs/screenshots/es/02-review.png" alt="Plan de clonado con la distribución de particiones de origen y destino y la verificación completa activada."></a></td>
+  </tr>
+  <tr>
+    <td><strong>3. Confirmar el destino</strong><br><a href="docs/screenshots/es/03-confirm.png"><img width="100%" src="docs/screenshots/es/03-confirm.png" alt="Pantalla de confirmación con los cuatro caracteres ficticios del número de serie escritos y el clonado habilitado."></a></td>
+    <td><strong>4. Clonado en curso</strong><br><a href="docs/screenshots/es/04-progress.png"><img width="100%" src="docs/screenshots/es/04-progress.png" alt="Progreso del clonado al 50 %, con las fases anteriores terminadas y la copia de datos en curso."></a></td>
+  </tr>
+  <tr>
+    <td><strong>5. Resultado correcto</strong><br><a href="docs/screenshots/es/05-result.png"><img width="100%" src="docs/screenshots/es/05-result.png" alt="Resultado satisfactorio con la verificación estructural y la verificación completa de datos aprobadas."></a></td>
+    <td><strong>6. Detalles de la verificación completa</strong><br><a href="docs/screenshots/es/06-verify-info.png"><img width="100%" src="docs/screenshots/es/06-verify-info.png" alt="Diálogo informativo que explica qué comprueba la verificación completa de datos, sobre la pantalla de revisión."></a></td>
+  </tr>
+</table>
+
 ## Después de clonar
 
 1. Apaga el equipo. Para arrancar desde el disco nuevo, puedes dejar los dos discos conectados y elegir el disco nuevo en el menú de arranque del firmware. La tecla para abrir ese menú depende del fabricante. Como alternativa, retira el disco original y arranca.
